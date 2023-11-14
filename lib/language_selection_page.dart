@@ -16,13 +16,15 @@ class LanguageSelection extends StatelessWidget {
             children: [
               const Text("ChocoTur",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600)),
-              GridView.count(
-                crossAxisCount: 4,
-                padding: const EdgeInsets.all(10),
-                children: [
-                  LanguageSelectionButton(language: LanguageCodes.EN),
-                  LanguageSelectionButton(language: LanguageCodes.IT),
-                ],
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 4,
+                  padding: const EdgeInsets.all(10),
+                  children: [
+                    LanguageSelectionButton(language: LanguageCodes.EN),
+                    LanguageSelectionButton(language: LanguageCodes.IT),
+                  ],
+                ),
               )
             ],
           ),

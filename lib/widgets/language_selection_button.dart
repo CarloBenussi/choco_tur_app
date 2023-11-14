@@ -10,7 +10,8 @@ class LanguageSelectionButton extends StatelessWidget {
   late final BuildContext context;
 
   void onLanguagePressed() {
-    Provider.of<ChocoTurModel>(context).setLanguage(context, language);
+    Provider.of<ChocoTurModel>(context, listen: false)
+        .setLanguage(context, language);
     Navigator.pushReplacementNamed(context, '/login');
   }
 
@@ -21,7 +22,7 @@ class LanguageSelectionButton extends StatelessWidget {
       children: [
         IconButton.filled(
           onPressed: onLanguagePressed,
-          icon: ImageIcon(AssetImage('assets/flags/$language.png')),
+          icon: Image.asset('assets/flags/$language.png'),
         ),
         Text(
           LanguageCodes.langCodeToLabel(language) ?? "Unknown Language",
