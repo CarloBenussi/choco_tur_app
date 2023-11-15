@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LanguageSelectionButton extends StatelessWidget {
-  LanguageSelectionButton({super.key, required this.language});
+  const LanguageSelectionButton({super.key, required this.language});
 
   final String language;
-  late final BuildContext context;
 
-  void onLanguagePressed() {
+  void onLanguagePressed(BuildContext context) {
     Provider.of<ChocoTurModel>(context, listen: false)
         .setLanguage(context, language);
     Navigator.pushReplacementNamed(context, '/login');
@@ -17,11 +16,10 @@ class LanguageSelectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    this.context = context;
     return Column(
       children: [
         IconButton.filled(
-          onPressed: onLanguagePressed,
+          onPressed: () => onLanguagePressed(context),
           icon: Image.asset('assets/flags/$language.png'),
         ),
         Text(

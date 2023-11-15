@@ -1,3 +1,5 @@
+import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -36,10 +38,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void loginUser() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      // TODO: Login
-      print("Successfully logged in");
+      // TODO: Login and set token on ChocoTurModel.
+      LoggerInstance.logger.i("Successfully logged in.");
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
-      print("Error");
+      LoggerInstance.logger.i("Error in loggin in.");
     }
   }
 
@@ -59,21 +62,23 @@ class _LoginPageState extends State<LoginPage> {
         body: Center(
       child: Padding(
         padding: const EdgeInsets.only(left: 15, right: 15),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          verticalDirection: VerticalDirection.down,
+        child: ListView(
           children: [
-            const Text("ChocoTur",
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600)),
+            const Center(
+              child: Text("ChocoTur",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600)),
+            ),
             Container(
-                padding: const EdgeInsets.only(top: 10, bottom: 40),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset("assets/gianduiotto.jpg"))),
-            const Text("Login with your credentials",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300)),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child:
+                      Image.asset("assets/gianduiotto.jpg", fit: BoxFit.cover)),
+            ),
+            const Center(
+              child: Text("Login with your credentials",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300)),
+            ),
             Form(
               key: _formKey,
               child: Column(
@@ -163,39 +168,33 @@ class _LoginPageState extends State<LoginPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: loginWithGoogle,
+                  LoginWithButton(
+                    onPressedFunction: loginWithGoogle,
+                    labelText: "SIGN IN WITH GOOGLE",
                     icon: const FaIcon(
                       FontAwesomeIcons.google,
                       color: Colors.white,
                     ),
-                    label: const Text("SIGN IN WITH GOOGLE",
-                        style: TextStyle(fontSize: 15, color: Colors.white)),
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    buttonColor: Colors.red,
                   ),
-                  ElevatedButton.icon(
-                    onPressed: loginWithApple,
+                  LoginWithButton(
+                    onPressedFunction: loginWithApple,
+                    labelText: "SIGN IN WITH APPLE",
                     icon: const FaIcon(
                       FontAwesomeIcons.apple,
                       color: Colors.white,
                     ),
-                    label: const Text("SIGN IN WITH APPLE",
-                        style: TextStyle(fontSize: 15, color: Colors.white)),
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                    buttonColor: Colors.black,
                   ),
-                  ElevatedButton.icon(
-                    onPressed: loginWithFacebook,
+                  LoginWithButton(
+                    onPressedFunction: loginWithFacebook,
+                    labelText: "SIGN IN WITH FACEBOOK",
                     icon: const FaIcon(
                       FontAwesomeIcons.facebook,
                       color: Colors.white,
                     ),
-                    label: const Text("SIGN IN WITH FACEBOOK",
-                        style: TextStyle(fontSize: 15, color: Colors.white)),
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  ),
+                    buttonColor: Colors.blue,
+                  )
                 ],
               ),
             ),
