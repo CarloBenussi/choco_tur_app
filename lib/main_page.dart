@@ -19,7 +19,7 @@ class MainPage extends StatelessWidget {
             heroTag: HeroTags.tourOneTag)),
     MainPageTour(
         tourDescription: TourDescriptionModel(
-            imageUrl: 'assets/piazzaSanCarlo.jpg',
+            imageUrl: 'assets/caffeSanCarlo.jpg',
             text: ChocoTurPlaceholder.loremIpsum,
             title: "Choco Tour 2",
             heroTag: HeroTags.tourTwoTag)),
@@ -52,7 +52,9 @@ class MainPage extends StatelessWidget {
           itemBuilder: (BuildContext context, int index) {
             return _tours[index];
           }),
-      bottomNavigationBar: const ChocoTurNavigationBar(),
+      bottomNavigationBar: const ChocoTurNavigationBar(
+        selectedIndex: 0,
+      ),
     );
   }
 }

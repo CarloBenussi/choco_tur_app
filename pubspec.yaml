@@ -32,12 +32,15 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  audioplayers: ^5.2.1
   flutter_native_splash: ^2.3.5
   font_awesome_flutter: ^10.6.0
+  google_maps_flutter: ^2.5.0
   intl: any
   logger: ^2.0.2+1
+  path: ^1.8.3
   provider: ^6.1.1
-  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -72,6 +75,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/gianduiotto.jpg
+    - assets/caffeSanCarlo.jpg
     - assets/piazzaSanCarlo.jpg
     - assets/flags/it.png
     - assets/flags/en.png

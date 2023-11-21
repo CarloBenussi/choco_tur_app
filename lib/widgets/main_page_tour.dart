@@ -17,33 +17,27 @@ class MainPageTour extends StatelessWidget {
       maxHeight: 200,
       child: GestureDetector(
         onTap: () => onTapped(context),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.circular(20),
+        child: Stack(children: [
+          Hero(
+            tag: tourDescription.heroTag,
+            child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(tourDescription.imageUrl)),
           ),
-          child: Stack(children: [
-            Hero(
-              tag: tourDescription.heroTag,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(tourDescription.imageUrl)),
+          Positioned(
+            bottom: 5,
+            left: 5,
+            child: Text(
+              tourDescription.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white),
             ),
-            Positioned(
-              bottom: 5,
-              left: 5,
-              child: Text(
-                tourDescription.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white),
-              ),
-            )
-          ]),
-        ),
+          )
+        ]),
       ),
     );
   }

@@ -46,15 +46,15 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void loginWithGoogle() {}
+  void loginWithGoogle() {} // TODO: Implement.
 
-  void loginWithApple() {}
+  void loginWithApple() {} // TODO: Implement.
 
-  void loginWithFacebook() {}
+  void loginWithFacebook() {} // TODO: Implement.
 
-  void createAccount() {}
+  void createAccount() {} // TODO: Implement.
 
-  void forgotPassword() {}
+  void forgotPassword() {} // TODO: Implement.
 
   @override
   Widget build(BuildContext context) {

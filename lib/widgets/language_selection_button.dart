@@ -1,4 +1,4 @@
-import 'package:choco_tur/models/choco_tur_model.dart';
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +9,7 @@ class LanguageSelectionButton extends StatelessWidget {
   final String language;
 
   void onLanguagePressed(BuildContext context) {
-    Provider.of<ChocoTurModel>(context, listen: false)
+    Provider.of<ChocoTurUser>(context, listen: false)
         .setLanguage(context, language);
     Navigator.pushReplacementNamed(context, '/login');
   }
