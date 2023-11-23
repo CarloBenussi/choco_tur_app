@@ -42,3 +42,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets
+/android/app/src/main/res/values/secrets.xml
+/ios/runner/Secret.swift
