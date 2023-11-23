@@ -14,15 +14,13 @@ class MainPageTour extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LimitedBox(
-      maxHeight: 200,
+      maxHeight: 500,
       child: GestureDetector(
         onTap: () => onTapped(context),
         child: Stack(children: [
           Hero(
             tag: tourDescription.heroTag,
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(tourDescription.imageUrl)),
+            child: Image.asset(tourDescription.imageUrl),
           ),
           Positioned(
             bottom: 5,

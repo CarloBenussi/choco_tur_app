@@ -30,12 +30,16 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
     tourDescription =
         ModalRoute.of(context)!.settings.arguments as TourDescriptionModel;
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: const ChocoTurAppBar(),
       body: ListView(
         children: [
-          Hero(
-            tag: tourDescription.heroTag,
-            child: ClipRRect(child: Image.asset(tourDescription.imageUrl)),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: Hero(
+              tag: tourDescription.heroTag,
+              child: Image.asset(tourDescription.imageUrl),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -72,9 +76,12 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
               ],
             ),
           ),
-          Text(
-            tourDescription.text,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: Text(
+              tourDescription.text,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+            ),
           )
         ],
       ),

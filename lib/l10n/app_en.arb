@@ -1,3 +1,14 @@
 {
-  "rememberMe": "Remember me"
+  "rememberMe": "Remember me",
+  "forgotPassword": "Forgot Password?",
+  "email": "Email",
+  "password": "Password",
+  "loginWithCredentialsTitle": "Login with your credentials",
+  "signInButtonLabel": "SIGN IN",
+  "or": "OR",
+  "signInWithGoogle": "SIGN IN WITH GOOGLE",
+  "signInWithApple": "SIGN IN WITH APPLE",
+  "signInWithFacebook": "SIGN IN WITH FACEBOOK",
+  "dontHaveAnAccountQ": "Don't have an account? ",
+  "createAnAccount": "Create an account"
 }

@@ -14,11 +14,11 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  // var chocoUser = await ChocoTurUser.init();
+  var chocoUser = await ChocoTurUser.init();
   FlutterNativeSplash.remove();
 
   runApp(ChangeNotifierProvider(
-    create: (BuildContext context) => ChocoTurUser(),
+    create: (BuildContext context) => chocoUser,
     child: const MyApp(),
   ));
 }
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/tour_description': (context) => TourDescriptionPage(),
           '/main': (context) => MainPage(),
-          '/map': (context) => const MapPage(),
+          '/map': (context) => MapPage(),
         });
   }
 }

@@ -1,3 +1,14 @@
 {
-  "rememberMe": "Rircordami"
+  "rememberMe": "Rircordami",
+  "forgotPassword": "Password dimenticata?",
+  "email": "Email",
+  "password": "Password",
+  "loginWithCredentialsTitle": "Accedi con le tue credenziali",
+  "signInButtonLabel": "ACCEDI",
+  "or": "OPPURE",
+  "signInWithGoogle": "ACCEDI CON GOOGLE",
+  "signInWithApple": "ACCEDI CON APPLE",
+  "signInWithFacebook": "ACCEDI CON FACEBOOK",
+  "dontHaveAnAccountQ": "Non hai un account? ",
+  "createAnAccount": "Registrati"
 }

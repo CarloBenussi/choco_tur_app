@@ -40,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
       // TODO: Login and set token on ChocoTurModel.
       LoggerInstance.logger.i("Successfully logged in.");
+
       Navigator.pushReplacementNamed(context, '/main');
     } else {
       LoggerInstance.logger.i("Error in loggin in.");
@@ -75,9 +76,11 @@ class _LoginPageState extends State<LoginPage> {
                   child:
                       Image.asset("assets/gianduiotto.jpg", fit: BoxFit.cover)),
             ),
-            const Center(
-              child: Text("Login with your credentials",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300)),
+            Center(
+              child: Text(
+                  AppLocalizations.of(context)!.loginWithCredentialsTitle,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w300)),
             ),
             Form(
               key: _formKey,
@@ -85,12 +88,12 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   UserTextInput(
                     controller: _userNameController,
-                    hintText: "Email",
+                    hintText: AppLocalizations.of(context)!.email,
                     validator: validateUsername,
                   ),
                   UserTextInput(
                     controller: _passwordController,
-                    hintText: "Password",
+                    hintText: AppLocalizations.of(context)!.password,
                     obscured: true,
                     validator: validatePassword,
                   ),
@@ -119,9 +122,10 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                       onPressed: forgotPassword,
-                      child: const Text(
-                        "Forgot password?",
-                        style: TextStyle(fontSize: 15, color: Colors.blue),
+                      child: Text(
+                        AppLocalizations.of(context)!.forgotPassword,
+                        style:
+                            const TextStyle(fontSize: 15, color: Colors.blue),
                       )),
                 )
               ],
@@ -137,9 +141,9 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: loginUser,
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.lightBlue),
-                        child: const Text(
-                          "SIGN IN",
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.signInButtonLabel,
+                          style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w300,
                               color: Colors.white),
@@ -155,8 +159,8 @@ class _LoginPageState extends State<LoginPage> {
                   const Expanded(child: Divider()),
                   Container(
                     padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: const Text("OR",
-                        style: TextStyle(
+                    child: Text(AppLocalizations.of(context)!.or,
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w300)),
                   ),
                   const Expanded(child: Divider()),
@@ -170,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   LoginWithButton(
                     onPressedFunction: loginWithGoogle,
-                    labelText: "SIGN IN WITH GOOGLE",
+                    labelText: AppLocalizations.of(context)!.signInWithGoogle,
                     icon: const FaIcon(
                       FontAwesomeIcons.google,
                       color: Colors.white,
@@ -179,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   LoginWithButton(
                     onPressedFunction: loginWithApple,
-                    labelText: "SIGN IN WITH APPLE",
+                    labelText: AppLocalizations.of(context)!.signInWithApple,
                     icon: const FaIcon(
                       FontAwesomeIcons.apple,
                       color: Colors.white,
@@ -188,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   LoginWithButton(
                     onPressedFunction: loginWithFacebook,
-                    labelText: "SIGN IN WITH FACEBOOK",
+                    labelText: AppLocalizations.of(context)!.signInWithFacebook,
                     icon: const FaIcon(
                       FontAwesomeIcons.facebook,
                       color: Colors.white,
@@ -201,15 +205,15 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Text(
-                  "Don't have an account? ",
-                  style: TextStyle(fontSize: 15),
+                Text(
+                  AppLocalizations.of(context)!.dontHaveAnAccountQ,
+                  style: const TextStyle(fontSize: 15),
                 ),
                 TextButton(
                     onPressed: createAccount,
-                    child: const Text(
-                      "Create an account",
-                      style: TextStyle(fontSize: 15, color: Colors.blue),
+                    child: Text(
+                      AppLocalizations.of(context)!.createAnAccount,
+                      style: const TextStyle(fontSize: 15, color: Colors.blue),
                     ))
               ],
             )

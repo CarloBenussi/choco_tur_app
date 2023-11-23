@@ -40,6 +40,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: const ChocoTurAppBar(),
       drawer: const ChocoTurDrawer(),
       body: ListView.separated(
@@ -48,7 +49,7 @@ class MainPage extends StatelessWidget {
             return const SizedBox(height: 10);
           },
           scrollDirection: Axis.vertical,
-          padding: const EdgeInsets.fromLTRB(40, 10, 40, 10),
+          padding: const EdgeInsets.only(top: 10, bottom: 10),
           itemBuilder: (BuildContext context, int index) {
             return _tours[index];
           }),
