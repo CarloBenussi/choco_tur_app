@@ -22,10 +22,18 @@ class UserTextInput extends StatelessWidget {
         validator: validator,
         controller: controller,
         decoration: InputDecoration(
-            hintText: hintText, border: const UnderlineInputBorder()),
+          hintText: hintText,
+          hintStyle:
+              const TextStyle(color: ChocoTurTextStyles.textOnBackgroundColor),
+          border: const UnderlineInputBorder(),
+        ),
         maxLines: 1,
         obscureText: obscured,
-        style: ChocoTurTextStyles.loginTextStyle,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w300,
+          color: ChocoTurTextStyles.textOnBackgroundColor,
+        ),
       ),
     );
   }

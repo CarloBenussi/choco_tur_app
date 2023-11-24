@@ -16,18 +16,15 @@ class LoginWithButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      flex: 1,
-      child: ElevatedButton.icon(
-        onPressed: onPressedFunction,
-        icon: icon,
-        label: Text(
-          labelText,
-          style: const TextStyle(fontSize: 15, color: Colors.white),
-          overflow: TextOverflow.ellipsis,
-        ),
-        style: ElevatedButton.styleFrom(backgroundColor: buttonColor),
+    return ElevatedButton.icon(
+      onPressed: onPressedFunction,
+      icon: icon,
+      label: Text(
+        labelText,
+        style: const TextStyle(fontSize: 15, color: Colors.white),
+        overflow: TextOverflow.ellipsis,
       ),
+      style: ElevatedButton.styleFrom(backgroundColor: buttonColor),
     );
   }
 }

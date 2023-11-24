@@ -1,7 +1,6 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MainPageTour extends StatelessWidget {
   const MainPageTour({super.key, required this.chocoTurTour});
