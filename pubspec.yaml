@@ -77,6 +77,9 @@ flutter:
     - assets/gianduiotto.jpg
     - assets/caffeSanCarlo.jpg
     - assets/piazzaSanCarlo.jpg
+    - assets/chocolateIcon.png
+    - assets/cremino.jpg
+    - assets/gianduiottoSingolo.jpg
     - assets/flags/it.png
     - assets/flags/en.png
   #   - images/a_dot_ham.jpeg

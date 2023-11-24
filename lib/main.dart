@@ -2,7 +2,7 @@ import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/main_page.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/tour_description_page.dart';
+import 'package:choco_tur/tour_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         locale: Provider.of<ChocoTurUser>(context).locale,
         routes: {
           '/login': (context) => const LoginPage(),
-          '/tour_description': (context) => TourDescriptionPage(),
+          '/tour_info': (context) => TourInfoPage(),
           '/main': (context) => MainPage(),
           '/map': (context) => MapPage(),
         });

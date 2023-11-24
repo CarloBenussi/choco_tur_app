@@ -1,19 +1,20 @@
-import 'package:choco_tur/models/tour_description_model.dart';
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
+import 'package:choco_tur/widgets/purchaseTourButton.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class TourDescriptionPage extends StatefulWidget {
+class TourInfoPage extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
-  TourDescriptionPage({super.key});
+  TourInfoPage({super.key});
 
   @override
-  State<TourDescriptionPage> createState() => _TourDescriptionPageState();
+  State<TourInfoPage> createState() => _TourInfoPageState();
 }
 
-class _TourDescriptionPageState extends State<TourDescriptionPage> {
-  late TourDescriptionModel tourDescription;
+class _TourInfoPageState extends State<TourInfoPage> {
+  late ChocoTurTour chocoTurTour;
 
   bool _purchased = false;
 
@@ -27,8 +28,7 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    tourDescription =
-        ModalRoute.of(context)!.settings.arguments as TourDescriptionModel;
+    chocoTurTour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const ChocoTurAppBar(),
@@ -37,8 +37,8 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
           Padding(
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: Hero(
-              tag: tourDescription.heroTag,
-              child: Image.asset(tourDescription.imageUrl),
+              tag: chocoTurTour.id,
+              child: Image.asset(chocoTurTour.imageUrl),
             ),
           ),
           Padding(
@@ -47,7 +47,9 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: _purchased ? onPlayPressed : null,
+                  onPressed: (_purchased || chocoTurTour.isFree())
+                      ? onPlayPressed
+                      : null,
                   icon: const FaIcon(
                     FontAwesomeIcons.play,
                     color: Colors.white,
@@ -60,27 +62,31 @@ class _TourDescriptionPageState extends State<TourDescriptionPage> {
                   style:
                       ElevatedButton.styleFrom(backgroundColor: Colors.orange),
                 ),
-                ElevatedButton.icon(
-                  onPressed: onPurchasePressed,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.cartShopping,
-                    color: Colors.white,
+                if (!chocoTurTour.isFree())
+                  PurchaseTourButton(
+                    onPressedFunction: onPurchasePressed,
+                    purchased: _purchased,
                   ),
-                  label: const Text(
-                    "Purchase tour",
-                    style: TextStyle(fontSize: 15, color: Colors.white),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                ),
               ],
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Text(
-              tourDescription.text,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "${chocoTurTour.title}\n\n",
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: chocoTurTour.text,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w300),
+                  ),
+                ],
+              ),
             ),
           )
         ],

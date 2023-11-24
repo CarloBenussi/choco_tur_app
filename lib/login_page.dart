@@ -167,39 +167,40 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  LoginWithButton(
-                    onPressedFunction: loginWithGoogle,
-                    labelText: AppLocalizations.of(context)!.signInWithGoogle,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.white,
-                    ),
-                    buttonColor: Colors.red,
-                  ),
-                  LoginWithButton(
-                    onPressedFunction: loginWithApple,
-                    labelText: AppLocalizations.of(context)!.signInWithApple,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.apple,
-                      color: Colors.white,
-                    ),
-                    buttonColor: Colors.black,
-                  ),
-                  LoginWithButton(
-                    onPressedFunction: loginWithFacebook,
-                    labelText: AppLocalizations.of(context)!.signInWithFacebook,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.facebook,
-                      color: Colors.white,
-                    ),
-                    buttonColor: Colors.blue,
-                  )
-                ],
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: LoginWithButton(
+                onPressedFunction: loginWithGoogle,
+                labelText: AppLocalizations.of(context)!.signInWithGoogle,
+                icon: const FaIcon(
+                  FontAwesomeIcons.google,
+                  color: Colors.white,
+                ),
+                buttonColor: Colors.red,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: LoginWithButton(
+                onPressedFunction: loginWithApple,
+                labelText: AppLocalizations.of(context)!.signInWithApple,
+                icon: const FaIcon(
+                  FontAwesomeIcons.apple,
+                  color: Colors.white,
+                ),
+                buttonColor: Colors.black,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: LoginWithButton(
+                onPressedFunction: loginWithFacebook,
+                labelText: AppLocalizations.of(context)!.signInWithFacebook,
+                icon: const FaIcon(
+                  FontAwesomeIcons.facebook,
+                  color: Colors.white,
+                ),
+                buttonColor: Colors.blue,
               ),
             ),
             Row(

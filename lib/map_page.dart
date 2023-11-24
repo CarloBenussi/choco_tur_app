@@ -21,7 +21,6 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const ChocoTurAppBar(),
       drawer: const ChocoTurDrawer(),
       body: Stack(
         children: [
@@ -31,6 +30,16 @@ class MapPage extends StatelessWidget {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
             },
+          ),
+          const Positioned(
+            left: 20,
+            top: 20,
+            child: DrawerButton(
+              style: ButtonStyle(
+                iconColor: MaterialStatePropertyAll(Colors.black),
+                backgroundColor: MaterialStatePropertyAll(Colors.white),
+              ),
+            ),
           ),
         ],
       ),

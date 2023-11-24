@@ -14,9 +14,7 @@ class ChocoTurUser extends ChangeNotifier {
         language: _prefs.getString(_languageKey));
   }
 
-  ChocoTurUser({String? userName, String? language})
-      : _userName = userName,
-        _language = language;
+  ChocoTurUser({this.userName, this.language});
 
   // SharedPreferences info.
   static late final SharedPreferences _prefs;
@@ -25,28 +23,34 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _tokenKey = "token";
 
   // User data.
-  String? _userName;
-  String? _language;
+  String? userName;
+  String? language;
   Locale _locale = const Locale(LanguageCodes.EN);
 
   Locale get locale {
-    if (_language != null) {
-      _locale = Locale(_language!);
+    if (language != null) {
+      _locale = Locale(language!);
     }
 
     return _locale;
   }
 
   void setLanguage(BuildContext context, String lang) {
-    if (_language != null && _language == lang) {
+    if (language != null && language == lang) {
       LoggerInstance.logger.d(
           'Language set is equivalent to language saved in preferences ($lang).');
       return;
     }
 
-    _language = lang;
+    language = lang;
     _locale = Locale(lang);
     _prefs.setString(_languageKey, lang);
+    notifyListeners();
+  }
+
+  void setUserName(BuildContext context, String userName) {
+    userName = userName;
+    _prefs.setString(_userNameKey, userName);
     notifyListeners();
   }
 }
