@@ -3,6 +3,7 @@ import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchaseTourButton.dart';
+import 'package:choco_tur/widgets/tour_stops.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -108,6 +109,13 @@ class _TourInfoPageState extends State<TourInfoPage> {
                   fontWeight: FontWeight.bold,
                   color: ChocoTurStyles.textOnBackgroundColor,
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              child: TourStops(
+                tourStops: chocoTurTour.stops,
+                tourStopDescriptions: chocoTurTour.stopDescriptions,
               ),
             ),
           ],

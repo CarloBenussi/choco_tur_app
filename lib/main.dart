@@ -20,12 +20,14 @@ void main() async {
 
   runApp(ChangeNotifierProvider(
     create: (BuildContext context) => chocoUser,
-    child: const MyApp(),
+    child: MyApp(user: chocoUser),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.user});
+
+  final ChocoTurUser user;
 
   static final _defaultLightColorScheme =
       ColorScheme.fromSwatch(primarySwatch: Colors.red);
@@ -48,7 +50,9 @@ class MyApp extends StatelessWidget {
           colorScheme: darkColorScheme ?? _defaultDarkColorScheme,
           useMaterial3: true,
         ),
-        home: const LanguageSelection(),
+        home: (user.language == null)
+            ? const LanguageSelection()
+            : const LoginPage(),
         locale: Provider.of<ChocoTurUser>(context).locale,
         routes: {
           '/login': (context) => const LoginPage(),
