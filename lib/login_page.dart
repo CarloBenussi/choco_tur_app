@@ -1,5 +1,5 @@
 import 'package:choco_tur/utils/logger.dart';
-import 'package:choco_tur/utils/text_styles.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
@@ -61,12 +61,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.grey.shade500, Colors.white]),
-      ),
+      decoration: ChocoTurStyles.backgroundDecoration,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Center(
@@ -79,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w600,
-                          color: ChocoTurTextStyles.textOnBackgroundColor)),
+                          color: ChocoTurStyles.textOnBackgroundColor)),
                 ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
@@ -94,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w300,
-                          color: ChocoTurTextStyles.textOnBackgroundColor)),
+                          color: ChocoTurStyles.textOnBackgroundColor)),
                 ),
                 Form(
                   key: _formKey,
@@ -122,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                         title: Text(AppLocalizations.of(context)!.rememberMe,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: ChocoTurTextStyles.textOnBackgroundColor,
+                              color: ChocoTurStyles.textOnBackgroundColor,
                             )),
                         controlAffinity: ListTileControlAffinity.leading,
                         checkColor: Colors.white,
@@ -180,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w300,
-                              color: ChocoTurTextStyles.textOnBackgroundColor,
+                              color: ChocoTurStyles.textOnBackgroundColor,
                             )),
                       ),
                       const Expanded(child: Divider()),
@@ -230,7 +225,7 @@ class _LoginPageState extends State<LoginPage> {
                       AppLocalizations.of(context)!.dontHaveAnAccountQ,
                       style: const TextStyle(
                         fontSize: 15,
-                        color: ChocoTurTextStyles.textOnBackgroundColor,
+                        color: ChocoTurStyles.textOnBackgroundColor,
                       ),
                     ),
                     TextButton(

@@ -5,10 +5,7 @@ class ChocoTurAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      elevation: 0,
-      shadowColor: Colors.transparent,
-    );
+    return AppBar();
   }
 
   @override

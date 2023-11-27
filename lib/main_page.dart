@@ -1,6 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/mock_data.dart';
-import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/main_page_tour.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
@@ -14,19 +13,28 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: const ChocoTurAppBar(),
       drawer: const ChocoTurDrawer(),
-      body: ListView.separated(
-          itemCount: _tours.length,
-          separatorBuilder: (BuildContext context, int index) {
-            return const SizedBox(height: 10);
-          },
-          scrollDirection: Axis.vertical,
-          padding: const EdgeInsets.only(top: 10, bottom: 10),
-          itemBuilder: (BuildContext context, int index) {
-            return MainPageTour(chocoTurTour: _tours[index]);
-          }),
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: _tours.length,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (BuildContext context, int index) {
+              return MainPageTour(chocoTurTour: _tours[index]);
+            },
+          ),
+          const Positioned(
+            left: 20,
+            top: 20,
+            child: DrawerButton(
+              style: ButtonStyle(
+                iconColor: MaterialStatePropertyAll(Colors.white),
+                backgroundColor: MaterialStatePropertyAll(Colors.red),
+              ),
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: const ChocoTurNavigationBar(
         selectedIndex: 0,
       ),

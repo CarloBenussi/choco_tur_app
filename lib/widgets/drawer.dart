@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ChocoTurDrawer extends StatelessWidget {
   const ChocoTurDrawer({super.key});
@@ -12,18 +11,46 @@ class ChocoTurDrawer extends StatelessWidget {
           DrawerHeader(
               child: Text(
             "ChocoTur",
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.w600, color: Colors.blue),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
           )),
           ListTile(
-            leading: FaIcon(
-              FontAwesomeIcons.cartShopping,
-              color: Colors.blue,
+            leading: Icon(
+              Icons.tour_outlined,
             ),
-            title: Text("Purchased tours"),
+            title: Text("My tours"),
           ),
-          ListTile(),
-          ListTile(),
+          Divider(
+            thickness: 0.5,
+            color: Colors.grey,
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.settings_outlined,
+            ),
+            title: Text("Settings"),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.logout_outlined,
+            ),
+            title: Text("Logout"),
+          ),
+          Divider(
+            thickness: 0.5,
+            color: Colors.grey,
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.question_mark_outlined,
+            ),
+            title: Text("Guide and Feedback"),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.info_outline_rounded,
+            ),
+            title: Text("About"),
+          ),
         ],
       ),
     );

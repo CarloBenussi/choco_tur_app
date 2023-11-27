@@ -5,7 +5,12 @@ class ChocoTurTour {
       required this.text,
       required this.title,
       required this.costInEuros,
-      required this.stops});
+      required this.stops,
+      required this.stopDescriptions}) {
+    if (stops.length != stopDescriptions.length) {
+      throw Error();
+    }
+  }
 
   final String id;
   final String imageUrl;
@@ -13,6 +18,7 @@ class ChocoTurTour {
   final String title;
   final int costInEuros;
   final List<ChocoTurTourStop> stops;
+  final List<String> stopDescriptions;
 
   bool isFree() {
     return costInEuros == 0;
@@ -32,14 +38,14 @@ class ChocoTurTourStop {
   ChocoTurTourStop(
       {required this.id,
       required this.imageUrl,
-      required this.text,
       required this.title,
+      required this.stopInfo,
       this.chocolate});
 
   final String id;
   final String imageUrl;
-  final String text;
   final String title;
+  final String stopInfo;
   final Chocolate? chocolate;
 }
 

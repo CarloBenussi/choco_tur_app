@@ -22,41 +22,41 @@ class MockData {
       ChocoTurTourStop(
         id: "Choco Tour Stop 1",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
       ),
       ChocoTurTourStop(
         id: "Choco Tour Stop 2",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
         chocolate: chocolates[0],
       ),
       ChocoTurTourStop(
         id: "Choco Tour Stop 3",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
       ),
       ChocoTurTourStop(
         id: "Choco Tour Stop 4",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
         chocolate: chocolates[1],
       ),
       ChocoTurTourStop(
         id: "Choco Tour Stop 5",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
         chocolate: chocolates[0],
       ),
       ChocoTurTourStop(
         id: "Choco Tour Stop 6",
         imageUrl: 'assets/caffeSanCarlo.jpg',
-        text: ChocoTurPlaceholder.loremIpsum,
         title: "Caffé san Carlo.",
+        stopInfo: ChocoTurPlaceholder.loremIpsum,
         chocolate: chocolates[1],
       ),
     ];
@@ -68,7 +68,9 @@ class MockData {
         text: ChocoTurPlaceholder.loremIpsum,
         title: "Choco Tour 1",
         costInEuros: 0,
-        stops: stops.sublist(1, 3),
+        stops: stops.sublist(1, 4),
+        stopDescriptions:
+            List<String>.generate(3, (index) => ChocoTurPlaceholder.loremIpsum),
       ),
       ChocoTurTour(
         id: "Tour 2",
@@ -76,7 +78,9 @@ class MockData {
         text: ChocoTurPlaceholder.loremIpsum,
         title: "Choco Tour 2",
         costInEuros: 7,
-        stops: stops.sublist(1, 4),
+        stops: stops.sublist(1, 5),
+        stopDescriptions:
+            List<String>.generate(4, (index) => ChocoTurPlaceholder.loremIpsum),
       ),
       ChocoTurTour(
         id: "Tour 3",
@@ -84,7 +88,9 @@ class MockData {
         text: ChocoTurPlaceholder.loremIpsum,
         title: "Choco Tour 3",
         costInEuros: 8,
-        stops: stops.sublist(1, 5),
+        stops: stops.sublist(1, 6),
+        stopDescriptions:
+            List<String>.generate(5, (index) => ChocoTurPlaceholder.loremIpsum),
       ),
       ChocoTurTour(
         id: "Tour 4",
@@ -93,6 +99,8 @@ class MockData {
         title: "Choco Tour 4",
         costInEuros: 15,
         stops: stops,
+        stopDescriptions:
+            List<String>.generate(6, (index) => ChocoTurPlaceholder.loremIpsum),
       ),
     ];
   }

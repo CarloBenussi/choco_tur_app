@@ -30,11 +30,6 @@ class ChocoTurNavigationBar extends StatelessWidget {
             icon: Icon(Icons.account_circle_outlined),
             label: 'Account',
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.settings_rounded),
-            icon: Icon(Icons.settings_outlined),
-            label: 'Settings',
-          ),
         ],
         selectedIndex: selectedIndex,
         onDestinationSelected: (int index) {

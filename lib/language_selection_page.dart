@@ -1,5 +1,6 @@
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,11 +10,7 @@ class LanguageSelection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.grey.shade500, Colors.white])),
+      decoration: ChocoTurStyles.backgroundDecoration,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Center(

@@ -3,6 +3,7 @@ import 'package:choco_tur/main_page.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/tour_info_page.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -26,14 +27,25 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final _defaultLightColorScheme =
+      ColorScheme.fromSwatch(primarySwatch: Colors.red);
+
+  static final _defaultDarkColorScheme = ColorScheme.fromSwatch(
+      primarySwatch: Colors.red, brightness: Brightness.dark);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return DynamicColorBuilder(builder: (lightColorScheme, darkColorScheme) {
+      return MaterialApp(
         title: 'Choco Tur App',
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red.shade900),
+          colorScheme: lightColorScheme ?? _defaultLightColorScheme,
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorScheme: darkColorScheme ?? _defaultDarkColorScheme,
           useMaterial3: true,
         ),
         home: const LanguageSelection(),
@@ -43,6 +55,8 @@ class MyApp extends StatelessWidget {
           '/tour_info': (context) => TourInfoPage(),
           '/main': (context) => MainPage(),
           '/map': (context) => MapPage(),
-        });
+        },
+      );
+    });
   }
 }
