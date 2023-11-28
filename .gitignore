@@ -46,3 +46,4 @@ app.*.map.json
 # Secrets
 /android/app/src/main/res/values/secrets.xml
 /ios/runner/Secret.swift
+/web/index.html

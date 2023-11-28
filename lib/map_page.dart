@@ -1,12 +1,16 @@
 import 'dart:async';
 
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 class MapPage extends StatefulWidget {
   MapPage({super.key});
@@ -24,6 +28,10 @@ class _MapPageState extends State<MapPage> {
   // ignore: prefer_final_fields
   Set<Marker> _markers = {};
 
+  StreamSubscription<Position>? _userLocationStreamSubscription;
+
+  CameraPosition? _cameraPosition;
+
   void _initUserLocation() async {
     Coordinates.getUserPosition().then((value) async {
       LatLng latLngValue = LatLng(value.latitude, value.longitude);
@@ -40,11 +48,11 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
       );
-
-      _moveCameraToCoordinates(latLngValue);
     }).onError((error, stackTrace) async {
       LoggerInstance.logger.e("Error getting user position.");
     });
+
+    setState(() {});
   }
 
   void _updateUserLocationMarker(LatLng position) async {
@@ -82,66 +90,104 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
+
+    _cameraPosition ??=
+        Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initUserLocation();
 
-      Coordinates.getUserPositionStream().listen((event) async {
-        _updateUserLocationMarker(LatLng(event.latitude, event.longitude));
-        setState(() {});
-      });
+      // TODO: Resolve issue for Geolocator.
+      // _userLocationStreamSubscription =
+      //     Coordinates.getUserPositionStream().listen((event) async {
+      //   _updateUserLocationMarker(LatLng(event.latitude, event.longitude));
+      //   setState(() {});
+      // });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      drawer: const ChocoTurDrawer(),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: const CameraPosition(
-                target: Coordinates.turinCenter,
-                zoom: 14.4746,
+    return FocusDetector(
+      onFocusLost: () {
+        if (_cameraPosition != null) {
+          Provider.of<ChocoTurUser>(context, listen: false)
+              .setCameraPosition(_cameraPosition!);
+        }
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        drawer: const ChocoTurDrawer(),
+        body: Stack(
+          children: [
+            SafeArea(
+              child: GoogleMap(
+                mapType: MapType.normal,
+                initialCameraPosition: (_cameraPosition != null)
+                    ? _cameraPosition!
+                    : const CameraPosition(
+                        target: Coordinates.turinCenter,
+                        zoom: 14.4746,
+                      ),
+                myLocationEnabled: true,
+                zoomControlsEnabled: false,
+                compassEnabled: true,
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                onCameraMove: (CameraPosition position) {
+                  _cameraPosition = position;
+                },
+                markers: _markers,
               ),
-              myLocationEnabled: true,
-              zoomControlsEnabled: false,
-              compassEnabled: true,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-              markers: _markers,
             ),
-          ),
-          const Positioned(
-            left: 20,
-            top: 20,
-            child: DrawerButton(
-              style: ButtonStyle(
-                iconColor: MaterialStatePropertyAll(Colors.white),
-                backgroundColor: MaterialStatePropertyAll(Colors.red),
+            const Positioned(
+              left: 20,
+              top: 20,
+              child: DrawerButton(
+                style: ButtonStyle(
+                  iconColor: MaterialStatePropertyAll(Colors.white),
+                  backgroundColor: MaterialStatePropertyAll(Colors.red),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          Coordinates.getUserPosition().then((value) async {
-            LatLng latLngValue = LatLng(value.latitude, value.longitude);
-            _updateUserLocationMarker(latLngValue);
-            _moveCameraToCoordinates(latLngValue);
-          }).onError((error, stackTrace) async {
-            LoggerInstance.logger.e("Error getting user position.");
-          });
-        },
-        child: const FaIcon(Icons.my_location_rounded),
-      ),
-      bottomNavigationBar: const ChocoTurNavigationBar(
-        selectedIndex: 1,
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            Coordinates.getUserPosition().then((value) async {
+              LatLng latLngValue = LatLng(value.latitude, value.longitude);
+              _updateUserLocationMarker(latLngValue);
+              _moveCameraToCoordinates(latLngValue);
+            }).onError((error, stackTrace) async {
+              LoggerInstance.logger.e("Error getting user position.");
+            });
+          },
+          child: const FaIcon(Icons.my_location_rounded),
+        ),
+        bottomNavigationBar: const ChocoTurNavigationBar(
+          selectedIndex: 1,
+        ),
       ),
     );
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+  }
+
+  @override
+  void dispose() async {
+    if (_userLocationStreamSubscription != null) {
+      _userLocationStreamSubscription!.cancel();
+    }
+
+    if (_cameraPosition != null) {
+      Provider.of<ChocoTurUser>(context, listen: false)
+          .setCameraPosition(_cameraPosition!);
+    }
+
+    super.dispose();
   }
 }

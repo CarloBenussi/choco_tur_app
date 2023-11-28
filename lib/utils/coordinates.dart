@@ -1,3 +1,5 @@
+import 'package:choco_tur/utils/logger.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -46,7 +48,18 @@ class Coordinates {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+
+    // Try to get last user position first.
+    try {
+      Position? lastKnownPosition = await Geolocator.getLastKnownPosition();
+      if (lastKnownPosition != null) {
+        return Future.value(lastKnownPosition);
+      }
+    } on PlatformException {
+      LoggerInstance.logger.w("Unsupported last known location.");
+    }
+
+    return Geolocator.getCurrentPosition();
   }
 
   static Stream<Position> getUserPositionStream() {
@@ -58,7 +71,8 @@ class Coordinates {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return Geolocator.getPositionStream();
+    return Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(distanceFilter: 5));
   }
 
   static const LatLng turinCenter = LatLng(45.07049, 7.68682);

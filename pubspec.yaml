@@ -37,8 +37,9 @@ dependencies:
   dynamic_color: ^1.4.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.5
+  focus_detector: ^2.0.1
   font_awesome_flutter: ^10.6.0
-  geolocator: ^10.1.0
+  geolocator: ^8.2.1
   google_maps_flutter: ^2.5.0
   intl: any
   logger: ^2.0.2+1
