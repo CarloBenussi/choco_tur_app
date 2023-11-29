@@ -15,7 +15,7 @@ class PurchaseTourButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: purchased ? () {} : onPressedFunction,
+      onPressed: purchased ? null : onPressedFunction,
       icon: FaIcon(
         purchased ? Icons.check_rounded : FontAwesomeIcons.cartShopping,
         color: Colors.white,

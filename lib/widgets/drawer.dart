@@ -29,6 +29,12 @@ class ChocoTurDrawer extends StatelessWidget {
             ),
             title: Text("Settings"),
           ),
+          const ListTile(
+            leading: Icon(
+              Icons.account_circle_outlined,
+            ),
+            title: Text("Account"),
+          ),
           ListTile(
               leading: const Icon(
                 Icons.logout_outlined,
