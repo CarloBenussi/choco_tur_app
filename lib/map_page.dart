@@ -115,13 +115,13 @@ class _MapPageState extends State<MapPage> {
               .setCameraPosition(_cameraPosition!);
         }
       },
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        drawer: const ChocoTurDrawer(),
-        body: Stack(
-          children: [
-            SafeArea(
-              child: GoogleMap(
+      child: SafeArea(
+        child: Scaffold(
+          extendBodyBehindAppBar: true,
+          drawer: const ChocoTurDrawer(),
+          body: Stack(
+            children: [
+              GoogleMap(
                 mapType: MapType.normal,
                 initialCameraPosition: (_cameraPosition != null)
                     ? _cameraPosition!
@@ -130,6 +130,7 @@ class _MapPageState extends State<MapPage> {
                         zoom: 14.4746,
                       ),
                 myLocationEnabled: true,
+                myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
                 compassEnabled: true,
                 onMapCreated: (GoogleMapController controller) {
@@ -140,33 +141,33 @@ class _MapPageState extends State<MapPage> {
                 },
                 markers: _markers,
               ),
-            ),
-            const Positioned(
-              left: 20,
-              top: 20,
-              child: DrawerButton(
-                style: ButtonStyle(
-                  iconColor: MaterialStatePropertyAll(Colors.white),
-                  backgroundColor: MaterialStatePropertyAll(Colors.red),
+              const Positioned(
+                left: 15,
+                top: 15,
+                child: DrawerButton(
+                  style: ButtonStyle(
+                    iconColor: MaterialStatePropertyAll(Colors.white),
+                    backgroundColor: MaterialStatePropertyAll(Colors.red),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            Coordinates.getUserPosition().then((value) async {
-              LatLng latLngValue = LatLng(value.latitude, value.longitude);
-              _updateUserLocationMarker(latLngValue);
-              _moveCameraToCoordinates(latLngValue);
-            }).onError((error, stackTrace) async {
-              LoggerInstance.logger.e("Error getting user position.");
-            });
-          },
-          child: const FaIcon(Icons.my_location_rounded),
-        ),
-        bottomNavigationBar: const ChocoTurNavigationBar(
-          selectedIndex: 1,
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              Coordinates.getUserPosition().then((value) async {
+                LatLng latLngValue = LatLng(value.latitude, value.longitude);
+                _updateUserLocationMarker(latLngValue);
+                _moveCameraToCoordinates(latLngValue);
+              }).onError((error, stackTrace) async {
+                LoggerInstance.logger.e("Error getting user position.");
+              });
+            },
+            child: const FaIcon(Icons.my_location_rounded),
+          ),
+          bottomNavigationBar: const ChocoTurNavigationBar(
+            selectedIndex: 1,
+          ),
         ),
       ),
     );

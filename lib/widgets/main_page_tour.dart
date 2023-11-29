@@ -20,7 +20,10 @@ class MainPageTour extends StatelessWidget {
         child: Stack(children: [
           Hero(
             tag: chocoTurTour.id,
-            child: Image.asset(chocoTurTour.imageUrl),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(chocoTurTour.imageUrl),
+            ),
           ),
           Positioned(
             bottom: 5,

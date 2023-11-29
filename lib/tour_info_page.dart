@@ -1,9 +1,11 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchaseTourButton.dart';
+import 'package:choco_tur/widgets/startTourButton.dart';
+import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:choco_tur/widgets/tour_stops.dart';
+import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -26,100 +28,98 @@ class _TourInfoPageState extends State<TourInfoPage> {
     });
   }
 
-  void onPlayPressed() {} // TODO: Implement with audio_player.
-
   @override
   Widget build(BuildContext context) {
     chocoTurTour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
-    return Scaffold(
-      appBar: const ChocoTurAppBar(),
-      backgroundColor: Colors.white,
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-        children: [
-          Hero(
-            tag: chocoTurTour.id,
-            child: Image.asset(chocoTurTour.imageUrl),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: (_purchased || chocoTurTour.isFree())
-                      ? onPlayPressed
-                      : null,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.play,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    "Play tour description",
-                    style: TextStyle(fontSize: 15, color: Colors.white),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                ),
-                if (!chocoTurTour.isFree())
-                  PurchaseTourButton(
-                    onPressedFunction: onPurchasePressed,
-                    purchased: _purchased,
-                  ),
-              ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: const ChocoTurAppBar(),
+        backgroundColor: Colors.white,
+        body: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          children: [
+            Hero(
+              tag: chocoTurTour.id,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(chocoTurTour.imageUrl),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: RichText(
-              text: TextSpan(
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Wrap(
+                direction: Axis.horizontal,
+                alignment: WrapAlignment.spaceAround,
+                spacing: 10,
                 children: [
-                  TextSpan(
-                    text: "${chocoTurTour.title}\n\n",
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: ChocoTurStyles.tourInfoTextOnBackgroundColor,
+                  StartTourButton(
+                    available: (_purchased || chocoTurTour.isFree()),
+                    chocoTurTour: chocoTurTour,
+                  ),
+                  if (!chocoTurTour.isFree())
+                    PurchaseTourButton(
+                      onPressedFunction: onPurchasePressed,
+                      purchased: _purchased,
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TitleAndDescription(
+                title: chocoTurTour.title,
+                subTitle: "${chocoTurTour.stops.length} stops | "
+                    "${chocoTurTour.getChocolatesCount()} tastings | "
+                    "${chocoTurTour.lengthInKms}km | "
+                    "${printDuration(chocoTurTour.avgDuration, abbreviated: true)}",
+                description: chocoTurTour.tourInfo,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: Divider(
+                        color: Colors.black54,
+                        thickness: 0.7,
+                      ),
                     ),
                   ),
-                  TextSpan(
-                    text: chocoTurTour.text,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w300,
-                      color: ChocoTurStyles.tourInfoTextOnBackgroundColor,
+                  Text(
+                    "Tour stops",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Divider(
+                        color: Colors.black54,
+                        thickness: 0.7,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: Divider(),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: Text(
-              "Tour stops",
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: ChocoTurStyles.tourInfoTextOnBackgroundColor,
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TourStops(
+                tourStops: chocoTurTour.stops,
+                tourStopDescriptions: chocoTurTour.stopDescriptions,
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: TourStops(
-              tourStops: chocoTurTour.stops,
-              tourStopDescriptions: chocoTurTour.stopDescriptions,
-            ),
-          ),
-        ],
+          ],
+        ),
+        bottomNavigationBar: const ChocoTurNavigationBar(),
       ),
-      bottomNavigationBar: const ChocoTurNavigationBar(),
     );
   }
 }

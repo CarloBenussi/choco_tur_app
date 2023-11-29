@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/styles.dart';
+import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:flutter/material.dart';
 
 class TourStops extends StatefulWidget {
@@ -19,11 +20,11 @@ class TourStops extends StatefulWidget {
 
 class _TourStopsState extends State<TourStops> {
   int _currentSelectedIndex = 0;
-  int _lastSelectedIndex = 0;
+  int _previousSelectedIndex = 0;
 
   void _onPressed(int index) {
     setState(() {
-      _lastSelectedIndex = _currentSelectedIndex;
+      _previousSelectedIndex = _currentSelectedIndex;
       _currentSelectedIndex = index;
     });
   }
@@ -35,95 +36,92 @@ class _TourStopsState extends State<TourStops> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Flexible(
-          flex: 1,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              for (var i = 0; i < widget.tourStops.length; ++i)
-                ElevatedButton(
-                  onPressed: () => _onPressed(i),
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                  ),
-                  child: Text(
-                    (i + 1).toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (var i = 0; i < widget.tourStops.length; ++i)
+              ElevatedButton(
+                onPressed: () => _onPressed(i),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _currentSelectedIndex == i ? Colors.red : null,
+                  shape: const CircleBorder(),
+                ),
+                child: Text(
+                  (i + 1).toString(),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
                   ),
                 ),
-              for (var i = 0; i < widget.tourStops.length; ++i)
-                if (i != widget.tourStops.length)
-                  const VerticalDivider(
-                    thickness: 0.4,
-                    color: Colors.grey,
-                    indent: 5,
-                    endIndent: 5,
-                  )
-            ],
-          ),
+              ),
+          ],
         ),
-        Flexible(
-          flex: 4,
-          child: PageTransitionSwitcher(
-            duration: const Duration(milliseconds: 2000),
-            reverse: _currentSelectedIndex < _lastSelectedIndex,
-            transitionBuilder: (
-              Widget child,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-            ) {
-              return SharedAxisTransition(
-                animation: animation,
-                secondaryAnimation: secondaryAnimation,
-                transitionType: SharedAxisTransitionType.vertical,
-                child: child,
-              );
-            },
-            child: Container(
-              key: ValueKey<int>(_currentSelectedIndex),
-              color: Colors.white,
+        const SizedBox(
+          height: 20,
+        ),
+        PageTransitionSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          reverse: _currentSelectedIndex < _previousSelectedIndex,
+          transitionBuilder: (
+            Widget child,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal,
+              fillColor: Colors.white,
+              child: child,
+            );
+          },
+          child: Container(
+            key: ValueKey<int>(_currentSelectedIndex),
+            color: Colors.white,
+            child: LimitedBox(
+              maxWidth: MediaQuery.of(context).size.width,
+              maxHeight: MediaQuery.of(context).size.height,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    widget.tourStops[_currentSelectedIndex].imageUrl,
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10, right: 10, top: 10),
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                "${widget.tourStops[_currentSelectedIndex].title}\n\n",
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  ChocoTurStyles.tourInfoTextOnBackgroundColor,
-                            ),
-                          ),
-                          TextSpan(
-                            text: widget
-                                .tourStops[_currentSelectedIndex].stopInfo,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w300,
-                              color:
-                                  ChocoTurStyles.tourInfoTextOnBackgroundColor,
-                            ),
-                          ),
-                        ],
+                  Flexible(
+                    flex: 3,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        widget.tourStops[_currentSelectedIndex].imageUrl,
                       ),
                     ),
                   ),
+                  Flexible(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: TitleAndDescription(
+                        title: widget.tourStops[_currentSelectedIndex].title,
+                        description:
+                            widget.tourStops[_currentSelectedIndex].stopInfo,
+                      ),
+                    ),
+                  ),
+                  if (widget.tourStops[_currentSelectedIndex].chocolate != null)
+                    Flexible(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: TitleAndDescription(
+                          title: widget
+                              .tourStops[_currentSelectedIndex].chocolate!.name,
+                          description: widget.tourStops[_currentSelectedIndex]
+                              .chocolate!.description,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
