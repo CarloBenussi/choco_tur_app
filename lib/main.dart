@@ -1,10 +1,9 @@
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/main_page.dart';
 import 'package:choco_tur/map_page.dart';
-import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/SqliteCache.dart';
 import 'package:choco_tur/tour_info_page.dart';
-import 'package:choco_tur/tour_play_page.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -18,6 +17,7 @@ void main() async {
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   var chocoUser = await ChocoTurUser.init();
+  SqliteCache.init();
   FlutterNativeSplash.remove();
 
   runApp(ChangeNotifierProvider(
@@ -59,9 +59,6 @@ class MyApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginPage(),
           '/tour_info': (context) => TourInfoPage(),
-          '/tour_play': (context) => TourPlayPage(
-              chocoTurTour:
-                  ModalRoute.of(context)!.settings.arguments as ChocoTurTour),
           '/main': (context) => MainPage(),
           '/map': (context) => MapPage(),
         },

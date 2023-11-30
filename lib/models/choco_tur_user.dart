@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Class to store on mobile storage user non-sensitive data and preferences
-/// such as user name, language preferences and user tokens.
 class ChocoTurUser extends ChangeNotifier {
   static Future<ChocoTurUser> init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -32,7 +30,7 @@ class ChocoTurUser extends ChangeNotifier {
 
   ChocoTurUser({this.userName, this.language, this.cameraPosition});
 
-  // SharedPreferences info.
+  // SharedPreferences keys.
   static late final SharedPreferences _prefs;
   static const String _userNameKey = "userName";
   static const String _languageKey = "lang";
@@ -41,7 +39,7 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _cameraZoomKey = "cameraZoom";
   static const String _tokenKey = "token";
 
-  // User data.
+  // User preferences to store.
   String? userName;
   String? language;
   CameraPosition? cameraPosition;
@@ -65,12 +63,6 @@ class ChocoTurUser extends ChangeNotifier {
     language = lang;
     _locale = Locale(lang);
     _prefs.setString(_languageKey, lang);
-    notifyListeners();
-  }
-
-  void setUserName(String userName) {
-    userName = userName;
-    _prefs.setString(_userNameKey, userName);
     notifyListeners();
   }
 

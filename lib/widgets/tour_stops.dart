@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:flutter/material.dart';
 
@@ -8,11 +7,9 @@ class TourStops extends StatefulWidget {
   const TourStops({
     super.key,
     required this.tourStops,
-    required this.tourStopDescriptions,
   });
 
   final List<ChocoTurTourStop> tourStops;
-  final List<String> tourStopDescriptions;
 
   @override
   State<TourStops> createState() => _TourStopsState();
@@ -94,7 +91,7 @@ class _TourStopsState extends State<TourStops> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.asset(
-                        widget.tourStops[_currentSelectedIndex].imageUrl,
+                        widget.tourStops[_currentSelectedIndex].mainImageUrl,
                       ),
                     ),
                   ),
@@ -103,9 +100,9 @@ class _TourStopsState extends State<TourStops> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 20),
                       child: TitleAndDescription(
-                        title: widget.tourStops[_currentSelectedIndex].title,
+                        title: widget.tourStops[_currentSelectedIndex].name,
                         description:
-                            widget.tourStops[_currentSelectedIndex].stopInfo,
+                            widget.tourStops[_currentSelectedIndex].description,
                       ),
                     ),
                   ),

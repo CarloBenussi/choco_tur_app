@@ -151,6 +151,14 @@ class _MapPageState extends State<MapPage> {
                   ),
                 ),
               ),
+              Positioned(
+                right: 15,
+                top: 15,
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  child: const FaIcon(Icons.my_location_rounded),
+                ),
+              ),
             ],
           ),
           floatingActionButton: FloatingActionButton(

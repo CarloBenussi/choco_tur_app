@@ -2,8 +2,8 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/placeholder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class MockData {
-  static List<ChocoTurTour> mockTours() {
+class MockTourDataAccess {
+  static List<ChocoTurTour> getTourInfos() {
     List<Chocolate> chocolates = [
       Chocolate(
         id: "Cremino",
@@ -84,8 +84,6 @@ class MockData {
         lengthInKms: 0.7,
         avgDuration: const Duration(hours: 1, minutes: 30),
         stops: stops.sublist(1, 4),
-        stopDescriptions: List<String>.generate(
-            3, (index) => ChocoTurPlaceholder.placeholder),
       ),
       ChocoTurTour(
         id: "Tour 2",
@@ -96,8 +94,6 @@ class MockData {
         lengthInKms: 1.3,
         avgDuration: const Duration(hours: 2),
         stops: stops.sublist(1, 5),
-        stopDescriptions: List<String>.generate(
-            4, (index) => ChocoTurPlaceholder.placeholder),
       ),
       ChocoTurTour(
         id: "Tour 3",
@@ -108,8 +104,6 @@ class MockData {
         lengthInKms: 1.8,
         avgDuration: const Duration(hours: 2, minutes: 45),
         stops: stops.sublist(1, 6),
-        stopDescriptions: List<String>.generate(
-            5, (index) => ChocoTurPlaceholder.placeholder),
       ),
       ChocoTurTour(
         id: "Tour 4",
@@ -120,8 +114,6 @@ class MockData {
         lengthInKms: 3,
         avgDuration: const Duration(hours: 3, minutes: 30),
         stops: stops,
-        stopDescriptions: List<String>.generate(
-            6, (index) => ChocoTurPlaceholder.placeholder),
       ),
     ];
   }

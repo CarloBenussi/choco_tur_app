@@ -7,7 +7,6 @@ import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:choco_tur/widgets/tour_stops.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TourInfoPage extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
@@ -29,6 +28,11 @@ class _TourInfoPageState extends State<TourInfoPage> {
   }
 
   @override
+  void initState() async {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     chocoTurTour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
     return SafeArea(
@@ -42,7 +46,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
               tag: chocoTurTour.id,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(chocoTurTour.imageUrl),
+                child: Image.asset(chocoTurTour.mainImageUrl),
               ),
             ),
             Padding(
@@ -67,7 +71,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: TitleAndDescription(
-                title: chocoTurTour.title,
+                title: chocoTurTour.name,
                 subTitle: "${chocoTurTour.stops.length} stops | "
                     "${chocoTurTour.getChocolatesCount()} tastings | "
                     "${chocoTurTour.lengthInKms}km | "
@@ -113,7 +117,6 @@ class _TourInfoPageState extends State<TourInfoPage> {
               padding: const EdgeInsets.only(top: 20),
               child: TourStops(
                 tourStops: chocoTurTour.stops,
-                tourStopDescriptions: chocoTurTour.stopDescriptions,
               ),
             ),
           ],

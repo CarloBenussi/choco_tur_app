@@ -25,8 +25,6 @@ class PurchaseTourButton extends StatelessWidget {
         style: const TextStyle(fontSize: 15, color: Colors.white),
         overflow: TextOverflow.ellipsis,
       ),
-      style: ElevatedButton.styleFrom(
-          backgroundColor: purchased ? Colors.green : Colors.blue),
     );
   }
 }
