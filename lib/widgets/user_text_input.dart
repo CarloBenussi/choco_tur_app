@@ -1,4 +1,3 @@
-import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class UserTextInput extends StatelessWidget {
@@ -23,8 +22,6 @@ class UserTextInput extends StatelessWidget {
         controller: controller,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle:
-              const TextStyle(color: ChocoTurStyles.textOnBackgroundColor),
           border: const UnderlineInputBorder(),
         ),
         maxLines: 1,
@@ -32,7 +29,6 @@ class UserTextInput extends StatelessWidget {
         style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w300,
-          color: ChocoTurStyles.textOnBackgroundColor,
         ),
       ),
     );

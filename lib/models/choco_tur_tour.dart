@@ -10,6 +10,8 @@ class ChocoTurTour {
   late final double lengthInKms;
   late final Duration avgDuration;
   late final String description;
+  late final int numStops;
+  late final int numTastings;
   late final String mainImageUrl;
 
   bool isFree() {
@@ -22,8 +24,10 @@ class ChocoTurTour {
       'name': name,
       'costEuro': costInEuros,
       'lengthKm': lengthInKms,
-      'avgDurationHour': avgDuration.toString(),
+      'avgDuration': avgDuration.toString(),
       'description': description,
+      'numStops': numStops,
+      'numTastings': numTastings,
       'mainImageUrl': mainImageUrl,
     };
   }
@@ -33,19 +37,12 @@ class ChocoTurTour {
     name = map['name'];
     costInEuros = map['costEuro'];
     lengthInKms = map['lengthKm'];
-    avgDuration = parseTime(map['avgDurationHour']);
+    avgDuration = parseTime(map['avgDuration']);
     description = map['description'];
+    numStops = map['numStops'];
+    numTastings = map['numTastings'];
     mainImageUrl = map['mainImageUrl'];
   }
-
-  // int getChocolatesCount() {
-  //   int chocolatesCount = 0;
-  //   for (var i = 0; i < stops.length; ++i) {
-  //     if (stops[i].chocolate != null) chocolatesCount++;
-  //   }
-
-  //   return chocolatesCount;
-  // }
 }
 
 class ChocoTurTourStop {
@@ -55,6 +52,7 @@ class ChocoTurTourStop {
   late final String name;
   late final String description;
   late final LatLng coordinates;
+  late final bool hasTasting;
   late final String mainImageUrl;
 
   Map<String, dynamic> toMap() {
@@ -64,6 +62,7 @@ class ChocoTurTourStop {
       'description': description,
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
+      'hasTasting': hasTasting ? 1 : 0,
       'mainImageUrl': mainImageUrl,
     };
   }
@@ -73,6 +72,7 @@ class ChocoTurTourStop {
     name = map['name'];
     description = map['description'];
     coordinates = LatLng(map['latitude'], map['longitude']);
+    hasTasting = map['hasTasting'] == 1 ? true : false;
     mainImageUrl = map['mainImageUrl'];
   }
 }

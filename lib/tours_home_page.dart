@@ -6,14 +6,14 @@ import 'package:choco_tur/widgets/main_page_tour.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 
-class MainPage extends StatefulWidget {
-  MainPage({super.key});
+class ToursHomePage extends StatefulWidget {
+  ToursHomePage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<ToursHomePage> createState() => _ToursHomePageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _ToursHomePageState extends State<ToursHomePage> {
   late final Future<List<ChocoTurTour>> _tours;
 
   @override

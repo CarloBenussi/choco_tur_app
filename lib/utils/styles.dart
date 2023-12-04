@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class ChocoTurStyles {
-  static const Color textOnBackgroundColor = Colors.white;
-  static const Color tourInfoTextOnBackgroundColor = Colors.black54;
-
   static const Decoration backgroundDecoration = BoxDecoration(
     gradient: LinearGradient(
       begin: Alignment.topLeft,

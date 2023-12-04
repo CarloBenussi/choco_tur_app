@@ -70,8 +70,9 @@ class _MapPageState extends State<MapPage> {
 
     // Update user location marker to new instance.
     _markers = _markers
-        .map((e) =>
-            e.markerId == _userLocationMarkerId ? newUserLocationMarker : e)
+        .map((marker) => marker.markerId == _userLocationMarkerId
+            ? newUserLocationMarker
+            : marker)
         .toSet();
   }
 

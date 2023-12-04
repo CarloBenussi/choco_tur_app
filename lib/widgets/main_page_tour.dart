@@ -68,7 +68,7 @@ class MainPageTour extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: chocoTurTour.getChocolatesCount().toString(),
+                        text: chocoTurTour.numTastings.toString(),
                         style: const TextStyle(color: Colors.white),
                       ),
                       const WidgetSpan(

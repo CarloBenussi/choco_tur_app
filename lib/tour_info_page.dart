@@ -4,7 +4,7 @@ import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchaseTourButton.dart';
 import 'package:choco_tur/widgets/startTourButton.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
-import 'package:choco_tur/widgets/tour_stops.dart';
+import 'package:choco_tur/widgets/tour_stops_info_animation.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
 
@@ -72,11 +72,11 @@ class _TourInfoPageState extends State<TourInfoPage> {
               padding: const EdgeInsets.only(top: 20),
               child: TitleAndDescription(
                 title: chocoTurTour.name,
-                subTitle: "${chocoTurTour.stops.length} stops | "
-                    "${chocoTurTour.getChocolatesCount()} tastings | "
+                subTitle: "${chocoTurTour.numStops} stops | "
+                    "${chocoTurTour.numTastings} tastings | "
                     "${chocoTurTour.lengthInKms}km | "
                     "${printDuration(chocoTurTour.avgDuration, abbreviated: true)}",
-                description: chocoTurTour.tourInfo,
+                description: chocoTurTour.description,
               ),
             ),
             const Padding(
@@ -115,8 +115,8 @@ class _TourInfoPageState extends State<TourInfoPage> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: TourStops(
-                tourStops: chocoTurTour.stops,
+              child: TourStopsInfoAnimation(
+                tourId: chocoTurTour.id,
               ),
             ),
           ],
