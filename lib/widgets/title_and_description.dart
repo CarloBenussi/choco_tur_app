@@ -1,4 +1,3 @@
-import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class TitleAndDescription extends StatelessWidget {

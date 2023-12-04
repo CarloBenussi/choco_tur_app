@@ -22,14 +22,14 @@ class MainPageTour extends StatelessWidget {
             tag: chocoTurTour.id,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(chocoTurTour.imageUrl),
+              child: Image.asset(chocoTurTour.mainImageUrl),
             ),
           ),
           Positioned(
             bottom: 5,
             left: 5,
             child: Text(
-              chocoTurTour.title,
+              chocoTurTour.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -68,7 +68,7 @@ class MainPageTour extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: chocoTurTour.getChocolatesCount().toString(),
+                        text: chocoTurTour.numTastings.toString(),
                         style: const TextStyle(color: Colors.white),
                       ),
                       const WidgetSpan(

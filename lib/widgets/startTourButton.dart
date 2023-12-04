@@ -13,9 +13,7 @@ class StartTourButton extends StatelessWidget {
   bool available;
   ChocoTurTour chocoTurTour;
 
-  void onStartTourPressed(BuildContext context) {
-    Navigator.pushNamed(context, "/tour_play", arguments: chocoTurTour);
-  }
+  void onStartTourPressed(BuildContext context) {}
 
   @override
   Widget build(BuildContext context) {

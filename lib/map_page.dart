@@ -70,8 +70,9 @@ class _MapPageState extends State<MapPage> {
 
     // Update user location marker to new instance.
     _markers = _markers
-        .map((e) =>
-            e.markerId == _userLocationMarkerId ? newUserLocationMarker : e)
+        .map((marker) => marker.markerId == _userLocationMarkerId
+            ? newUserLocationMarker
+            : marker)
         .toSet();
   }
 
@@ -149,6 +150,14 @@ class _MapPageState extends State<MapPage> {
                     iconColor: MaterialStatePropertyAll(Colors.white),
                     backgroundColor: MaterialStatePropertyAll(Colors.red),
                   ),
+                ),
+              ),
+              Positioned(
+                right: 15,
+                top: 15,
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  child: const FaIcon(Icons.my_location_rounded),
                 ),
               ),
             ],

@@ -1,11 +1,10 @@
+import 'package:choco_tur/services/SqliteCache.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Class to store on mobile storage user non-sensitive data and preferences
-/// such as user name, language preferences and user tokens.
 class ChocoTurUser extends ChangeNotifier {
   static Future<ChocoTurUser> init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -27,24 +26,37 @@ class ChocoTurUser extends ChangeNotifier {
       userName: _prefs.getString(_userNameKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
+      activeTours: _prefs.getStringList(_activeToursKey) ?? [],
+      toursNextStopId: _prefs.getStringList(_toursNextStopIdKey) ?? [],
     );
   }
 
-  ChocoTurUser({this.userName, this.language, this.cameraPosition});
+  ChocoTurUser({
+    this.userName,
+    this.language,
+    this.cameraPosition,
+    required this.activeTours,
+    required this.toursNextStopId,
+  });
 
-  // SharedPreferences info.
-  static late final SharedPreferences _prefs;
+  // SharedPreferences keys.
   static const String _userNameKey = "userName";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
   static const String _cameraZoomKey = "cameraZoom";
+  static const String _activeToursKey = "activeTours";
+  static const String _toursNextStopIdKey = "toursNextStopId";
   static const String _tokenKey = "token";
 
-  // User data.
+  // User preferences to store.
   String? userName;
   String? language;
   CameraPosition? cameraPosition;
+  List<String> activeTours;
+  List<String> toursNextStopId;
+
+  static late final SharedPreferences _prefs;
   Locale _locale = const Locale(LanguageCodes.EN);
 
   Locale get locale {
@@ -68,17 +80,66 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setUserName(String userName) {
-    userName = userName;
-    _prefs.setString(_userNameKey, userName);
-    notifyListeners();
-  }
-
   void setCameraPosition(CameraPosition position) {
     cameraPosition = position;
     _prefs.setDouble(_cameraLatituteKey, position.target.latitude);
     _prefs.setDouble(_cameraLongitudeKey, position.target.longitude);
     _prefs.setDouble(_cameraZoomKey, position.zoom);
+    notifyListeners();
+  }
+
+  void activateTour(String tourId) async {
+    if (activeTours.contains(tourId)) {
+      LoggerInstance.logger.w('Tour $tourId is already active.');
+      return;
+    }
+
+    SqliteCache cache = await SqliteCache.getInstance();
+    List<String> tourStopIds = await cache.getTourStopIds(tourId);
+    if (tourStopIds.isEmpty) {
+      throw Exception('No stops found for tour $tourId!');
+    }
+
+    activeTours.add(tourId);
+    toursNextStopId.add(tourStopIds[0]);
+    notifyListeners();
+  }
+
+  void deactivateTour(String tourId) {
+    if (!activeTours.contains(tourId)) {
+      LoggerInstance.logger.w('Tour $tourId is already unactive.');
+      return;
+    }
+
+    int activeTourIndex = activeTours.indexOf(tourId);
+    activeTours.removeAt(activeTourIndex);
+    toursNextStopId.removeAt(activeTourIndex);
+    notifyListeners();
+  }
+
+  void advanceTour(String tourId) async {
+    var tourIndex = activeTours.indexOf(tourId);
+    if (tourIndex == -1) {
+      throw Exception('Tour $tourId is not active!');
+    }
+
+    SqliteCache cache = await SqliteCache.getInstance();
+    List<String> tourStopIds = await cache.getTourStopIds(tourId);
+    if (tourStopIds.isEmpty) {
+      throw Exception('No stops found for tour $tourId!');
+    }
+
+    var tourStopIndex = tourStopIds.indexOf(toursNextStopId[tourIndex]);
+    if (++tourStopIndex == tourStopIds.length) {
+      LoggerInstance.logger
+          .i('Tour $tourId is finished, removing from active tours for user.');
+
+      toursNextStopId.removeAt(tourIndex);
+      activeTours.removeAt(tourIndex);
+    }
+
+    toursNextStopId[tourIndex] = tourStopIds[tourStopIndex];
+
     notifyListeners();
   }
 }

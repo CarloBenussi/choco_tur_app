@@ -1,5 +1,4 @@
 import 'package:choco_tur/utils/logger.dart';
-import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
@@ -60,185 +59,179 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: ChocoTurStyles.backgroundDecoration,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15),
-            child: ListView(
-              children: [
-                const Center(
-                  child: Text("ChocoTur",
-                      style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w600,
-                          color: ChocoTurStyles.textOnBackgroundColor)),
-                ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-                  child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.asset("assets/gianduiotto.jpg",
-                          fit: BoxFit.cover)),
-                ),
-                Center(
-                  child: Text(
-                      AppLocalizations.of(context)!.loginWithCredentialsTitle,
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                          color: ChocoTurStyles.textOnBackgroundColor)),
-                ),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      UserTextInput(
-                        controller: _userNameController,
-                        hintText: AppLocalizations.of(context)!.email,
-                        validator: validateUsername,
-                      ),
-                      UserTextInput(
-                        controller: _passwordController,
-                        hintText: AppLocalizations.of(context)!.password,
-                        obscured: true,
-                        validator: validatePassword,
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 15, right: 15),
+          child: ListView(
+            children: [
+              const Center(
+                child: Text("ChocoTur",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w600,
+                    )),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset("assets/gianduiotto.jpg",
+                        fit: BoxFit.cover)),
+              ),
+              Center(
+                child: Text(
+                    AppLocalizations.of(context)!.loginWithCredentialsTitle,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300,
+                    )),
+              ),
+              Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    Flexible(
-                      child: CheckboxListTile(
-                        title: Text(AppLocalizations.of(context)!.rememberMe,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: ChocoTurStyles.textOnBackgroundColor,
-                            )),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        checkColor: Colors.white,
-                        activeColor: Colors.blue,
-                        value: isRememberMeChecked,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isRememberMeChecked = value!;
-                          });
-                        },
-                      ),
+                    UserTextInput(
+                      controller: _userNameController,
+                      hintText: AppLocalizations.of(context)!.email,
+                      validator: validateUsername,
                     ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                          onPressed: forgotPassword,
-                          child: Text(
-                            AppLocalizations.of(context)!.forgotPassword,
-                            style: const TextStyle(
-                                fontSize: 15, color: Colors.blue),
-                          )),
-                    )
+                    UserTextInput(
+                      controller: _passwordController,
+                      hintText: AppLocalizations.of(context)!.password,
+                      obscured: true,
+                      validator: validatePassword,
+                    ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: ElevatedButton(
-                            onPressed: loginUser,
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.lightBlue),
-                            child: Text(
-                              AppLocalizations.of(context)!.signInButtonLabel,
-                              style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.white),
-                            )),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(top: 20, bottom: 20),
-                  child: Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Container(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        child: Text(AppLocalizations.of(context)!.or,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w300,
-                              color: ChocoTurStyles.textOnBackgroundColor,
-                            )),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: LoginWithButton(
-                    onPressedFunction: loginWithGoogle,
-                    labelText: AppLocalizations.of(context)!.signInWithGoogle,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.white,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: CheckboxListTile(
+                      title: Text(AppLocalizations.of(context)!.rememberMe,
+                          style: const TextStyle(
+                            fontSize: 12,
+                          )),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      checkColor: Colors.white,
+                      activeColor: Colors.blue,
+                      value: isRememberMeChecked,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isRememberMeChecked = value!;
+                        });
+                      },
                     ),
-                    buttonColor: Colors.red,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: LoginWithButton(
-                    onPressedFunction: loginWithApple,
-                    labelText: AppLocalizations.of(context)!.signInWithApple,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.apple,
-                      color: Colors.white,
-                    ),
-                    buttonColor: Colors.black,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: LoginWithButton(
-                    onPressedFunction: loginWithFacebook,
-                    labelText: AppLocalizations.of(context)!.signInWithFacebook,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.facebook,
-                      color: Colors.white,
-                    ),
-                    buttonColor: Colors.blue,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.dontHaveAnAccountQ,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: ChocoTurStyles.textOnBackgroundColor,
-                      ),
-                    ),
-                    TextButton(
-                        onPressed: createAccount,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                        onPressed: forgotPassword,
                         child: Text(
-                          AppLocalizations.of(context)!.createAnAccount,
+                          AppLocalizations.of(context)!.forgotPassword,
                           style:
                               const TextStyle(fontSize: 15, color: Colors.blue),
-                        ))
+                        )),
+                  )
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: ElevatedButton(
+                          onPressed: loginUser,
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlue),
+                          child: Text(
+                            AppLocalizations.of(context)!.signInButtonLabel,
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.white),
+                          )),
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              Container(
+                padding: const EdgeInsets.only(top: 20, bottom: 20),
+                child: Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Container(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: Text(AppLocalizations.of(context)!.or,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w300,
+                          )),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: LoginWithButton(
+                  onPressedFunction: loginWithGoogle,
+                  labelText: AppLocalizations.of(context)!.signInWithGoogle,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.google,
+                    color: Colors.white,
+                  ),
+                  buttonColor: Colors.red,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: LoginWithButton(
+                  onPressedFunction: loginWithApple,
+                  labelText: AppLocalizations.of(context)!.signInWithApple,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.apple,
+                    color: Colors.white,
+                  ),
+                  buttonColor: Colors.black,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: LoginWithButton(
+                  onPressedFunction: loginWithFacebook,
+                  labelText: AppLocalizations.of(context)!.signInWithFacebook,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.facebook,
+                    color: Colors.white,
+                  ),
+                  buttonColor: Colors.blue,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.dontHaveAnAccountQ,
+                    style: const TextStyle(
+                      fontSize: 15,
+                    ),
+                  ),
+                  TextButton(
+                      onPressed: createAccount,
+                      child: Text(
+                        AppLocalizations.of(context)!.createAnAccount,
+                        style:
+                            const TextStyle(fontSize: 15, color: Colors.blue),
+                      ))
+                ],
+              ),
+            ],
           ),
         ),
       ),
