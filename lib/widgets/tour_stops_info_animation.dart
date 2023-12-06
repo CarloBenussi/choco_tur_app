@@ -10,15 +10,16 @@ class TourStopsInfoAnimation extends StatefulWidget {
     required this.tourId,
   });
 
-  final String tourId;
+  final int tourId;
 
   @override
   State<TourStopsInfoAnimation> createState() => _TourStopsInfoAnimationState();
 }
 
 class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
-  late final Future<List<ChocoTurTourStop>> _tourStops;
-  late final List<Future<Chocolate?>> _tourStopChocolates;
+  Future<List<ChocoTurTourStop>>? _tourStops;
+  // ignore: prefer_final_fields
+  List<Future<Chocolate?>?> _tourStopChocolates = [];
 
   int _currentSelectedIndex = 0;
   int _previousSelectedIndex = 0;
@@ -31,17 +32,17 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
   }
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
 
-    SqliteCache cache = await SqliteCache.getInstance();
-
-    _tourStops = cache.getTourStops(widget.tourId);
-
-    var tourStops = await _tourStops;
-    for (var i = 0; i < tourStops.length; ++i) {
-      _tourStopChocolates.add(cache.getStopchocolate(tourStops[i].id));
-    }
+    Future<SqliteCache> cache = SqliteCache.getInstance();
+    cache.then((value) async {
+      _tourStops = value.getTourStops(widget.tourId);
+      var tourStops = await _tourStops;
+      for (var i = 0; i < tourStops!.length; ++i) {
+        _tourStopChocolates.add(value.getStopchocolate(tourStops[i].id));
+      }
+    });
   }
 
   @override

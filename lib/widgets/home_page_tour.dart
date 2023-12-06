@@ -2,8 +2,8 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/sizes.dart';
 import 'package:flutter/material.dart';
 
-class MainPageTour extends StatelessWidget {
-  const MainPageTour({super.key, required this.chocoTurTour});
+class HomePageTour extends StatelessWidget {
+  const HomePageTour({super.key, required this.chocoTurTour});
 
   final ChocoTurTour chocoTurTour;
 

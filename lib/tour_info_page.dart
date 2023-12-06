@@ -28,7 +28,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
   }
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
   }
 

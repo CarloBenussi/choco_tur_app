@@ -2,7 +2,7 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/SqliteCache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
-import 'package:choco_tur/widgets/main_page_tour.dart';
+import 'package:choco_tur/widgets/home_page_tour.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -14,15 +14,14 @@ class ToursHomePage extends StatefulWidget {
 }
 
 class _ToursHomePageState extends State<ToursHomePage> {
-  late final Future<List<ChocoTurTour>> _tours;
+  Future<List<ChocoTurTour>>? _tours;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
 
-    SqliteCache cache = await SqliteCache.getInstance();
-
-    _tours = cache.getAllTours();
+    Future<SqliteCache> cache = SqliteCache.getInstance();
+    cache.then((value) => {_tours = value.getAllTours()});
   }
 
   @override
@@ -46,11 +45,11 @@ class _ToursHomePageState extends State<ToursHomePage> {
                       return const SizedBox(height: 5);
                     },
                     itemBuilder: (BuildContext context, int index) {
-                      return MainPageTour(chocoTurTour: snapshot.data![index]);
+                      return HomePageTour(chocoTurTour: snapshot.data![index]);
                     },
                   );
                 } else {
-                  return const CircularProgressIndicator();
+                  return const Center(child: CircularProgressIndicator());
                 }
               })
         ],

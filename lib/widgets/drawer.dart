@@ -15,9 +15,9 @@ class ChocoTurDrawer extends StatelessWidget {
           )),
           const ListTile(
             leading: Icon(
-              Icons.tour_outlined,
+              Icons.account_circle_outlined,
             ),
-            title: Text("My tours"),
+            title: Text("Account"),
           ),
           const Divider(
             thickness: 0.5,

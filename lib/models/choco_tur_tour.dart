@@ -4,9 +4,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class ChocoTurTour {
   ChocoTurTour();
 
-  late final String id;
+  late final int id;
   late final String name;
-  late final int costInEuros;
+  late final double costInEuros;
   late final double lengthInKms;
   late final Duration avgDuration;
   late final String description;
@@ -48,7 +48,7 @@ class ChocoTurTour {
 class ChocoTurTourStop {
   ChocoTurTourStop();
 
-  late final String id;
+  late final int id;
   late final String name;
   late final String description;
   late final LatLng coordinates;
@@ -80,7 +80,7 @@ class ChocoTurTourStop {
 class Chocolate {
   Chocolate();
 
-  late final String id;
+  late final int id;
   late final String name;
   late final String description;
   late final String mainImageUrl;

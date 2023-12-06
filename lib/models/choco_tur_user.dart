@@ -88,8 +88,8 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void activateTour(String tourId) async {
-    if (activeTours.contains(tourId)) {
+  void activateTour(int tourId) async {
+    if (activeTours.contains(tourId.toString())) {
       LoggerInstance.logger.w('Tour $tourId is already active.');
       return;
     }
@@ -100,7 +100,7 @@ class ChocoTurUser extends ChangeNotifier {
       throw Exception('No stops found for tour $tourId!');
     }
 
-    activeTours.add(tourId);
+    activeTours.add(tourId.toString());
     toursNextStopId.add(tourStopIds[0]);
     notifyListeners();
   }
@@ -117,8 +117,8 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void advanceTour(String tourId) async {
-    var tourIndex = activeTours.indexOf(tourId);
+  void advanceTour(int tourId) async {
+    var tourIndex = activeTours.indexOf(tourId.toString());
     if (tourIndex == -1) {
       throw Exception('Tour $tourId is not active!');
     }

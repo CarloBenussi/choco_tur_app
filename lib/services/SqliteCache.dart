@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class SqliteCache {
   static const _toursTableName = "tours";
@@ -30,13 +31,19 @@ class SqliteCache {
   static SqliteCache? _cache;
 
   static void init() async {
+    if (kIsWeb) {
+      // Change default factory on the web
+      databaseFactory = databaseFactoryFfiWeb;
+    }
+
     String path = join(
       await getDatabasesPath(),
       'choco_tur_cache.db',
     );
 
+    // MOCK DATA (not support on web).
     bool exists = await databaseExists(path);
-    if (!exists) {
+    if (!exists && !kIsWeb) {
       // Copy from asset.
       ByteData data =
           await rootBundle.load(url.join("assets/mock_db", "mock_tours.db"));
@@ -65,6 +72,9 @@ class SqliteCache {
         db.execute(
           'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsSchema)',
         );
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        LoggerInstance.logger.w("Implement DB upgrade");
       },
       version: 1,
     );
@@ -100,7 +110,7 @@ class SqliteCache {
     return tours;
   }
 
-  Future<List<ChocoTurTourStop>> getTourStops(String tourId) async {
+  Future<List<ChocoTurTourStop>> getTourStops(int tourId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourRelationsMaps = await database.query(
@@ -128,7 +138,7 @@ class SqliteCache {
     return tourStops;
   }
 
-  Future<List<String>> getTourStopIds(String tourId) async {
+  Future<List<String>> getTourStopIds(int tourId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourRelationsMaps = await database.query(
@@ -156,7 +166,7 @@ class SqliteCache {
     return tourStopIds;
   }
 
-  Future<ChocoTurTourStop> getTourStopFromId(String stopId) async {
+  Future<ChocoTurTourStop> getTourStopFromId(int stopId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourStopMap = await database.query(
@@ -185,7 +195,7 @@ class SqliteCache {
     return ChocoTurTourStop.fromMap(tourStopMap[0]);
   }
 
-  Future<Chocolate?> getStopchocolate(String stopId) async {
+  Future<Chocolate?> getStopchocolate(int stopId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> stopChocolateRelationsMap = await database.query(
@@ -212,7 +222,7 @@ class SqliteCache {
     return getChocolateFromId(stopChocolateRelationsMap[0]['chocolateId']);
   }
 
-  Future<Chocolate?> getChocolateFromId(String chocolateId) async {
+  Future<Chocolate> getChocolateFromId(int chocolateId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> chocolateMap = await database.query(
