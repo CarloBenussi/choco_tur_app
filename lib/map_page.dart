@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/widgets/drawer.dart';
@@ -23,58 +25,12 @@ class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  static const MarkerId _userLocationMarkerId = MarkerId("1");
-
   // ignore: prefer_final_fields
   Set<Marker> _markers = {};
 
   StreamSubscription<Position>? _userLocationStreamSubscription;
 
   CameraPosition? _cameraPosition;
-
-  void _initUserLocation() async {
-    Coordinates.getUserPosition().then((value) async {
-      LatLng latLngValue = LatLng(value.latitude, value.longitude);
-      _markers.add(
-        Marker(
-          markerId: _userLocationMarkerId,
-          position: latLngValue,
-          infoWindow: const InfoWindow(
-            title: 'My Current Location',
-          ),
-          icon: await BitmapDescriptor.fromAssetImage(
-            createLocalImageConfiguration(context, size: const Size(15, 15)),
-            "assets/myLocation.png",
-          ),
-        ),
-      );
-    }).onError((error, stackTrace) async {
-      LoggerInstance.logger.e("Error getting user position.");
-    });
-
-    setState(() {});
-  }
-
-  void _updateUserLocationMarker(LatLng position) async {
-    Marker newUserLocationMarker = Marker(
-      markerId: _userLocationMarkerId,
-      position: position,
-      infoWindow: const InfoWindow(
-        title: 'My Current Location',
-      ),
-      icon: await BitmapDescriptor.fromAssetImage(
-        createLocalImageConfiguration(context, size: const Size(15, 15)),
-        "assets/myLocation.png",
-      ),
-    );
-
-    // Update user location marker to new instance.
-    _markers = _markers
-        .map((marker) => marker.markerId == _userLocationMarkerId
-            ? newUserLocationMarker
-            : marker)
-        .toSet();
-  }
 
   void _moveCameraToCoordinates(LatLng position) async {
     // specified current users location
@@ -88,6 +44,38 @@ class _MapPageState extends State<MapPage> {
     setState(() {});
   }
 
+  void _setActiveToursMarkers(
+      BuildContext context, int? activeTourId, int? tourNextStopIds) async {
+    if (activeTourId != null) {
+      _markers.clear();
+      SqliteCache cache = await SqliteCache.getInstance();
+      List<ChocoTurTourStop> tourStops = await cache.getTourStops(activeTourId);
+
+      for (var j = 0; j < tourStops.length; ++j) {
+        ChocoTurTourStop stop = tourStops[j];
+        Marker tourStopMarker = Marker(
+          markerId:
+              MarkerId('${activeTourId.toString()} - ${stop.id.toString()}'),
+          position: stop.coordinates,
+          infoWindow: InfoWindow(
+            title: stop.name,
+            snippet: stop.description,
+            onTap: () {},
+          ),
+          icon: await BitmapDescriptor.fromAssetImage(
+            // ignore: use_build_context_synchronously
+            createLocalImageConfiguration(context, size: const Size(15, 15)),
+            'assets/markers/${j + 1}.png',
+          ),
+        );
+
+        _markers.add(tourStopMarker);
+      }
+
+      LoggerInstance.logger.d("Updated tour markers.");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -96,8 +84,6 @@ class _MapPageState extends State<MapPage> {
         Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initUserLocation();
-
       // TODO: Resolve issue for Geolocator.
       // _userLocationStreamSubscription =
       //     Coordinates.getUserPositionStream().listen((event) async {
@@ -122,26 +108,30 @@ class _MapPageState extends State<MapPage> {
           drawer: const ChocoTurDrawer(),
           body: Stack(
             children: [
-              GoogleMap(
-                mapType: MapType.normal,
-                initialCameraPosition: (_cameraPosition != null)
-                    ? _cameraPosition!
-                    : const CameraPosition(
-                        target: Coordinates.turinCenter,
-                        zoom: 14.4746,
-                      ),
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-                compassEnabled: true,
-                onMapCreated: (GoogleMapController controller) {
-                  _controller.complete(controller);
-                },
-                onCameraMove: (CameraPosition position) {
-                  _cameraPosition = position;
-                },
-                markers: _markers,
-              ),
+              Consumer<ChocoTurUser>(builder: (context, user, child) {
+                _setActiveToursMarkers(
+                    context, user.activeTour, user.tourNextStopId);
+                return GoogleMap(
+                  mapType: MapType.normal,
+                  initialCameraPosition: (_cameraPosition != null)
+                      ? _cameraPosition!
+                      : const CameraPosition(
+                          target: Coordinates.turinCenter,
+                          zoom: 14.4746,
+                        ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  compassEnabled: true,
+                  onMapCreated: (GoogleMapController controller) {
+                    _controller.complete(controller);
+                  },
+                  onCameraMove: (CameraPosition position) {
+                    _cameraPosition = position;
+                  },
+                  markers: _markers,
+                );
+              }),
               const Positioned(
                 left: 15,
                 top: 15,
@@ -154,10 +144,11 @@ class _MapPageState extends State<MapPage> {
               ),
               Positioned(
                 right: 15,
-                top: 15,
+                bottom: 85,
                 child: FloatingActionButton(
-                  onPressed: () {},
-                  child: const FaIcon(Icons.my_location_rounded),
+                  onPressed: () {}, // TODO: Move camera to tour next stop
+                  heroTag: "ToursButton",
+                  child: const FaIcon(Icons.tour_outlined),
                 ),
               ),
             ],
@@ -166,12 +157,12 @@ class _MapPageState extends State<MapPage> {
             onPressed: () async {
               Coordinates.getUserPosition().then((value) async {
                 LatLng latLngValue = LatLng(value.latitude, value.longitude);
-                _updateUserLocationMarker(latLngValue);
                 _moveCameraToCoordinates(latLngValue);
               }).onError((error, stackTrace) async {
                 LoggerInstance.logger.e("Error getting user position.");
               });
             },
+            heroTag: "UserPositionButton",
             child: const FaIcon(Icons.my_location_rounded),
           ),
           bottomNavigationBar: const ChocoTurNavigationBar(

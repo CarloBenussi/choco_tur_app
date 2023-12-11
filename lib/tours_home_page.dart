@@ -1,5 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/services/SqliteCache.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/home_page_tour.dart';
@@ -16,12 +16,18 @@ class ToursHomePage extends StatefulWidget {
 class _ToursHomePageState extends State<ToursHomePage> {
   Future<List<ChocoTurTour>>? _tours;
 
+  Future<List<ChocoTurTour>> _getOrReturnTours() async {
+    if (_tours == null) {
+      SqliteCache cache = await SqliteCache.getInstance();
+      _tours = cache.getAllTours();
+    }
+
+    return _tours!;
+  }
+
   @override
   void initState() {
     super.initState();
-
-    Future<SqliteCache> cache = SqliteCache.getInstance();
-    cache.then((value) => {_tours = value.getAllTours()});
   }
 
   @override
@@ -33,7 +39,7 @@ class _ToursHomePageState extends State<ToursHomePage> {
       body: Stack(
         children: [
           FutureBuilder(
-              future: _tours,
+              future: _getOrReturnTours(),
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
                     snapshot.connectionState == ConnectionState.done) {

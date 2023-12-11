@@ -49,7 +49,6 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   sqflite: ^2.3.0
-  sqflite_common_ffi_web: ^0.4.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -91,8 +90,20 @@ flutter:
     - assets/gianduiottoSingolo.jpg
     - assets/flags/it.png
     - assets/flags/en.png
-    - assets/myLocation.png
+    - assets/markers/myLocation.png
     - assets/mock_db/mock_tours.db
+    - assets/markers/1.png
+    - assets/markers/2.png
+    - assets/markers/3.png
+    - assets/markers/4.png
+    - assets/markers/5.png
+    - assets/markers/6.png
+    - assets/markers/7.png
+    - assets/markers/8.png
+    - assets/markers/9.png
+    - assets/markers/10.png
+    - assets/markers/11.png
+    - assets/markers/12.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

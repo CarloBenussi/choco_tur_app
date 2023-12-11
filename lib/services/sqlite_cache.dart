@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class SqliteCache {
   static const _toursTableName = "tours";
@@ -31,11 +30,6 @@ class SqliteCache {
   static SqliteCache? _cache;
 
   static void init() async {
-    if (kIsWeb) {
-      // Change default factory on the web
-      databaseFactory = databaseFactoryFfiWeb;
-    }
-
     String path = join(
       await getDatabasesPath(),
       'choco_tur_cache.db',
@@ -110,6 +104,30 @@ class SqliteCache {
     return tours;
   }
 
+  Future<String> getTourName(int tourId) async {
+    final database = await _db!;
+
+    List<Map<String, dynamic>> tourNameMap = await database.query(
+      _toursTableName,
+      columns: [
+        'id',
+        'name',
+      ],
+      where: "id = ?",
+      whereArgs: [tourId],
+    );
+
+    if (tourNameMap.isEmpty) {
+      return Future.error(Exception('Got no name for tour $tourId'));
+    }
+
+    if (tourNameMap.length > 1) {
+      return Future.error(Exception('Got multiple tours with id $tourId'));
+    }
+
+    return tourNameMap[0]['name'];
+  }
+
   Future<List<ChocoTurTourStop>> getTourStops(int tourId) async {
     final database = await _db!;
 
@@ -138,7 +156,7 @@ class SqliteCache {
     return tourStops;
   }
 
-  Future<List<String>> getTourStopIds(int tourId) async {
+  Future<List<int>> getTourStopIds(int tourId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourRelationsMaps = await database.query(
@@ -158,7 +176,7 @@ class SqliteCache {
       return Future.error(Exception('Got no stops for tour $tourId'));
     }
 
-    List<String> tourStopIds = [];
+    List<int> tourStopIds = [];
     for (var i = 0; i < tourRelationsMaps.length; ++i) {
       tourStopIds.add(tourRelationsMaps[i]['stopId']);
     }

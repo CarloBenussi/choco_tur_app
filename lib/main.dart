@@ -1,8 +1,9 @@
 import 'package:choco_tur/language_selection_page.dart';
+import 'package:choco_tur/tour_start_page.dart';
 import 'package:choco_tur/tours_home_page.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/services/SqliteCache.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/tour_info_page.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,8 @@ class ChocoTurApp extends StatelessWidget {
           '/tour_info': (context) => TourInfoPage(),
           '/main': (context) => ToursHomePage(),
           '/map': (context) => MapPage(),
+          '/tour_play': (context) => TourStartPage(
+              tourId: ModalRoute.of(context)!.settings.arguments as int),
         },
       );
     });

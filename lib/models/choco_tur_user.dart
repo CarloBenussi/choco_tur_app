@@ -1,4 +1,4 @@
-import 'package:choco_tur/services/SqliteCache.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +26,8 @@ class ChocoTurUser extends ChangeNotifier {
       userName: _prefs.getString(_userNameKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
-      activeTours: _prefs.getStringList(_activeToursKey) ?? [],
-      toursNextStopId: _prefs.getStringList(_toursNextStopIdKey) ?? [],
+      activeTour: _prefs.getInt(_activeTourKey),
+      tourNextStopId: _prefs.getInt(_tourNextStopIdKey),
     );
   }
 
@@ -35,8 +35,8 @@ class ChocoTurUser extends ChangeNotifier {
     this.userName,
     this.language,
     this.cameraPosition,
-    required this.activeTours,
-    required this.toursNextStopId,
+    required this.activeTour,
+    required this.tourNextStopId,
   });
 
   // SharedPreferences keys.
@@ -45,16 +45,16 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
   static const String _cameraZoomKey = "cameraZoom";
-  static const String _activeToursKey = "activeTours";
-  static const String _toursNextStopIdKey = "toursNextStopId";
+  static const String _activeTourKey = "activeTour";
+  static const String _tourNextStopIdKey = "tourNextStopId";
   static const String _tokenKey = "token";
 
   // User preferences to store.
   String? userName;
   String? language;
   CameraPosition? cameraPosition;
-  List<String> activeTours;
-  List<String> toursNextStopId;
+  int? activeTour;
+  int? tourNextStopId;
 
   static late final SharedPreferences _prefs;
   Locale _locale = const Locale(LanguageCodes.EN);
@@ -89,56 +89,60 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   void activateTour(int tourId) async {
-    if (activeTours.contains(tourId.toString())) {
-      LoggerInstance.logger.w('Tour $tourId is already active.');
+    if (activeTour == tourId) {
+      LoggerInstance.logger
+          .i("Activating a tour that is already active, nothing to do.");
       return;
     }
 
     SqliteCache cache = await SqliteCache.getInstance();
-    List<String> tourStopIds = await cache.getTourStopIds(tourId);
+    List<int> tourStopIds = await cache.getTourStopIds(tourId);
     if (tourStopIds.isEmpty) {
       throw Exception('No stops found for tour $tourId!');
     }
 
-    activeTours.add(tourId.toString());
-    toursNextStopId.add(tourStopIds[0]);
+    activeTour = tourId;
+    tourNextStopId = tourStopIds[0];
+    _prefs.setInt(_activeTourKey, tourId);
+    _prefs.setInt(_tourNextStopIdKey, tourStopIds[0]);
     notifyListeners();
   }
 
-  void deactivateTour(String tourId) {
-    if (!activeTours.contains(tourId)) {
+  void deactivateTour(int tourId) {
+    if (activeTour != tourId) {
       LoggerInstance.logger.w('Tour $tourId is already unactive.');
       return;
     }
 
-    int activeTourIndex = activeTours.indexOf(tourId);
-    activeTours.removeAt(activeTourIndex);
-    toursNextStopId.removeAt(activeTourIndex);
+    activeTour = null;
+    tourNextStopId = null;
+    _prefs.remove(_activeTourKey);
+    _prefs.remove(_tourNextStopIdKey);
     notifyListeners();
   }
 
   void advanceTour(int tourId) async {
-    var tourIndex = activeTours.indexOf(tourId.toString());
-    if (tourIndex == -1) {
+    if (activeTour != tourId) {
       throw Exception('Tour $tourId is not active!');
     }
 
     SqliteCache cache = await SqliteCache.getInstance();
-    List<String> tourStopIds = await cache.getTourStopIds(tourId);
+    List<int> tourStopIds = await cache.getTourStopIds(tourId);
     if (tourStopIds.isEmpty) {
       throw Exception('No stops found for tour $tourId!');
     }
 
-    var tourStopIndex = tourStopIds.indexOf(toursNextStopId[tourIndex]);
+    var tourStopIndex = tourStopIds.indexOf(tourNextStopId!);
     if (++tourStopIndex == tourStopIds.length) {
       LoggerInstance.logger
           .i('Tour $tourId is finished, removing from active tours for user.');
 
-      toursNextStopId.removeAt(tourIndex);
-      activeTours.removeAt(tourIndex);
+      _prefs.remove(_activeTourKey);
+      _prefs.remove(_tourNextStopIdKey);
     }
 
-    toursNextStopId[tourIndex] = tourStopIds[tourStopIndex];
+    tourNextStopId = tourStopIds[tourStopIndex];
+    _prefs.setInt(_tourNextStopIdKey, tourNextStopId!);
 
     notifyListeners();
   }

@@ -1,4 +1,6 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchaseTourButton.dart';
@@ -7,6 +9,7 @@ import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:choco_tur/widgets/tour_stops_info_animation.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TourInfoPage extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
@@ -17,9 +20,27 @@ class TourInfoPage extends StatefulWidget {
 }
 
 class _TourInfoPageState extends State<TourInfoPage> {
-  late ChocoTurTour chocoTurTour;
+  late ChocoTurTour tour;
 
   bool _purchased = false;
+
+  Future<List<ChocoTurTourStop>>? _tourStops;
+  List<Chocolate?>? _tourStopTastings;
+
+  Future<List<ChocoTurTourStop>> _getOrReturnTourStops() async {
+    if (_tourStops == null) {
+      SqliteCache cache = await SqliteCache.getInstance();
+      _tourStops = cache.getTourStops(tour.id);
+
+      _tourStopTastings = [];
+      var tourStops = await _getOrReturnTourStops();
+      for (var i = 0; i < tourStops.length; ++i) {
+        _tourStopTastings!.add(await cache.getStopchocolate(tourStops[i].id));
+      }
+    }
+
+    return _tourStops!;
+  }
 
   void onPurchasePressed() {
     setState(() {
@@ -34,7 +55,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    chocoTurTour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
+    tour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
     return SafeArea(
       child: Scaffold(
         appBar: const ChocoTurAppBar(),
@@ -43,10 +64,10 @@ class _TourInfoPageState extends State<TourInfoPage> {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           children: [
             Hero(
-              tag: chocoTurTour.id,
+              tag: tour.id,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(chocoTurTour.mainImageUrl),
+                child: Image.asset(tour.mainImageUrl),
               ),
             ),
             Padding(
@@ -57,10 +78,13 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 spacing: 10,
                 children: [
                   StartTourButton(
-                    available: (_purchased || chocoTurTour.isFree()),
-                    chocoTurTour: chocoTurTour,
+                    available: ((_purchased || tour.isFree()) &&
+                        (Provider.of<ChocoTurUser>(context, listen: false)
+                                .activeTour !=
+                            null)),
+                    tourId: tour.id,
                   ),
-                  if (!chocoTurTour.isFree())
+                  if (!tour.isFree())
                     PurchaseTourButton(
                       onPressedFunction: onPurchasePressed,
                       purchased: _purchased,
@@ -71,12 +95,12 @@ class _TourInfoPageState extends State<TourInfoPage> {
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: TitleAndDescription(
-                title: chocoTurTour.name,
-                subTitle: "${chocoTurTour.numStops} stops | "
-                    "${chocoTurTour.numTastings} tastings | "
-                    "${chocoTurTour.lengthInKms}km | "
-                    "${printDuration(chocoTurTour.avgDuration, abbreviated: true)}",
-                description: chocoTurTour.description,
+                title: tour.name,
+                subTitle: "${tour.numStops} stops | "
+                    "${tour.numTastings} tastings | "
+                    "${tour.lengthInKms}km | "
+                    "${printDuration(tour.avgDuration, abbreviated: true)}",
+                description: tour.description,
               ),
             ),
             const Padding(
@@ -115,8 +139,20 @@ class _TourInfoPageState extends State<TourInfoPage> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: TourStopsInfoAnimation(
-                tourId: chocoTurTour.id,
+              child: FutureBuilder(
+                future: _getOrReturnTourStops(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData &&
+                      snapshot.connectionState == ConnectionState.done) {
+                    return TourStopsInfoAnimation(
+                      tourId: tour.id,
+                      tourStops: snapshot.data!,
+                      tourStopTastings: _tourStopTastings!,
+                    );
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
               ),
             ),
           ],
