@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:flutter/material.dart';
 

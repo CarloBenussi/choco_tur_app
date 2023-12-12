@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:choco_tur/utils/logger.dart';
 import 'package:duration/duration.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -99,5 +102,43 @@ class Chocolate {
     name = map['name'];
     description = map['description'];
     mainImageUrl = map['mainImageUrl'];
+  }
+}
+
+enum ChocoTurStopPageType {
+  text, // A page displaying a text with an image.
+  quiz // A page displaying a quiz question with options.
+}
+
+class ChocoTurStopPage {
+  late final ChocoTurStopPageType type;
+  String? topImageUrl;
+  String? text;
+
+  ChocoTurStopPage.fromJson(String pageContentJson) {
+    try {
+      var pageContent = jsonDecode(pageContentJson);
+      String typeStr = pageContent['type'];
+      switch (typeStr) {
+        case "text":
+          type = ChocoTurStopPageType.text;
+          break;
+
+        case "quiz":
+          type = ChocoTurStopPageType.quiz;
+          break;
+
+        default:
+          throw Exception('Page type $typeStr is unknown');
+      }
+
+      if (type == ChocoTurStopPageType.text) {
+        topImageUrl = pageContent['top_image_url'];
+        text = pageContent['text'];
+      }
+    } catch (e) {
+      LoggerInstance.logger.e("Failed to parse stop page json.");
+      rethrow;
+    }
   }
 }

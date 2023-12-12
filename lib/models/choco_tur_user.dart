@@ -28,6 +28,7 @@ class ChocoTurUser extends ChangeNotifier {
       cameraPosition: cameraPosition,
       activeTour: _prefs.getInt(_activeTourKey),
       tourNextStopId: _prefs.getInt(_tourNextStopIdKey),
+      tourNextStopStoryPageIndex: _prefs.getInt(_tourNextStopStoryPageIndexKey),
     );
   }
 
@@ -37,6 +38,7 @@ class ChocoTurUser extends ChangeNotifier {
     this.cameraPosition,
     required this.activeTour,
     required this.tourNextStopId,
+    required this.tourNextStopStoryPageIndex,
   });
 
   // SharedPreferences keys.
@@ -46,6 +48,8 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _cameraLongitudeKey = "cameraLongitude";
   static const String _cameraZoomKey = "cameraZoom";
   static const String _activeTourKey = "activeTour";
+  static const String _tourNextStopStoryPageIndexKey =
+      "tourNextStopStoryPageIndex";
   static const String _tourNextStopIdKey = "tourNextStopId";
   static const String _tokenKey = "token";
 
@@ -55,6 +59,7 @@ class ChocoTurUser extends ChangeNotifier {
   CameraPosition? cameraPosition;
   int? activeTour;
   int? tourNextStopId;
+  int? tourNextStopStoryPageIndex;
 
   static late final SharedPreferences _prefs;
   Locale _locale = const Locale(LanguageCodes.EN);
@@ -88,11 +93,28 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void activateTour(int tourId) async {
+  Future<bool> activateTour(BuildContext context, int tourId) async {
     if (activeTour == tourId) {
       LoggerInstance.logger
           .i("Activating a tour that is already active, nothing to do.");
-      return;
+      return false;
+    }
+
+    if (activeTour != null) {
+      LoggerInstance.logger
+          .w("Activating a tour while there is one already active!");
+
+      showDialog(
+        context: context,
+        builder: (_) => const AlertDialog(
+          title: Text("A choco tour is already active!"),
+          content:
+              Text("To activate a new tour, complete first the active tour."),
+          elevation: 24.0,
+        ),
+        barrierDismissible: true,
+      );
+      return false;
     }
 
     SqliteCache cache = await SqliteCache.getInstance();
@@ -106,6 +128,8 @@ class ChocoTurUser extends ChangeNotifier {
     _prefs.setInt(_activeTourKey, tourId);
     _prefs.setInt(_tourNextStopIdKey, tourStopIds[0]);
     notifyListeners();
+
+    return true;
   }
 
   void deactivateTour(int tourId) {

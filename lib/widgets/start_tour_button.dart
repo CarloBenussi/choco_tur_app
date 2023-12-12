@@ -1,4 +1,3 @@
-import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:flutter/material.dart';
@@ -16,10 +15,15 @@ class StartTourButton extends StatelessWidget {
   bool available;
   int tourId;
 
-  void _onStartTourPressed(BuildContext context) {
+  void _onStartTourPressed(BuildContext context) async {
     LoggerInstance.logger.d('Activating tour $tourId');
-    Provider.of<ChocoTurUser>(context, listen: false).activateTour(tourId);
-    Navigator.pushNamed(context, "/tour_play", arguments: tourId);
+    bool activateSuccess =
+        await Provider.of<ChocoTurUser>(context, listen: false)
+            .activateTour(context, tourId);
+    if (activateSuccess) {
+      // ignore: use_build_context_synchronously
+      Navigator.pushNamed(context, "/tour_play", arguments: tourId);
+    }
   }
 
   @override

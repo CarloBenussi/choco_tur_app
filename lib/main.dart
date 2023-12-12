@@ -1,5 +1,6 @@
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/tour_start_page.dart';
+import 'package:choco_tur/tour_stop_story_pages_loading_page.dart';
 import 'package:choco_tur/tours_home_page.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
@@ -64,10 +65,14 @@ class ChocoTurApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginPage(),
           '/tour_info': (context) => TourInfoPage(),
-          '/main': (context) => ToursHomePage(),
-          '/map': (context) => MapPage(),
+          '/main': (context) => const ToursHomePage(),
+          '/map': (context) => const MapPage(),
           '/tour_play': (context) => TourStartPage(
-              tourId: ModalRoute.of(context)!.settings.arguments as int),
+                tourId: ModalRoute.of(context)!.settings.arguments as int,
+              ),
+          '/tour_stop_story_pages': (context) => TourStopStoryPagesLoadingPage(
+                stopId: ModalRoute.of(context)!.settings.arguments as int,
+              ),
         },
       );
     });

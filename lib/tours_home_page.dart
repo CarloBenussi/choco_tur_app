@@ -7,7 +7,7 @@ import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class ToursHomePage extends StatefulWidget {
-  ToursHomePage({super.key});
+  const ToursHomePage({super.key});
 
   @override
   State<ToursHomePage> createState() => _ToursHomePageState();

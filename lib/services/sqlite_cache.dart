@@ -14,6 +14,7 @@ class SqliteCache {
   static const _tourStopsRelationsTableName = "tourStopsRelations";
   static const _tourStopChocolatesRelationsTableName =
       "tourStopChocolatesRelations";
+  static const _stopStoryPagesTableName = "stopStoryPages";
 
   static const String _toursTableSchema =
       "id INTEGER PRIMARY KEY, name TEXT, costEuro REAL, lengthKm REAL, avgDuration TEXT, description TEXT, numStops INTEGER, numTastings INTEGER, mainImageUrl TEXT";
@@ -21,10 +22,14 @@ class SqliteCache {
       "id INTEGER PRIMARY KEY, name TEXT, description TEXT, latitude REAL, longitude REAL, hasTasting INTEGER, mainImageUrl TEXT";
   static const String _chocolatesTableSchema =
       "id INTEGER PRIMARY KEY, name TEXT, description TEXT, mainImageUrl TEXT";
-  static const String _tourStopsRelationsSchema =
+  static const String _tourStopsRelationsTableSchema =
       "id INTEGER PRIMARY KEY, tourId INTEGER, stopId INTEGER, stopPosition INTEGER";
-  static const String _stopChocolatesRelationsSchema =
+  static const String _stopChocolatesRelationsTableSchema =
       "id INTEGER PRIMARY KEY, stopId INTEGER, chocolateId INTEGER";
+
+  // These should be stored only remotely since they will contain most content.
+  static const String _stopStoryPagesTableSchema =
+      "id INTEGER PRIMARY KEY, stopId INTEGER, pagePosition INTEGER, pageContentJson TEXT";
 
   static Future<Database>? _db;
   static SqliteCache? _cache;
@@ -61,10 +66,13 @@ class SqliteCache {
           'CREATE TABLE $_chocolatesTableName($_chocolatesTableSchema)',
         );
         db.execute(
-          'CREATE TABLE $_tourStopsRelationsTableName($_tourStopsRelationsSchema)',
+          'CREATE TABLE $_tourStopsRelationsTableName($_tourStopsRelationsTableSchema)',
         );
         db.execute(
-          'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsSchema)',
+          'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsTableSchema)',
+        );
+        db.execute(
+          'CREATE TABLE $_stopStoryPagesTableName($_stopStoryPagesTableSchema)',
         );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -265,5 +273,32 @@ class SqliteCache {
     }
 
     return Chocolate.fromMap(chocolateMap[0]);
+  }
+
+  Future<List<ChocoTurStopPage>> getStopStoryPages(int stopId) async {
+    final database = await _db!;
+
+    List<Map<String, dynamic>> tourStopStoryPagesMap = await database.query(
+      _stopStoryPagesTableName,
+      columns: [
+        'pageContentJson',
+      ],
+      where: "stopId = ?",
+      whereArgs: [stopId],
+      orderBy: "pagePosition ASC",
+    );
+
+    if (tourStopStoryPagesMap.isEmpty) {
+      return Future.error(
+          Exception('Got no stop story pages for stop $stopId'));
+    }
+
+    List<ChocoTurStopPage> stopStoryPages = [];
+    for (var i = 0; i < tourStopStoryPagesMap.length; ++i) {
+      stopStoryPages.add(ChocoTurStopPage.fromJson(
+          tourStopStoryPagesMap[i]['pageContentJson']));
+    }
+
+    return stopStoryPages;
   }
 }

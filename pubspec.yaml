@@ -90,7 +90,6 @@ flutter:
     - assets/gianduiottoSingolo.jpg
     - assets/flags/it.png
     - assets/flags/en.png
-    - assets/markers/myLocation.png
     - assets/mock_db/mock_tours.db
     - assets/markers/1.png
     - assets/markers/2.png
