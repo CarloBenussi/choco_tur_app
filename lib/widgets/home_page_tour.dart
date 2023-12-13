@@ -1,5 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/utils/sizes.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:flutter/material.dart';
 
 class HomePageTour extends StatelessWidget {
@@ -8,7 +8,7 @@ class HomePageTour extends StatelessWidget {
   final ChocoTurTour chocoTurTour;
 
   void onTapped(BuildContext context) {
-    Navigator.pushNamed(context, '/tour_info', arguments: chocoTurTour);
+    Navigator.pushNamed(context, RouteNames.tourInfo, arguments: chocoTurTour);
   }
 
   @override
@@ -74,8 +74,8 @@ class HomePageTour extends StatelessWidget {
                       const WidgetSpan(
                         child: Image(
                             image: AssetImage('assets/chocolateIcon.png'),
-                            width: Sizes.iconWidth,
-                            height: Sizes.iconHeight,
+                            width: 14,
+                            height: 14,
                             fit: BoxFit.scaleDown,
                             alignment: FractionalOffset.center),
                       ),

@@ -1,9 +1,14 @@
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:flutter/material.dart';
 
 class ChocoTurNavigationBar extends StatelessWidget {
   const ChocoTurNavigationBar({super.key, this.selectedIndex = 0});
 
-  static final Map<int, String> indexToRouteNames = {0: "/main", 1: "/map"};
+  static final Map<int, String> indexToRouteNames = {
+    0: RouteNames.home,
+    1: RouteNames.map,
+    2: RouteNames.myTours,
+  };
   final int selectedIndex;
 
   @override

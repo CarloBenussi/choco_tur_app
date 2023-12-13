@@ -1,4 +1,5 @@
 import 'package:choco_tur/language_selection_page.dart';
+import 'package:choco_tur/my_tours_page.dart';
 import 'package:choco_tur/tour_start_page.dart';
 import 'package:choco_tur/tour_stop_story_pages_loading_page.dart';
 import 'package:choco_tur/tours_home_page.dart';
@@ -6,6 +7,7 @@ import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/tour_info_page.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -63,14 +65,16 @@ class ChocoTurApp extends StatelessWidget {
             : const LoginPage(),
         locale: Provider.of<ChocoTurUser>(context).locale,
         routes: {
-          '/login': (context) => const LoginPage(),
-          '/tour_info': (context) => TourInfoPage(),
-          '/main': (context) => const ToursHomePage(),
-          '/map': (context) => const MapPage(),
-          '/tour_play': (context) => TourStartPage(
+          RouteNames.login: (context) => const LoginPage(),
+          RouteNames.tourInfo: (context) => TourInfoPage(),
+          RouteNames.home: (context) => const ToursHomePage(),
+          RouteNames.map: (context) => const MapPage(),
+          RouteNames.myTours: (context) => const MyTourPage(),
+          RouteNames.tourPlay: (context) => TourStartPage(
                 tourId: ModalRoute.of(context)!.settings.arguments as int,
               ),
-          '/tour_stop_story_pages': (context) => TourStopStoryPagesLoadingPage(
+          RouteNames.tourStopStoryPages: (context) =>
+              TourStopStoryPagesLoadingPage(
                 stopId: ModalRoute.of(context)!.settings.arguments as int,
               ),
         },

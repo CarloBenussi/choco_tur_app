@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +12,7 @@ class TourStartPage extends StatelessWidget {
   Future<String>? _tourName;
 
   void _onAnimationFinished(BuildContext context) {
-    Navigator.pushReplacementNamed(context, "/map");
+    Navigator.pushReplacementNamed(context, RouteNames.map);
   }
 
   Future<String> _getOrReturnTourName() async {

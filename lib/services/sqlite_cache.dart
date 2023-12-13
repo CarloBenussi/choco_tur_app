@@ -112,6 +112,37 @@ class SqliteCache {
     return tours;
   }
 
+  Future<ChocoTurTour> getTourFromId(int tourId) async {
+    final database = await _db!;
+
+    List<Map<String, dynamic>> tourMaps = await database.query(
+      _toursTableName,
+      columns: [
+        'id',
+        'name',
+        'costEuro',
+        'lengthKm',
+        'avgDuration',
+        'description',
+        'numStops',
+        'numTastings',
+        'mainImageUrl'
+      ],
+      where: "id = ?",
+      whereArgs: [tourId],
+    );
+
+    if (tourMaps.isEmpty) {
+      return Future.error(Exception('Got no name for tour $tourId'));
+    }
+
+    if (tourMaps.length > 1) {
+      return Future.error(Exception('Got multiple tours with id $tourId'));
+    }
+
+    return ChocoTurTour.fromMap(tourMaps[0]);
+  }
+
   Future<String> getTourName(int tourId) async {
     final database = await _db!;
 

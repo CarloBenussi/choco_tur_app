@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_quiz.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_text.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
   late int _currentPageIndex;
   bool _backPressed = false;
 
-  void _onNextPressed(BuildContext context, int stopStoryPagesLength) {
+  void _onNextPressed(BuildContext context, int stopStoryPagesLength) async {
     if (_currentPageIndex < stopStoryPagesLength - 1) {
       _currentPageIndex++;
       Provider.of<ChocoTurUser>(context, listen: false)
@@ -28,7 +29,10 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
       _backPressed = false;
       setState(() {});
     } else {
-      // TODO: Advance stop and go to map page.
+      await Provider.of<ChocoTurUser>(context, listen: false).advanceTour();
+      if (mounted) {
+        Navigator.pushNamed(context, RouteNames.map);
+      }
     }
   }
 

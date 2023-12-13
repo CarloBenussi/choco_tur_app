@@ -6,10 +6,12 @@ import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animarker/flutter_map_marker_animation.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -59,7 +61,7 @@ class _MapPageState extends State<MapPage> {
 
   Future<Set<Marker>> _getActiveToursMarkers(BuildContext context) async {
     int? activeTourId =
-        Provider.of<ChocoTurUser>(context, listen: true).activeTour;
+        Provider.of<ChocoTurUser>(context, listen: true).activeTourId;
     int? tourNextStopId =
         Provider.of<ChocoTurUser>(context, listen: true).tourNextStopId;
 
@@ -83,26 +85,37 @@ class _MapPageState extends State<MapPage> {
             '${activeTourId.toString()} - ${stop.id.toString()}';
         final Uint8List markerIcon =
             await _getBytesFromAsset('assets/markers/${i + 1}.png', 120);
-        Marker tourStopMarker = Marker(
-          markerId: MarkerId(markerIdStr),
-          position: stop.coordinates,
-          infoWindow: InfoWindow(
-            title: stop.name,
-            snippet: stop.description,
-            onTap: () {
-              Navigator.pushNamed(context, "/tour_stop_story_pages",
-                  arguments: stop.id);
-            },
-          ),
-          icon: BitmapDescriptor.fromBytes(markerIcon),
-        );
+
+        Marker? tourStopMarker;
+        if (stop.id == tourNextStopId) {
+          tourStopMarker = RippleMarker(
+            markerId: MarkerId(markerIdStr),
+            position: stop.coordinates,
+            infoWindow: InfoWindow(
+                title: stop.name,
+                snippet: stop.description,
+                onTap: () {
+                  Navigator.pushNamed(context, RouteNames.tourStopStoryPages,
+                      arguments: stop.id);
+                }),
+            icon: BitmapDescriptor.fromBytes(markerIcon),
+          );
+        } else {
+          tourStopMarker = Marker(
+            markerId: MarkerId(markerIdStr),
+            position: stop.coordinates,
+            infoWindow: InfoWindow(
+              title: stop.name,
+              snippet: stop.description,
+            ),
+            icon: BitmapDescriptor.fromBytes(markerIcon),
+          );
+        }
 
         if (!_markers.add(tourStopMarker)) {
           LoggerInstance.logger.w('Marker $markerIdStr is already in set!');
         }
       }
-
-      LoggerInstance.logger.d("Updated tour markers.");
     }
 
     return _markers;
@@ -143,27 +156,34 @@ class _MapPageState extends State<MapPage> {
                   snapshot.connectionState == ConnectionState.done) {
                 return Stack(
                   children: [
-                    GoogleMap(
-                      mapType: MapType.normal,
-                      initialCameraPosition: (_cameraPosition != null)
-                          ? _cameraPosition!
-                          : const CameraPosition(
-                              target: Coordinates.turinCenter,
-                              zoom: 14.4746,
-                            ),
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: false,
-                      compassEnabled: true,
-                      onMapCreated: (GoogleMapController controller) {
-                        if (!_controller.isCompleted) {
-                          _controller.complete(controller);
-                        }
-                      },
-                      onCameraMove: (CameraPosition position) {
-                        _cameraPosition = position;
-                      },
+                    Animarker(
+                      curve: Curves.ease,
+                      rippleRadius: 0.1,
+                      mapId: _controller.future.then<int>(
+                          (value) => value.mapId), //Grab Google Map Id
                       markers: snapshot.data!,
+                      child: GoogleMap(
+                        mapType: MapType.normal,
+                        initialCameraPosition: (_cameraPosition != null)
+                            ? _cameraPosition!
+                            : const CameraPosition(
+                                target: Coordinates.turinCenter,
+                                zoom: 14.4746,
+                              ),
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        compassEnabled: true,
+                        onMapCreated: (GoogleMapController controller) {
+                          if (!_controller.isCompleted) {
+                            _controller.complete(controller);
+                          }
+                        },
+                        onCameraMove: (CameraPosition position) {
+                          _cameraPosition = position;
+                        },
+                        markers: snapshot.data!,
+                      ),
                     ),
                     const Positioned(
                       left: 15,

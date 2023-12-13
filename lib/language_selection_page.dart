@@ -1,5 +1,6 @@
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class LanguageSelection extends StatelessWidget {
             onSelected: (String? langCode) {
               Provider.of<ChocoTurUser>(context, listen: false)
                   .setLanguage(context, langCode!);
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacementNamed(context, RouteNames.login);
             },
             dropdownMenuEntries: [
               DropdownMenuEntry(

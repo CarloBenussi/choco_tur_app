@@ -145,7 +145,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
                       tourStopTastings: _tourStopTastings!,
                     );
                   } else {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   }
                 },
               ),

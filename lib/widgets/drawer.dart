@@ -15,16 +15,6 @@ class ChocoTurDrawer extends StatelessWidget {
           )),
           const ListTile(
             leading: Icon(
-              Icons.account_circle_outlined,
-            ),
-            title: Text("Account"),
-          ),
-          const Divider(
-            thickness: 0.5,
-            color: Colors.grey,
-          ),
-          const ListTile(
-            leading: Icon(
               Icons.settings_outlined,
             ),
             title: Text("Settings"),
@@ -72,9 +62,11 @@ class ChocoTurDrawer extends StatelessWidget {
               ),
               title: const Text("About"),
               onTap: () {
-                showDialog(
+                showAboutDialog(
                   context: context,
-                  builder: (_) => const AboutDialog(),
+                  applicationVersion: "1.0.0",
+                  applicationIcon: const Icon(Icons.flutter_dash),
+                  applicationLegalese: "Legalese",
                   barrierDismissible: true,
                 );
               }),

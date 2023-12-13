@@ -26,7 +26,7 @@ class ChocoTurUser extends ChangeNotifier {
       userName: _prefs.getString(_userNameKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
-      activeTour: _prefs.getInt(_activeTourKey),
+      activeTourId: _prefs.getInt(_activeTourIdKey),
       tourNextStopId: _prefs.getInt(_tourNextStopIdKey),
       tourNextStopStoryPageIndex: _prefs.getInt(_tourNextStopStoryPageIndexKey),
     );
@@ -36,7 +36,7 @@ class ChocoTurUser extends ChangeNotifier {
     this.userName,
     this.language,
     this.cameraPosition,
-    required this.activeTour,
+    required this.activeTourId,
     required this.tourNextStopId,
     required this.tourNextStopStoryPageIndex,
   });
@@ -47,7 +47,7 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
   static const String _cameraZoomKey = "cameraZoom";
-  static const String _activeTourKey = "activeTour";
+  static const String _activeTourIdKey = "activeTourId";
   static const String _tourNextStopStoryPageIndexKey =
       "tourNextStopStoryPageIndex";
   static const String _tourNextStopIdKey = "tourNextStopId";
@@ -57,7 +57,7 @@ class ChocoTurUser extends ChangeNotifier {
   String? userName;
   String? language;
   CameraPosition? cameraPosition;
-  int? activeTour;
+  int? activeTourId;
   int? tourNextStopId;
   int? tourNextStopStoryPageIndex;
 
@@ -94,13 +94,13 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   Future<bool> activateTour(BuildContext context, int tourId) async {
-    if (activeTour == tourId) {
+    if (activeTourId == tourId) {
       LoggerInstance.logger
           .i("Activating a tour that is already active, nothing to do.");
       return false;
     }
 
-    if (activeTour != null) {
+    if (activeTourId != null) {
       LoggerInstance.logger
           .w("Activating a tour while there is one already active!");
 
@@ -123,9 +123,9 @@ class ChocoTurUser extends ChangeNotifier {
       throw Exception('No stops found for tour $tourId!');
     }
 
-    activeTour = tourId;
+    activeTourId = tourId;
     tourNextStopId = tourStopIds[0];
-    _prefs.setInt(_activeTourKey, tourId);
+    _prefs.setInt(_activeTourIdKey, tourId);
     _prefs.setInt(_tourNextStopIdKey, tourStopIds[0]);
     notifyListeners();
 
@@ -133,40 +133,43 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   void deactivateTour(int tourId) {
-    if (activeTour != tourId) {
+    if (activeTourId != tourId) {
       LoggerInstance.logger.w('Tour $tourId is already unactive.');
       return;
     }
 
-    activeTour = null;
+    activeTourId = null;
     tourNextStopId = null;
-    _prefs.remove(_activeTourKey);
+    _prefs.remove(_activeTourIdKey);
     _prefs.remove(_tourNextStopIdKey);
     notifyListeners();
   }
 
-  void advanceTour(int tourId) async {
-    if (activeTour != tourId) {
-      throw Exception('Tour $tourId is not active!');
+  Future<void> advanceTour() async {
+    if (activeTourId == null) {
+      throw Exception('No active tour present!');
     }
 
     SqliteCache cache = await SqliteCache.getInstance();
-    List<int> tourStopIds = await cache.getTourStopIds(tourId);
+    List<int> tourStopIds = await cache.getTourStopIds(activeTourId!);
     if (tourStopIds.isEmpty) {
-      throw Exception('No stops found for tour $tourId!');
+      throw Exception('No stops found for tour $activeTourId!');
     }
 
     var tourStopIndex = tourStopIds.indexOf(tourNextStopId!);
     if (++tourStopIndex == tourStopIds.length) {
-      LoggerInstance.logger
-          .i('Tour $tourId is finished, removing from active tours for user.');
+      LoggerInstance.logger.i(
+          'Tour $activeTourId is finished, removing from active tours for user.');
 
-      _prefs.remove(_activeTourKey);
+      _prefs.remove(_activeTourIdKey);
       _prefs.remove(_tourNextStopIdKey);
+      return;
     }
 
     tourNextStopId = tourStopIds[tourStopIndex];
+    tourNextStopStoryPageIndex = 0;
     _prefs.setInt(_tourNextStopIdKey, tourNextStopId!);
+    _prefs.setInt(_tourNextStopStoryPageIndexKey, tourNextStopStoryPageIndex!);
 
     notifyListeners();
   }

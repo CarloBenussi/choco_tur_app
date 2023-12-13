@@ -37,6 +37,7 @@ dependencies:
   audioplayers: ^5.2.1
   duration: ^3.0.13
   dynamic_color: ^1.4.0
+  flutter_animarker: ^3.2.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.5
   focus_detector: ^2.0.1

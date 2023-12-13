@@ -1,4 +1,5 @@
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       // TODO: Login and set token on ChocoTurModel.
       LoggerInstance.logger.i("Successfully logged in.");
 
-      Navigator.pushReplacementNamed(context, '/main');
+      Navigator.pushReplacementNamed(context, RouteNames.home);
     } else {
       LoggerInstance.logger.i("Error in loggin in.");
     }

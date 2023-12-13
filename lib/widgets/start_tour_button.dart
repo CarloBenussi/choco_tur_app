@@ -1,5 +1,6 @@
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,7 @@ class StartTourButton extends StatelessWidget {
             .activateTour(context, tourId);
     if (activateSuccess) {
       // ignore: use_build_context_synchronously
-      Navigator.pushNamed(context, "/tour_play", arguments: tourId);
+      Navigator.pushNamed(context, RouteNames.tourPlay, arguments: tourId);
     }
   }
 
