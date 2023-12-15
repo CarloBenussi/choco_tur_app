@@ -1,4 +1,5 @@
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -14,48 +15,54 @@ class ChocoTurNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-        backgroundColor: Colors.red.shade300,
-        indicatorColor: Colors.white,
-        destinations: <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.home_rounded,
-              color: Colors.red.shade300,
+    return NavigationBarTheme(
+      data: const NavigationBarThemeData(
+        labelTextStyle:
+            MaterialStatePropertyAll(TextStyle(color: Styles.onRedShade)),
+      ),
+      child: NavigationBar(
+          backgroundColor: Styles.redShade,
+          indicatorColor: Styles.onRedShade,
+          destinations: <Widget>[
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.home_rounded,
+                color: Styles.redShade,
+              ),
+              icon: const Icon(
+                Icons.home_outlined,
+                color: Styles.onRedShade,
+              ),
+              label: AppLocalizations.of(context)!.homeButton,
             ),
-            icon: const Icon(
-              Icons.home_outlined,
-              color: Colors.white,
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.map_rounded,
+                color: Styles.redShade,
+              ),
+              icon: const Icon(
+                Icons.map_outlined,
+                color: Styles.onRedShade,
+              ),
+              label: AppLocalizations.of(context)!.mapButton,
             ),
-            label: AppLocalizations.of(context)!.homeButton,
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.map_rounded,
-              color: Colors.red.shade300,
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.tour_rounded,
+                color: Styles.redShade,
+              ),
+              icon: const Icon(
+                Icons.tour_outlined,
+                color: Styles.onRedShade,
+              ),
+              label: AppLocalizations.of(context)!.myToursButton,
             ),
-            icon: const Icon(
-              Icons.map_outlined,
-              color: Colors.white,
-            ),
-            label: AppLocalizations.of(context)!.mapButton,
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.tour_rounded,
-              color: Colors.red.shade300,
-            ),
-            icon: const Icon(
-              Icons.tour_outlined,
-              color: Colors.white,
-            ),
-            label: AppLocalizations.of(context)!.myToursButton,
-          ),
-        ],
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (int index) {
-          String? routeName = indexToRouteNames[index];
-          if (routeName != null) Navigator.pushNamed(context, routeName);
-        });
+          ],
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (int index) {
+            String? routeName = indexToRouteNames[index];
+            if (routeName != null) Navigator.pushNamed(context, routeName);
+          }),
+    );
   }
 }

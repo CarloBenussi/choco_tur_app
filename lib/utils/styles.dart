@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ChocoTurStyles {
-  static const Decoration backgroundDecoration = BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color.fromRGBO(177, 78, 77, 100), Colors.white],
-    ),
-  );
+class Styles {
+  static Color redShade = Colors.red.shade900;
+  static const Color onRedShade = Color.fromRGBO(255, 255, 255, 1);
 }

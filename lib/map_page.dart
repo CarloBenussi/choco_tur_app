@@ -7,6 +7,7 @@ import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
@@ -131,16 +132,16 @@ class _MapPageState extends State<MapPage> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            backgroundColor: Colors.red.shade300,
+            backgroundColor: Styles.redShade,
             icon: const Icon(Icons.arrow_forward_rounded),
-            iconColor: Colors.white,
+            iconColor: Styles.onRedShade,
             title: Text(
               AppLocalizations.of(context)!.goToTheNextStop,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Styles.onRedShade),
             ),
             content: Text(
                 AppLocalizations.of(context)!.goToTheNextStopIndication,
-                style: const TextStyle(color: Colors.white)),
+                style: const TextStyle(color: Styles.onRedShade)),
             elevation: 24.0,
           ),
           barrierDismissible: true,
@@ -217,9 +218,9 @@ class _MapPageState extends State<MapPage> {
                       child: DrawerButton(
                         style: ButtonStyle(
                           iconColor:
-                              const MaterialStatePropertyAll(Colors.white),
+                              const MaterialStatePropertyAll(Styles.onRedShade),
                           backgroundColor:
-                              MaterialStatePropertyAll(Colors.red.shade300),
+                              MaterialStatePropertyAll(Styles.redShade),
                         ),
                       ),
                     ),
@@ -238,19 +239,19 @@ class _MapPageState extends State<MapPage> {
                               context: context,
                               builder: (_) => GenericAlertDialog(
                                 title: AppLocalizations.of(context)!
-                                    .goToTheNextStopIndication,
+                                    .noActiveTourToGoTo,
                                 content: AppLocalizations.of(context)!
-                                    .goToTheNextStopIndication,
+                                    .noActiveTourToGoToIndication,
                               ),
                               barrierDismissible: true,
                             );
                           }
                         },
                         heroTag: "ToursButton",
-                        backgroundColor: Colors.red.shade300,
+                        backgroundColor: Styles.redShade,
                         child: const FaIcon(
                           Icons.tour_outlined,
-                          color: Colors.white,
+                          color: Styles.onRedShade,
                         ),
                       ),
                     ),
@@ -271,10 +272,10 @@ class _MapPageState extends State<MapPage> {
               });
             },
             heroTag: "UserPositionButton",
-            backgroundColor: Colors.red.shade300,
+            backgroundColor: Styles.redShade,
             child: const FaIcon(
               Icons.my_location_rounded,
-              color: Colors.white,
+              color: Styles.onRedShade,
             ),
           ),
           bottomNavigationBar: const ChocoTurNavigationBar(

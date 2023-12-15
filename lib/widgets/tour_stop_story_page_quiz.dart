@@ -1,4 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -35,7 +36,7 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.red.shade300,
+        backgroundColor: Styles.redShade,
         icon: isAnswerCorret
             ? const Icon(
                 Icons.check_rounded,
@@ -43,13 +44,13 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
               )
             : const Icon(
                 Icons.clear_rounded,
-                color: Colors.white,
+                color: Styles.onRedShade,
               ),
         title: Text(
           isAnswerCorret
               ? AppLocalizations.of(context)!.correct
               : AppLocalizations.of(context)!.wrong,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Styles.onRedShade),
         ),
         content: RichText(
           text: TextSpan(
@@ -57,11 +58,11 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
               TextSpan(
                 text:
                     '${widget.stopStoryPage.onAnswerTexts![_selectedAnswerIndex!]}\n',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Styles.onRedShade),
               ),
               TextSpan(
                 text: widget.stopStoryPage.afterQuizText!,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Styles.onRedShade),
               ),
             ],
           ),
@@ -73,52 +74,56 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      children: [
-        const Center(
-          child: Text(
-            "QUIZ!",
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-                color: Colors.red.shade300,
-                borderRadius: BorderRadius.circular(8)),
-            child: Center(
-                child: Text(
-              widget.stopStoryPage.quizQuestion!,
-              style: const TextStyle(color: Colors.white),
-            )),
-          ),
-        ),
-        for (var i = 0; i < widget.stopStoryPage.quizAnswers!.length; ++i)
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: _decideOnColor(i),
-                  borderRadius: BorderRadius.circular(8)),
-              child: ListTile(
-                leading: Text(i.toString()),
-                title: Text(widget.stopStoryPage.quizAnswers![i]),
-                onTap: () => _giveAnswer(context, i),
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Center(
+            child: Text(
+              "QUIZ!",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        // To avoid back-next buttons to be on top
-        const SizedBox(
-          height: 20,
-        )
-      ],
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                  color: Styles.redShade,
+                  borderRadius: BorderRadius.circular(8)),
+              child: Center(
+                  child: Text(
+                widget.stopStoryPage.quizQuestion!,
+                style: const TextStyle(color: Styles.onRedShade),
+              )),
+            ),
+          ),
+          for (var i = 0; i < widget.stopStoryPage.quizAnswers!.length; ++i)
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Container(
+                decoration: BoxDecoration(
+                    color: _decideOnColor(i),
+                    borderRadius: BorderRadius.circular(8)),
+                child: ListTile(
+                  leading: Text((i + 1).toString()),
+                  title: Text(widget.stopStoryPage.quizAnswers![i]),
+                  onTap: () => _giveAnswer(context, i),
+                ),
+              ),
+            ),
+          // To avoid back-next buttons to be on top
+          const SizedBox(
+            height: 20,
+          )
+        ],
+      ),
     );
   }
 }

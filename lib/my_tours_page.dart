@@ -1,6 +1,7 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -72,26 +73,30 @@ class _MyTourPageState extends State<MyTourPage> {
                       return const SizedBox(height: 5);
                     },
                     itemBuilder: (BuildContext context, int index) {
-                      return ColoredBox(
-                        color: Colors.red.shade300,
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Styles.redShade,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: ListTile(
-                          textColor: Colors.white,
+                          textColor: Styles.onRedShade,
                           leading: const Icon(Icons.tour_outlined),
-                          iconColor: Colors.white,
+                          iconColor: Styles.onRedShade,
                           title: Text(snapshot.data![index].name),
                           subtitle: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               LinearProgressIndicator(
-                                backgroundColor: Colors.white,
+                                backgroundColor: Styles.onRedShade,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     Colors.grey.shade500),
                                 value: _myTourProgresses![index],
                               ),
                               Text(
                                 AppLocalizations.of(context)!.active,
-                                style: const TextStyle(color: Colors.white),
+                                style:
+                                    const TextStyle(color: Styles.onRedShade),
                               ),
                             ],
                           ),

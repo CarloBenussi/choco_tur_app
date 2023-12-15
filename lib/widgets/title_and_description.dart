@@ -21,7 +21,7 @@ class TitleAndDescription extends StatelessWidget {
             text: "$title\n",
             style: const TextStyle(
               fontSize: 30,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w300,
               color: Colors.black,
             ),
           ),

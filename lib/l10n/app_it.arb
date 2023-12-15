@@ -43,5 +43,7 @@
   "alreadyActive": "Un choco tour è già attivo!",
   "alreadyActiveIndication": "Per attivare un nuovo tour è necessario prima completare il tour attivo",
   "cannotRevert": "Non è possibile tornare alla fermata precedente",
-  "cannotRevertIndication": "Il tour è già impostato alla prima fermata"
+  "cannotRevertIndication": "Il tour è già impostato alla prima fermata",
+  "generalSettingsSection": "Generali",
+  "languageSetting": "Lingua"
 }

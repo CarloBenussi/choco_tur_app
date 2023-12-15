@@ -45,7 +45,7 @@ class SqliteCache {
     if (!exists && !kIsWeb) {
       // Copy from asset.
       ByteData data =
-          await rootBundle.load(url.join("assets/mock_db", "mock_tours.db"));
+          await rootBundle.load(url.join("assets/mock_db", "tour_saturday.db"));
       List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 

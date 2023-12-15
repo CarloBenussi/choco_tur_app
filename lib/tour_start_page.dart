@@ -15,7 +15,7 @@ class TourStartPage extends StatelessWidget {
 
   void _onAnimationFinished(BuildContext context) {
     Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
-    // Navigator.pushNamed(context, RouteNames.tourStopStoryPages, arguments: 2);
+    //Navigator.pushNamed(context, RouteNames.tourStopStoryPages, arguments: 2);
   }
 
   Future<ChocoTurTour> _getOrReturnTour() async {
@@ -30,6 +30,7 @@ class TourStartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: const ChocoTurAppBar(),
       body: Center(
         child: FutureBuilder(
@@ -37,35 +38,19 @@ class TourStartPage extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData &&
                 snapshot.connectionState == ConnectionState.done) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  AnimatedTextKit(
-                    isRepeatingAnimation: false,
-                    animatedTexts: [
-                      TyperAnimatedText(
-                        AppLocalizations.of(context)!.welcomeToChocoTur,
-                        textStyle: const TextStyle(fontSize: 20),
-                      ),
-                      FadeAnimatedText(
-                        snapshot.data!.name,
-                        textStyle: const TextStyle(fontSize: 20),
-                      ),
-                    ],
-                    onFinished: () => _onAnimationFinished(context),
+              return AnimatedTextKit(
+                isRepeatingAnimation: false,
+                animatedTexts: [
+                  TyperAnimatedText(
+                    AppLocalizations.of(context)!.welcomeToChocoTur,
+                    textStyle: const TextStyle(fontSize: 20),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 20, left: 10, right: 10),
-                    child: Hero(
-                      tag: snapshot.data!.id,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.asset(snapshot.data!.mainImageUrl),
-                      ),
-                    ),
+                  FadeAnimatedText(
+                    snapshot.data!.name,
+                    textStyle: const TextStyle(fontSize: 20),
                   ),
                 ],
+                onFinished: () => _onAnimationFinished(context),
               );
             } else {
               return const CircularProgressIndicator();

@@ -64,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 15, right: 15),
@@ -80,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.asset("assets/gianduiotto.jpg",
+                    child: Image.asset("assets/chocolateGobino.jpg",
                         fit: BoxFit.cover)),
               ),
               Center(
@@ -119,8 +120,8 @@ class _LoginPageState extends State<LoginPage> {
                             fontSize: 12,
                           )),
                       controlAffinity: ListTileControlAffinity.leading,
-                      checkColor: Colors.white,
-                      activeColor: Colors.blue,
+                      checkColor: Colors.black,
+                      activeColor: Colors.white,
                       value: isRememberMeChecked,
                       onChanged: (bool? value) {
                         setState(() {

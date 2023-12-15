@@ -1,5 +1,6 @@
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/my_tours_page.dart';
+import 'package:choco_tur/settings_page.dart';
 import 'package:choco_tur/tour_start_page.dart';
 import 'package:choco_tur/tour_stop_story_pages_loading_page.dart';
 import 'package:choco_tur/tours_home_page.dart';
@@ -67,6 +68,7 @@ class ChocoTurApp extends StatelessWidget {
                 : const LoginPage(),
         locale: Provider.of<ChocoTurUser>(context).locale,
         routes: {
+          RouteNames.languageSelection: (context) => const LanguageSelection(),
           RouteNames.login: (context) => const LoginPage(),
           RouteNames.tourInfo: (context) => TourInfoPage(),
           RouteNames.home: (context) => const ToursHomePage(),
@@ -79,6 +81,7 @@ class ChocoTurApp extends StatelessWidget {
               TourStopStoryPagesLoadingPage(
                 stopId: ModalRoute.of(context)!.settings.arguments as int,
               ),
+          RouteNames.settings: (context) => const SettingsPage(),
         },
       );
     });

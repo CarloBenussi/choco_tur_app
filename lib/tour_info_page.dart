@@ -128,7 +128,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
                     AppLocalizations.of(context)!.tourStopsTitle,
                     style: const TextStyle(
                       fontSize: 30,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w300,
                       color: Colors.black,
                     ),
                   ),

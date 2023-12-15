@@ -1,3 +1,4 @@
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class GenericAlertDialog extends StatelessWidget {
@@ -13,14 +14,14 @@ class GenericAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.red.shade300,
+      backgroundColor: Styles.redShade,
       icon: const Icon(Icons.warning_rounded),
-      iconColor: Colors.white,
+      iconColor: Styles.onRedShade,
       title: Text(
         title,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Styles.onRedShade),
       ),
-      content: Text(content, style: const TextStyle(color: Colors.white)),
+      content: Text(content, style: const TextStyle(color: Styles.onRedShade)),
       elevation: 24.0,
     );
   }

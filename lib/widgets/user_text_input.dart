@@ -22,7 +22,9 @@ class UserTextInput extends StatelessWidget {
         controller: controller,
         decoration: InputDecoration(
           hintText: hintText,
-          border: const UnderlineInputBorder(),
+          border: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
         ),
         maxLines: 1,
         obscureText: obscured,

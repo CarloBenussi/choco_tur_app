@@ -12,13 +12,14 @@ class TourStopStoryPageText extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       children: [
         Center(child: Text(stopStoryPage.text!)),
-        Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.asset(stopStoryPage.topImageUrl!),
-          ),
-        )
+        if (stopStoryPage.topImageUrl != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(stopStoryPage.topImageUrl!),
+            ),
+          )
       ],
     );
   }

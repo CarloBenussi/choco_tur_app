@@ -1,3 +1,4 @@
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -10,15 +11,19 @@ class ChocoTurDrawer extends StatelessWidget {
       child: ListView(
         children: [
           const DrawerHeader(
-              child: Text(
-            "ChocoTur",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-          )),
+            child: Text(
+              "ChocoTur",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+            ),
+          ),
           ListTile(
             leading: const Icon(
               Icons.settings_outlined,
             ),
             title: Text(AppLocalizations.of(context)!.settingsButton),
+            onTap: () {
+              Navigator.pushNamed(context, RouteNames.settings);
+            },
           ),
           ListTile(
             leading: const Icon(

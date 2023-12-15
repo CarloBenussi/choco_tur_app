@@ -2,6 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_quiz.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_text.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -99,32 +100,26 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                     onPressed: _currentPageIndex > 0
                         ? () => _onBackPressed(context)
                         : null,
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.red.shade300,
-                    ),
                     child: Text(
                       AppLocalizations.of(context)!.backButton,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: (_currentPageIndex > 0) ? Styles.redShade : null,
                       ),
                     ),
                   ),
                   TextButton(
                     onPressed: () => _onNextPressed(
                         context, widget.tourStopStoryPages.length),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.red.shade300,
-                    ),
                     child: Text(
                       (_currentPageIndex < widget.tourStopStoryPages.length - 1)
                           ? AppLocalizations.of(context)!.nextButton
                           : "-->",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Styles.redShade,
                       ),
                     ),
                   ),
