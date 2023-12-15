@@ -14,44 +14,51 @@ class MyTourPage extends StatefulWidget {
 }
 
 class _MyTourPageState extends State<MyTourPage> {
-  int? _lastActiveTourId;
-  int? _lastTourNextStopId;
-  List<ChocoTurTour>? _myTours;
+  Future<List<ChocoTurTour>>? _myTours;
   List<double>? _myTourProgresses;
 
-  Future<List<ChocoTurTour>> _getOrReturnMyTours(
-      int? activeTourId, int? tourNextStopId) async {
-    if ((_lastActiveTourId == activeTourId) &&
-        (_lastTourNextStopId == tourNextStopId)) {
-      return _myTours ?? [];
-    }
+  Future<List<ChocoTurTour>> _getMyTours(BuildContext context) async {
+    int? activeTourId =
+        Provider.of<ChocoTurUser>(context, listen: true).activeTourId;
+    int? tourNextStopId =
+        Provider.of<ChocoTurUser>(context, listen: true).tourNextStopId;
 
-    _lastActiveTourId = activeTourId;
-    _lastTourNextStopId = tourNextStopId;
+    List<ChocoTurTour> myTours = [];
+    _myTourProgresses = [];
 
-    if (activeTourId == null) {
-      _myTours = [];
-      _myTourProgresses = [];
-    } else {
+    if (activeTourId != null) {
       SqliteCache cache = await SqliteCache.getInstance();
 
-      _myTours = [await cache.getTourFromId(activeTourId)];
-      var tourStopIds = await cache.getTourStopIds(_myTours![0].id);
+      myTours = [await cache.getTourFromId(activeTourId)];
+      var tourStopIds = await cache.getTourStopIds(myTours[0].id);
       var tourNextStopIndex = tourStopIds.indexOf(tourNextStopId!);
-      _myTourProgresses = [tourNextStopIndex / _myTours![0].numStops];
+      _myTourProgresses = [tourNextStopIndex / myTours[0].numStops];
     }
 
-    return _myTours!;
+    return myTours;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _myTours = _getMyTours(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const ChocoTurAppBar(),
+      backgroundColor: Colors.white,
       body: Consumer<ChocoTurUser>(
         builder: (context, user, child) {
           return FutureBuilder(
-            future: _getOrReturnMyTours(user.activeTourId, user.tourNextStopId),
+            future: _myTours,
             builder: (context, snapshot) {
               if (snapshot.hasData &&
                   snapshot.connectionState == ConnectionState.done) {
@@ -64,28 +71,45 @@ class _MyTourPageState extends State<MyTourPage> {
                       return const SizedBox(height: 5);
                     },
                     itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        leading: const Icon(Icons.tour_outlined),
-                        title: Text(snapshot.data![index].name),
-                        subtitle: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            LinearProgressIndicator(
-                              value: _myTourProgresses![index],
-                            ),
-                            const Text("ACTIVE"),
-                          ],
-                        ),
-                        trailing: PopupMenuButton<PopupMenuItem>(
-                          itemBuilder: (BuildContext context) => [
-                            PopupMenuItem(
-                              onTap: () {
-                                user.deactivateTour(user.activeTourId!);
-                              },
-                              child: const Text("Deactivate"),
-                            ),
-                          ],
+                      return ColoredBox(
+                        color: Colors.red.shade300,
+                        child: ListTile(
+                          textColor: Colors.white,
+                          leading: const Icon(Icons.tour_outlined),
+                          iconColor: Colors.white,
+                          title: Text(snapshot.data![index].name),
+                          subtitle: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              LinearProgressIndicator(
+                                backgroundColor: Colors.white,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.grey.shade500),
+                                value: _myTourProgresses![index],
+                              ),
+                              const Text(
+                                "ACTIVE",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          trailing: PopupMenuButton<PopupMenuItem>(
+                            itemBuilder: (BuildContext context) => [
+                              PopupMenuItem(
+                                onTap: () {
+                                  user.revertTourStop(context);
+                                },
+                                child: const Text("Previous stop"),
+                              ),
+                              PopupMenuItem(
+                                onTap: () {
+                                  user.deactivateTour(user.activeTourId!);
+                                },
+                                child: const Text("Deactivate"),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

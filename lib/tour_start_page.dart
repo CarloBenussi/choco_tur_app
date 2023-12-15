@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
@@ -9,19 +10,20 @@ class TourStartPage extends StatelessWidget {
   TourStartPage({super.key, required this.tourId});
 
   final int tourId;
-  Future<String>? _tourName;
+  Future<ChocoTurTour>? _tour;
 
   void _onAnimationFinished(BuildContext context) {
-    Navigator.pushReplacementNamed(context, RouteNames.map);
+    // Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
+    Navigator.pushNamed(context, RouteNames.tourStopStoryPages, arguments: 2);
   }
 
-  Future<String> _getOrReturnTourName() async {
-    if (_tourName == null) {
+  Future<ChocoTurTour> _getOrReturnTour() async {
+    if (_tour == null) {
       SqliteCache cache = await SqliteCache.getInstance();
-      _tourName = cache.getTourName(tourId);
+      _tour = cache.getTourFromId(tourId);
     }
 
-    return _tourName!;
+    return _tour!;
   }
 
   @override
@@ -30,23 +32,39 @@ class TourStartPage extends StatelessWidget {
       appBar: const ChocoTurAppBar(),
       body: Center(
         child: FutureBuilder(
-          future: _getOrReturnTourName(),
+          future: _getOrReturnTour(),
           builder: (context, snapshot) {
             if (snapshot.hasData &&
                 snapshot.connectionState == ConnectionState.done) {
-              return AnimatedTextKit(
-                isRepeatingAnimation: false,
-                animatedTexts: [
-                  TyperAnimatedText(
-                    "Welcome to the Choco Tur...",
-                    textStyle: const TextStyle(fontSize: 20),
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  AnimatedTextKit(
+                    isRepeatingAnimation: false,
+                    animatedTexts: [
+                      TyperAnimatedText(
+                        "Welcome to the Choco Tur...",
+                        textStyle: const TextStyle(fontSize: 20),
+                      ),
+                      FadeAnimatedText(
+                        snapshot.data!.name,
+                        textStyle: const TextStyle(fontSize: 20),
+                      ),
+                    ],
+                    onFinished: () => _onAnimationFinished(context),
                   ),
-                  FadeAnimatedText(
-                    snapshot.data!,
-                    textStyle: const TextStyle(fontSize: 30),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 20, left: 10, right: 10),
+                    child: Hero(
+                      tag: snapshot.data!.id,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(snapshot.data!.mainImageUrl),
+                      ),
+                    ),
                   ),
                 ],
-                onFinished: () => _onAnimationFinished(context),
               );
             } else {
               return const CircularProgressIndicator();

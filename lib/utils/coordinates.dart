@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Coordinates {
-  static void _checkPermission() async {
+  static void checkPermission() async {
     // Test if location services are enabled.
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -41,7 +41,7 @@ class Coordinates {
   /// are denied the `Future` will return an error.
   static Future<Position> getUserPosition() async {
     try {
-      _checkPermission();
+      checkPermission();
     } on PermissionDeniedException {
       return Future.error("Got no permissions.");
     }
@@ -64,7 +64,7 @@ class Coordinates {
 
   static Stream<Position> getUserPositionStream() {
     try {
-      _checkPermission();
+      checkPermission();
     } on PermissionDeniedException {
       return Stream.error("Got no permissions.");
     }

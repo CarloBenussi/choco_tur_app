@@ -14,20 +14,40 @@ class ChocoTurNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NavigationBar(
-        destinations: const <Widget>[
+        backgroundColor: Colors.red.shade300,
+        indicatorColor: Colors.white,
+        destinations: <Widget>[
           NavigationDestination(
-            selectedIcon: Icon(Icons.home_rounded),
-            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(
+              Icons.home_rounded,
+              color: Colors.red.shade300,
+            ),
+            icon: const Icon(
+              Icons.home_outlined,
+              color: Colors.white,
+            ),
             label: 'Home',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.map_rounded),
-            icon: Icon(Icons.map_outlined),
+            selectedIcon: Icon(
+              Icons.map_rounded,
+              color: Colors.red.shade300,
+            ),
+            icon: const Icon(
+              Icons.map_outlined,
+              color: Colors.white,
+            ),
             label: 'Map',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.tour_rounded),
-            icon: Icon(Icons.tour_outlined),
+            selectedIcon: Icon(
+              Icons.tour_rounded,
+              color: Colors.red.shade300,
+            ),
+            icon: const Icon(
+              Icons.tour_outlined,
+              color: Colors.white,
+            ),
             label: 'MyTours',
           ),
         ],

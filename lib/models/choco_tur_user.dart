@@ -1,6 +1,7 @@
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class ChocoTurUser extends ChangeNotifier {
     }
 
     return ChocoTurUser(
-      userName: _prefs.getString(_userNameKey),
+      isLoggedIn: _prefs.getBool(_isLoggedInKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
       activeTourId: _prefs.getInt(_activeTourIdKey),
@@ -33,7 +34,7 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   ChocoTurUser({
-    this.userName,
+    this.isLoggedIn,
     this.language,
     this.cameraPosition,
     required this.activeTourId,
@@ -42,7 +43,7 @@ class ChocoTurUser extends ChangeNotifier {
   });
 
   // SharedPreferences keys.
-  static const String _userNameKey = "userName";
+  static const String _isLoggedInKey = "isLoggedIn";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
@@ -54,7 +55,7 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _tokenKey = "token";
 
   // User preferences to store.
-  String? userName;
+  bool? isLoggedIn; // TODO: Remove once token is utilized.
   String? language;
   CameraPosition? cameraPosition;
   int? activeTourId;
@@ -85,12 +86,18 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
+  void recordLoginInfo() {
+    isLoggedIn = true;
+    _prefs.setBool(_isLoggedInKey, true);
+    notifyListeners();
+  }
+
   void setCameraPosition(CameraPosition position) {
     cameraPosition = position;
     _prefs.setDouble(_cameraLatituteKey, position.target.latitude);
     _prefs.setDouble(_cameraLongitudeKey, position.target.longitude);
     _prefs.setDouble(_cameraZoomKey, position.zoom);
-    notifyListeners();
+    // notifyListeners(); Disabled since it is set on focus lost of map page.
   }
 
   Future<bool> activateTour(BuildContext context, int tourId) async {
@@ -106,14 +113,13 @@ class ChocoTurUser extends ChangeNotifier {
 
       showDialog(
         context: context,
-        builder: (_) => const AlertDialog(
-          title: Text("A choco tour is already active!"),
-          content:
-              Text("To activate a new tour, complete first the active tour."),
-          elevation: 24.0,
+        builder: (_) => const GenericAlertDialog(
+          title: "A choco tour is already active!",
+          content: "To activate a new tour, complete first the active tour.",
         ),
         barrierDismissible: true,
       );
+
       return false;
     }
 
@@ -145,6 +151,42 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> revertTourStop(BuildContext context) async {
+    if (activeTourId == null) {
+      throw Exception('No active tour present!');
+    }
+
+    SqliteCache cache = await SqliteCache.getInstance();
+    List<int> tourStopIds = await cache.getTourStopIds(activeTourId!);
+    if (tourStopIds.isEmpty) {
+      throw Exception('No stops found for tour $activeTourId!');
+    }
+
+    var tourStopIndex = tourStopIds.indexOf(tourNextStopId!);
+    if (--tourStopIndex < 0) {
+      LoggerInstance.logger.i(
+          'Tour $activeTourId is already at the first stop, cannot go back further.');
+
+      // ignore: use_build_context_synchronously
+      return showDialog(
+        context: context,
+        builder: (_) => const GenericAlertDialog(
+          title: "Cannot revert tour stop",
+          content:
+              "The tour is already at the first stop, cannot go back further",
+        ),
+        barrierDismissible: true,
+      );
+    }
+
+    tourNextStopId = tourStopIds[tourStopIndex];
+    tourNextStopStoryPageIndex = 0;
+    _prefs.setInt(_tourNextStopIdKey, tourNextStopId!);
+    _prefs.setInt(_tourNextStopStoryPageIndexKey, tourNextStopStoryPageIndex!);
+
+    notifyListeners();
+  }
+
   Future<void> advanceTour() async {
     if (activeTourId == null) {
       throw Exception('No active tour present!');
@@ -161,9 +203,7 @@ class ChocoTurUser extends ChangeNotifier {
       LoggerInstance.logger.i(
           'Tour $activeTourId is finished, removing from active tours for user.');
 
-      _prefs.remove(_activeTourIdKey);
-      _prefs.remove(_tourNextStopIdKey);
-      return;
+      return deactivateTour(activeTourId!);
     }
 
     tourNextStopId = tourStopIds[tourStopIndex];

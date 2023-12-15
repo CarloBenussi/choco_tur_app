@@ -112,8 +112,15 @@ enum ChocoTurStopPageType {
 
 class ChocoTurStopPage {
   late final ChocoTurStopPageType type;
-  String? topImageUrl;
+
   String? text;
+  String? topImageUrl;
+
+  String? quizQuestion;
+  List<dynamic>? quizAnswers;
+  List<dynamic>? onAnswerTexts;
+  int? correctAnswerIndex;
+  String? afterQuizText;
 
   ChocoTurStopPage.fromJson(String pageContentJson) {
     try {
@@ -132,9 +139,16 @@ class ChocoTurStopPage {
           throw Exception('Page type $typeStr is unknown');
       }
 
+      topImageUrl = pageContent['top_image_url'];
+
       if (type == ChocoTurStopPageType.text) {
-        topImageUrl = pageContent['top_image_url'];
         text = pageContent['text'];
+      } else if (type == ChocoTurStopPageType.quiz) {
+        quizQuestion = pageContent['quiz_question'];
+        quizAnswers = pageContent['quiz_answers'];
+        onAnswerTexts = pageContent['on_answer_texts'];
+        correctAnswerIndex = pageContent['correct_answer_index'];
+        afterQuizText = pageContent['after_quiz_text'];
       }
     } catch (e) {
       LoggerInstance.logger.e("Failed to parse stop page json.");

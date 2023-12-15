@@ -30,13 +30,18 @@ class StartTourButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red.shade300,
+      ),
       onPressed: available ? () => _onStartTourPressed(context) : null,
       icon: const FaIcon(
         FontAwesomeIcons.play,
+        color: Colors.white,
       ),
       label: const Text(
         "Start tour",
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Colors.white),
       ),
     );
   }

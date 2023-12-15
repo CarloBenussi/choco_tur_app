@@ -43,7 +43,7 @@ class ChocoTurDrawer extends StatelessWidget {
                     ],
                     elevation: 24.0,
                   ),
-                  barrierDismissible: false,
+                  barrierDismissible: true,
                 );
               }),
           const Divider(
@@ -65,7 +65,7 @@ class ChocoTurDrawer extends StatelessWidget {
                 showAboutDialog(
                   context: context,
                   applicationVersion: "1.0.0",
-                  applicationIcon: const Icon(Icons.flutter_dash),
+                  applicationIcon: const Icon(Icons.tour_rounded),
                   applicationLegalese: "Legalese",
                   barrierDismissible: true,
                 );

@@ -1,4 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
@@ -8,6 +9,7 @@ import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:choco_tur/widgets/tour_stops_info_animation.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TourInfoPage extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
@@ -21,6 +23,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
   late ChocoTurTour tour;
 
   bool _purchased = false;
+  bool _active = false;
 
   Future<List<ChocoTurTourStop>>? _tourStops;
   List<Chocolate?>? _tourStopTastings;
@@ -52,8 +55,15 @@ class _TourInfoPageState extends State<TourInfoPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
     tour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
+    _active = (tour.id == Provider.of<ChocoTurUser>(context).activeTourId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: const ChocoTurAppBar(),
@@ -76,7 +86,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 spacing: 10,
                 children: [
                   StartTourButton(
-                    available: _purchased || tour.isFree(),
+                    available: !_active && (_purchased || tour.isFree()),
                     tourId: tour.id,
                   ),
                   if (!tour.isFree())

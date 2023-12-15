@@ -34,13 +34,13 @@ class SqliteCache {
   static Future<Database>? _db;
   static SqliteCache? _cache;
 
-  static void init() async {
+  static Future<void> init() async {
     String path = join(
       await getDatabasesPath(),
       'choco_tur_cache.db',
     );
 
-    // MOCK DATA (not support on web).
+    // MOCK DATA (not supported on web).
     bool exists = await databaseExists(path);
     if (!exists && !kIsWeb) {
       // Copy from asset.
@@ -51,29 +51,33 @@ class SqliteCache {
 
       // Write and flush the bytes written.
       await File(path).writeAsBytes(bytes, flush: true);
+
+      exists = true;
     }
 
     _db = openDatabase(
       path,
       onCreate: (db, version) async {
-        db.execute(
-          'CREATE TABLE $_toursTableName($_toursTableSchema)',
-        );
-        db.execute(
-          'CREATE TABLE $_tourStopsTableName($_tourStopsTableSchema)',
-        );
-        db.execute(
-          'CREATE TABLE $_chocolatesTableName($_chocolatesTableSchema)',
-        );
-        db.execute(
-          'CREATE TABLE $_tourStopsRelationsTableName($_tourStopsRelationsTableSchema)',
-        );
-        db.execute(
-          'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsTableSchema)',
-        );
-        db.execute(
-          'CREATE TABLE $_stopStoryPagesTableName($_stopStoryPagesTableSchema)',
-        );
+        if (!exists) {
+          db.execute(
+            'CREATE TABLE $_toursTableName($_toursTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_tourStopsTableName($_tourStopsTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_chocolatesTableName($_chocolatesTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_tourStopsRelationsTableName($_tourStopsRelationsTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_stopStoryPagesTableName($_stopStoryPagesTableSchema)',
+          );
+        }
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         LoggerInstance.logger.w("Implement DB upgrade");
@@ -141,30 +145,6 @@ class SqliteCache {
     }
 
     return ChocoTurTour.fromMap(tourMaps[0]);
-  }
-
-  Future<String> getTourName(int tourId) async {
-    final database = await _db!;
-
-    List<Map<String, dynamic>> tourNameMap = await database.query(
-      _toursTableName,
-      columns: [
-        'id',
-        'name',
-      ],
-      where: "id = ?",
-      whereArgs: [tourId],
-    );
-
-    if (tourNameMap.isEmpty) {
-      return Future.error(Exception('Got no name for tour $tourId'));
-    }
-
-    if (tourNameMap.length > 1) {
-      return Future.error(Exception('Got multiple tours with id $tourId'));
-    }
-
-    return tourNameMap[0]['name'];
   }
 
   Future<List<ChocoTurTourStop>> getTourStops(int tourId) async {

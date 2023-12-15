@@ -8,6 +8,7 @@ import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/drawer.dart';
+import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,10 +30,13 @@ class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
+  bool? _showGoToNextStopDialog;
+
   int? _lastActiveTourId;
   int? _lastTourNextStopId;
+
   // ignore: prefer_final_fields
-  Set<Marker> _markers = {};
+  Future<Set<Marker>>? _markers;
 
   StreamSubscription<Position>? _userLocationStreamSubscription;
 
@@ -65,16 +69,9 @@ class _MapPageState extends State<MapPage> {
     int? tourNextStopId =
         Provider.of<ChocoTurUser>(context, listen: true).tourNextStopId;
 
-    // If nothing has changed wrt active tours, return same markers.
-    if ((_lastActiveTourId == activeTourId) &&
-        (_lastTourNextStopId == tourNextStopId)) {
-      return _markers;
-    }
-
     _lastActiveTourId = activeTourId;
     _lastTourNextStopId = tourNextStopId;
-    _markers.clear();
-
+    Set<Marker> markers = {};
     if (activeTourId != null) {
       SqliteCache cache = await SqliteCache.getInstance();
       List<ChocoTurTourStop> tourStops = await cache.getTourStops(activeTourId);
@@ -84,7 +81,7 @@ class _MapPageState extends State<MapPage> {
         final String markerIdStr =
             '${activeTourId.toString()} - ${stop.id.toString()}';
         final Uint8List markerIcon =
-            await _getBytesFromAsset('assets/markers/${i + 1}.png', 120);
+            await _getBytesFromAsset('assets/markers/${i + 1}.png', 100);
 
         Marker? tourStopMarker;
         if (stop.id == tourNextStopId) {
@@ -112,13 +109,13 @@ class _MapPageState extends State<MapPage> {
           );
         }
 
-        if (!_markers.add(tourStopMarker)) {
+        if (!markers.add(tourStopMarker)) {
           LoggerInstance.logger.w('Marker $markerIdStr is already in set!');
         }
       }
     }
 
-    return _markers;
+    return markers;
   }
 
   @override
@@ -128,12 +125,39 @@ class _MapPageState extends State<MapPage> {
     _cameraPosition ??=
         Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _userLocationStreamSubscription =
-    //       Coordinates.getUserPositionStream().listen((event) async {
-    //     setState(() {});
-    //   });
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if ((_showGoToNextStopDialog != null) && _showGoToNextStopDialog!) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: Colors.red.shade300,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            iconColor: Colors.white,
+            title: const Text(
+              "Go to the next stop!",
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+                "The next stop is identifiable by a marker with the lighting effect.",
+                style: TextStyle(color: Colors.white)),
+            elevation: 24.0,
+          ),
+          barrierDismissible: true,
+        );
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _markers = _getActiveToursMarkers(context);
+
+    var showGoToNextStopDialogObj = ModalRoute.of(context)!.settings.arguments;
+    if (showGoToNextStopDialogObj != null) {
+      _showGoToNextStopDialog = showGoToNextStopDialogObj as bool;
+    }
   }
 
   @override
@@ -150,7 +174,7 @@ class _MapPageState extends State<MapPage> {
           extendBodyBehindAppBar: true,
           drawer: const ChocoTurDrawer(),
           body: FutureBuilder(
-            future: _getActiveToursMarkers(context),
+            future: _markers,
             builder: (context, snapshot) {
               if (snapshot.hasData &&
                   snapshot.connectionState == ConnectionState.done) {
@@ -185,13 +209,16 @@ class _MapPageState extends State<MapPage> {
                         markers: snapshot.data!,
                       ),
                     ),
-                    const Positioned(
+                    // ),
+                    Positioned(
                       left: 15,
                       top: 15,
                       child: DrawerButton(
                         style: ButtonStyle(
-                          iconColor: MaterialStatePropertyAll(Colors.white),
-                          backgroundColor: MaterialStatePropertyAll(Colors.red),
+                          iconColor:
+                              const MaterialStatePropertyAll(Colors.white),
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.red.shade300),
                         ),
                       ),
                     ),
@@ -208,18 +235,21 @@ class _MapPageState extends State<MapPage> {
                           } else {
                             showDialog(
                               context: context,
-                              builder: (_) => const AlertDialog(
-                                title: Text("No active choco tur to go to"),
-                                content: Text(
-                                    "Once a tour is activated, this button will move the camera to the tour's next stop."),
-                                elevation: 24.0,
+                              builder: (_) => const GenericAlertDialog(
+                                title: "No active choco tur to go to",
+                                content:
+                                    "Once a tour is activated, this button will move the camera to the tour's next stop.",
                               ),
                               barrierDismissible: true,
                             );
                           }
                         },
                         heroTag: "ToursButton",
-                        child: const FaIcon(Icons.tour_outlined),
+                        backgroundColor: Colors.red.shade300,
+                        child: const FaIcon(
+                          Icons.tour_outlined,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -239,7 +269,11 @@ class _MapPageState extends State<MapPage> {
               });
             },
             heroTag: "UserPositionButton",
-            child: const FaIcon(Icons.my_location_rounded),
+            backgroundColor: Colors.red.shade300,
+            child: const FaIcon(
+              Icons.my_location_rounded,
+              color: Colors.white,
+            ),
           ),
           bottomNavigationBar: const ChocoTurNavigationBar(
             selectedIndex: 1,
@@ -247,11 +281,6 @@ class _MapPageState extends State<MapPage> {
         ),
       ),
     );
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
   }
 
   @override

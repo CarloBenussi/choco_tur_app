@@ -1,5 +1,6 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
+import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/home_page_tour.dart';
@@ -28,6 +29,8 @@ class _ToursHomePageState extends State<ToursHomePage> {
   @override
   void initState() {
     super.initState();
+
+    Coordinates.checkPermission();
   }
 
   @override

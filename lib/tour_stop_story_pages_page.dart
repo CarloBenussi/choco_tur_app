@@ -2,6 +2,8 @@ import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_quiz.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_text.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +33,13 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
     } else {
       await Provider.of<ChocoTurUser>(context, listen: false).advanceTour();
       if (mounted) {
-        Navigator.pushNamed(context, RouteNames.map);
+        if (Provider.of<ChocoTurUser>(context, listen: false).activeTourId !=
+            null) {
+          Navigator.pushReplacementNamed(context, RouteNames.map,
+              arguments: true);
+        } else {
+          Navigator.pushReplacementNamed(context, RouteNames.home);
+        }
       }
     }
   }
@@ -73,9 +81,7 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
       },
       child: Container(
         key: ValueKey<int>(_currentPageIndex),
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        child: Stack(
           children: [
             if (widget.tourStopStoryPages[_currentPageIndex].type ==
                 ChocoTurStopPageType.text)
@@ -85,8 +91,8 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                 ChocoTurStopPageType.quiz)
               TourStopStoryPageQuiz(
                   stopStoryPage: widget.tourStopStoryPages[_currentPageIndex]),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
+            Align(
+              alignment: Alignment.bottomCenter,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -94,12 +100,36 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                     onPressed: _currentPageIndex > 0
                         ? () => _onBackPressed(context)
                         : null,
-                    child: const Text("BACK"),
+                    style: TextButton.styleFrom(
+                      shape: const CircleBorder(),
+                      backgroundColor: Colors.red.shade300,
+                    ),
+                    child: const Text(
+                      "BACK",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => _onNextPressed(
                         context, widget.tourStopStoryPages.length),
-                    child: const Text("NEXT"),
+                    style: TextButton.styleFrom(
+                      shape: const CircleBorder(),
+                      backgroundColor: Colors.red.shade300,
+                    ),
+                    child: Text(
+                      (_currentPageIndex < widget.tourStopStoryPages.length - 1)
+                          ? "NEXT"
+                          : "-->",
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),

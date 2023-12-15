@@ -1,3 +1,4 @@
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
@@ -5,6 +6,7 @@ import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,14 +34,15 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
-  String? validatePassword(String? username) {
+  String? validatePassword(String? password) {
     // TODO: Implement.
     return null;
   }
 
   void loginUser() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      // TODO: Login and set token on ChocoTurModel.
+      // TODO: Login and record token on ChocoTurModel.
+      Provider.of<ChocoTurUser>(context, listen: false).recordLoginInfo();
       LoggerInstance.logger.i("Successfully logged in.");
 
       Navigator.pushReplacementNamed(context, RouteNames.home);

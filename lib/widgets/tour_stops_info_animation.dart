@@ -47,16 +47,15 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
               ElevatedButton(
                 onPressed: () => _onPressed(i),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _currentSelectedIndex == i ? Colors.red : null,
                   shape: const CircleBorder(),
+                  backgroundColor: Colors.red.shade300,
                 ),
                 child: Text(
                   (i + 1).toString(),
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -91,22 +90,22 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Flexible(
-                    flex: 3,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        widget.tourStops[_currentSelectedIndex].mainImageUrl,
-                      ),
+                    flex: 1,
+                    child: TitleAndDescription(
+                      title: widget.tourStops[_currentSelectedIndex].name,
+                      description:
+                          widget.tourStops[_currentSelectedIndex].description,
                     ),
                   ),
                   Flexible(
-                    flex: 1,
+                    flex: 3,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 20),
-                      child: TitleAndDescription(
-                        title: widget.tourStops[_currentSelectedIndex].name,
-                        description:
-                            widget.tourStops[_currentSelectedIndex].description,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          widget.tourStops[_currentSelectedIndex].mainImageUrl,
+                        ),
                       ),
                     ),
                   ),

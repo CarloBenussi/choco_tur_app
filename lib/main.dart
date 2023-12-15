@@ -21,7 +21,7 @@ void main() async {
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   var chocoUser = await ChocoTurUser.init();
-  SqliteCache.init();
+  await SqliteCache.init();
   FlutterNativeSplash.remove();
 
   runApp(MultiProvider(
@@ -62,7 +62,9 @@ class ChocoTurApp extends StatelessWidget {
         ),
         home: (user.language == null)
             ? const LanguageSelection()
-            : const LoginPage(),
+            : ((user.isLoggedIn != null) && user.isLoggedIn!)
+                ? const ToursHomePage()
+                : const LoginPage(),
         locale: Provider.of<ChocoTurUser>(context).locale,
         routes: {
           RouteNames.login: (context) => const LoginPage(),

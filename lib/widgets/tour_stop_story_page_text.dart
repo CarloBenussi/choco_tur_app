@@ -8,10 +8,17 @@ class TourStopStoryPageText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       children: [
-        Text(stopStoryPage.text!),
+        Center(child: Text(stopStoryPage.text!)),
+        Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.asset(stopStoryPage.topImageUrl!),
+          ),
+        )
       ],
     );
   }
