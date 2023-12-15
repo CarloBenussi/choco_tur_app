@@ -2,6 +2,7 @@ import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -113,9 +114,9 @@ class ChocoTurUser extends ChangeNotifier {
 
       showDialog(
         context: context,
-        builder: (_) => const GenericAlertDialog(
-          title: "A choco tour is already active!",
-          content: "To activate a new tour, complete first the active tour.",
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.alreadyActive,
+          content: AppLocalizations.of(context)!.alreadyActiveIndication,
         ),
         barrierDismissible: true,
       );
@@ -170,10 +171,9 @@ class ChocoTurUser extends ChangeNotifier {
       // ignore: use_build_context_synchronously
       return showDialog(
         context: context,
-        builder: (_) => const GenericAlertDialog(
-          title: "Cannot revert tour stop",
-          content:
-              "The tour is already at the first stop, cannot go back further",
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.cannotRevert,
+          content: AppLocalizations.of(context)!.cannotRevertIndication,
         ),
         barrierDismissible: true,
       );

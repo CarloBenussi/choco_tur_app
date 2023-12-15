@@ -8,6 +8,7 @@ import 'package:choco_tur/widgets/start_tour_button.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:choco_tur/widgets/tour_stops_info_animation.dart';
 import 'package:duration/duration.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -101,19 +102,20 @@ class _TourInfoPageState extends State<TourInfoPage> {
               padding: const EdgeInsets.only(top: 20),
               child: TitleAndDescription(
                 title: tour.name,
-                subTitle: "${tour.numStops} stops | "
-                    "${tour.numTastings} tastings | "
+                subTitle:
+                    "${tour.numStops} ${AppLocalizations.of(context)!.stops} | "
+                    "${tour.numTastings} ${AppLocalizations.of(context)!.tastings} | "
                     "${tour.lengthInKms}km | "
                     "${printDuration(tour.avgDuration, abbreviated: true)}",
                 description: tour.description,
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 20),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(right: 10),
                       child: Divider(
@@ -123,14 +125,14 @@ class _TourInfoPageState extends State<TourInfoPage> {
                     ),
                   ),
                   Text(
-                    "Tour stops",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.tourStopsTitle,
+                    style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w400,
                       color: Colors.black,
                     ),
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(left: 10),
                       child: Divider(

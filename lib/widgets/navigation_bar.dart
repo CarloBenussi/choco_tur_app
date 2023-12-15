@@ -1,4 +1,5 @@
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class ChocoTurNavigationBar extends StatelessWidget {
@@ -26,7 +27,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               Icons.home_outlined,
               color: Colors.white,
             ),
-            label: 'Home',
+            label: AppLocalizations.of(context)!.homeButton,
           ),
           NavigationDestination(
             selectedIcon: Icon(
@@ -37,7 +38,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               Icons.map_outlined,
               color: Colors.white,
             ),
-            label: 'Map',
+            label: AppLocalizations.of(context)!.mapButton,
           ),
           NavigationDestination(
             selectedIcon: Icon(
@@ -48,7 +49,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               Icons.tour_outlined,
               color: Colors.white,
             ),
-            label: 'MyTours',
+            label: AppLocalizations.of(context)!.myToursButton,
           ),
         ],
         selectedIndex: selectedIndex,

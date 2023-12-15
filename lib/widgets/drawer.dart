@@ -1,3 +1,4 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class ChocoTurDrawer extends StatelessWidget {
@@ -13,33 +14,37 @@ class ChocoTurDrawer extends StatelessWidget {
             "ChocoTur",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
           )),
-          const ListTile(
-            leading: Icon(
+          ListTile(
+            leading: const Icon(
               Icons.settings_outlined,
             ),
-            title: Text("Settings"),
+            title: Text(AppLocalizations.of(context)!.settingsButton),
           ),
-          const ListTile(
-            leading: Icon(
+          ListTile(
+            leading: const Icon(
               Icons.account_circle_outlined,
             ),
-            title: Text("Account"),
+            title: Text(AppLocalizations.of(context)!.accountButton),
           ),
           ListTile(
               leading: const Icon(
                 Icons.logout_outlined,
               ),
-              title: const Text("Logout"),
+              title: Text(AppLocalizations.of(context)!.logoutButton),
               onTap: () {
                 showDialog(
                   context: context,
-                  builder: (_) => const AlertDialog(
-                    title: Text("Are you sure you want to logout?"),
-                    content: Text(
-                        "User preferences such as language and camera position will be lost"),
+                  builder: (_) => AlertDialog(
+                    title: Text(AppLocalizations.of(context)!.areYouSureLogout),
+                    content: Text(AppLocalizations.of(context)!
+                        .areYouSureLogoutIndication),
                     actions: [
-                      TextButton(onPressed: null, child: Text("Yes")),
-                      TextButton(onPressed: null, child: Text("No")),
+                      TextButton(
+                          onPressed: null,
+                          child: Text(AppLocalizations.of(context)!.yesButton)),
+                      TextButton(
+                          onPressed: null,
+                          child: Text(AppLocalizations.of(context)!.noButton)),
                     ],
                     elevation: 24.0,
                   ),
@@ -50,17 +55,17 @@ class ChocoTurDrawer extends StatelessWidget {
             thickness: 0.5,
             color: Colors.grey,
           ),
-          const ListTile(
-            leading: Icon(
+          ListTile(
+            leading: const Icon(
               Icons.question_mark_outlined,
             ),
-            title: Text("Guide and Feedback"),
+            title: Text(AppLocalizations.of(context)!.guideAndFeedbackButton),
           ),
           ListTile(
               leading: const Icon(
                 Icons.info_outline_rounded,
               ),
-              title: const Text("About"),
+              title: Text(AppLocalizations.of(context)!.aboutButton),
               onTap: () {
                 showAboutDialog(
                   context: context,

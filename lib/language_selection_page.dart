@@ -1,7 +1,6 @@
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/route_names.dart';
-import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';

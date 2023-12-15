@@ -1,4 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class TourStopStoryPageQuiz extends StatefulWidget {
@@ -45,7 +46,9 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
                 color: Colors.white,
               ),
         title: Text(
-          isAnswerCorret ? "Correct!" : "Wrong",
+          isAnswerCorret
+              ? AppLocalizations.of(context)!.correct
+              : AppLocalizations.of(context)!.wrong,
           style: const TextStyle(color: Colors.white),
         ),
         content: RichText(

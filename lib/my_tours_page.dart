@@ -3,6 +3,7 @@ import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -88,9 +89,9 @@ class _MyTourPageState extends State<MyTourPage> {
                                     Colors.grey.shade500),
                                 value: _myTourProgresses![index],
                               ),
-                              const Text(
-                                "ACTIVE",
-                                style: TextStyle(color: Colors.white),
+                              Text(
+                                AppLocalizations.of(context)!.active,
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ],
                           ),
@@ -100,13 +101,15 @@ class _MyTourPageState extends State<MyTourPage> {
                                 onTap: () {
                                   user.revertTourStop(context);
                                 },
-                                child: const Text("Previous stop"),
+                                child: Text(
+                                    AppLocalizations.of(context)!.previousStop),
                               ),
                               PopupMenuItem(
                                 onTap: () {
                                   user.deactivateTour(user.activeTourId!);
                                 },
-                                child: const Text("Deactivate"),
+                                child: Text(
+                                    AppLocalizations.of(context)!.deactivate),
                               ),
                             ],
                           ),
@@ -115,7 +118,9 @@ class _MyTourPageState extends State<MyTourPage> {
                     },
                   );
                 } else {
-                  return const Center(child: Text("No Active tour found"));
+                  return Center(
+                      child: Text(
+                          AppLocalizations.of(context)!.noActiveTourFound));
                 }
               } else {
                 return const Center(child: CircularProgressIndicator());

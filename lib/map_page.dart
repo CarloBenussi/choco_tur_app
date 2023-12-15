@@ -10,6 +10,7 @@ import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animarker/flutter_map_marker_animation.dart';
@@ -133,13 +134,13 @@ class _MapPageState extends State<MapPage> {
             backgroundColor: Colors.red.shade300,
             icon: const Icon(Icons.arrow_forward_rounded),
             iconColor: Colors.white,
-            title: const Text(
-              "Go to the next stop!",
-              style: TextStyle(color: Colors.white),
+            title: Text(
+              AppLocalizations.of(context)!.goToTheNextStop,
+              style: const TextStyle(color: Colors.white),
             ),
-            content: const Text(
-                "The next stop is identifiable by a marker with the lighting effect.",
-                style: TextStyle(color: Colors.white)),
+            content: Text(
+                AppLocalizations.of(context)!.goToTheNextStopIndication,
+                style: const TextStyle(color: Colors.white)),
             elevation: 24.0,
           ),
           barrierDismissible: true,
@@ -235,10 +236,11 @@ class _MapPageState extends State<MapPage> {
                           } else {
                             showDialog(
                               context: context,
-                              builder: (_) => const GenericAlertDialog(
-                                title: "No active choco tur to go to",
-                                content:
-                                    "Once a tour is activated, this button will move the camera to the tour's next stop.",
+                              builder: (_) => GenericAlertDialog(
+                                title: AppLocalizations.of(context)!
+                                    .goToTheNextStopIndication,
+                                content: AppLocalizations.of(context)!
+                                    .goToTheNextStopIndication,
                               ),
                               barrierDismissible: true,
                             );

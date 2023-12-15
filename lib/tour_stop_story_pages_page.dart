@@ -2,10 +2,9 @@ import 'package:animations/animations.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
-import 'package:choco_tur/widgets/app_bar.dart';
-import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_quiz.dart';
 import 'package:choco_tur/widgets/tour_stop_story_page_text.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -101,12 +100,11 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                         ? () => _onBackPressed(context)
                         : null,
                     style: TextButton.styleFrom(
-                      shape: const CircleBorder(),
                       backgroundColor: Colors.red.shade300,
                     ),
-                    child: const Text(
-                      "BACK",
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.backButton,
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -117,12 +115,11 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                     onPressed: () => _onNextPressed(
                         context, widget.tourStopStoryPages.length),
                     style: TextButton.styleFrom(
-                      shape: const CircleBorder(),
                       backgroundColor: Colors.red.shade300,
                     ),
                     child: Text(
                       (_currentPageIndex < widget.tourStopStoryPages.length - 1)
-                          ? "NEXT"
+                          ? AppLocalizations.of(context)!.nextButton
                           : "-->",
                       style: const TextStyle(
                         fontSize: 10,
