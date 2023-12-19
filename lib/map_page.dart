@@ -6,10 +6,11 @@ import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
-import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/drawer.dart';
-import 'package:choco_tur/widgets/generic_alert_dialog.dart';
+import 'package:choco_tur/widgets/info_window_widget.dart';
+import 'package:choco_tur/widgets/map_tour_button.dart';
+import 'package:choco_tur/widgets/marker_info_window.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animarker/flutter_map_marker_animation.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +29,8 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  InfoWidgetRoute? _infoWidgetRoute;
+
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -40,18 +42,36 @@ class _MapPageState extends State<MapPage> {
   // ignore: prefer_final_fields
   Future<Set<Marker>>? _markers;
 
-  StreamSubscription<Position>? _userLocationStreamSubscription;
-
   CameraPosition? _cameraPosition;
 
-  void _moveCameraToCoordinates(LatLng position, double zoom) async {
-    // specified current users location
-    CameraPosition cameraPosition = CameraPosition(
-      target: position,
-      zoom: zoom,
+  /// First it creates the Info Widget Route and then
+  /// animates the Camera to the stop coordinates.
+  void _onTap(BuildContext context, ChocoTurTourStop stop,
+      [double? zoom]) async {
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    Rect itemRect = renderBox.localToGlobal(Offset.zero) & renderBox.size;
+
+    _infoWidgetRoute = InfoWidgetRoute(
+      barrierLabel: "BarrierLable",
+      child: MarkerInfoWindow(stop: stop),
+      buildContext: context,
+      textStyle: const TextStyle(
+        fontSize: 14,
+        color: Colors.black,
+      ),
+      mapsWidgetSize: itemRect,
     );
 
+    _moveCameraToCoordinates(stop.coordinates, zoom);
+  }
+
+  void _moveCameraToCoordinates(LatLng position, [double? zoom]) async {
     final GoogleMapController controller = await _controller.future;
+
+    CameraPosition cameraPosition = CameraPosition(
+      target: position,
+      zoom: zoom ?? await controller.getZoomLevel(),
+    );
     controller.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
 
@@ -88,24 +108,17 @@ class _MapPageState extends State<MapPage> {
         Marker? tourStopMarker;
         if (stop.id == tourNextStopId) {
           tourStopMarker = RippleMarker(
-            markerId: MarkerId(markerIdStr),
-            position: stop.coordinates,
-            infoWindow: InfoWindow(
-                title: stop.name,
-                snippet: stop.description,
-                onTap: () {
-                  Navigator.pushNamed(context, RouteNames.tourStopStoryPages,
-                      arguments: stop.id);
-                }),
-            icon: BitmapDescriptor.fromBytes(markerIcon),
-          );
+              markerId: MarkerId(markerIdStr),
+              position: stop.coordinates,
+              icon: BitmapDescriptor.fromBytes(markerIcon),
+              // ignore: use_build_context_synchronously
+              onTap: () => _onTap(context, stop));
         } else {
           tourStopMarker = Marker(
             markerId: MarkerId(markerIdStr),
             position: stop.coordinates,
             infoWindow: InfoWindow(
               title: stop.name,
-              snippet: stop.description,
             ),
             icon: BitmapDescriptor.fromBytes(markerIcon),
           );
@@ -196,6 +209,7 @@ class _MapPageState extends State<MapPage> {
                                 target: Coordinates.turinCenter,
                                 zoom: 14.4746,
                               ),
+                        mapToolbarEnabled: false,
                         myLocationEnabled: true,
                         myLocationButtonEnabled: false,
                         zoomControlsEnabled: false,
@@ -203,6 +217,19 @@ class _MapPageState extends State<MapPage> {
                         onMapCreated: (GoogleMapController controller) {
                           if (!_controller.isCompleted) {
                             _controller.complete(controller);
+                          }
+                        },
+
+                        /// If onCameraIdle does not work see https://github.com/flutter/flutter/issues/37682)
+                        onCameraIdle: () {
+                          if (_infoWidgetRoute != null) {
+                            Navigator.of(context, rootNavigator: true)
+                                .push(_infoWidgetRoute!)
+                                .then<void>(
+                              (newValue) {
+                                _infoWidgetRoute = null;
+                              },
+                            );
                           }
                         },
                         onCameraMove: (CameraPosition position) {
@@ -227,33 +254,8 @@ class _MapPageState extends State<MapPage> {
                     Positioned(
                       right: 15,
                       bottom: 85,
-                      child: FloatingActionButton(
-                        onPressed: () async {
-                          if (_lastActiveTourId != null) {
-                            SqliteCache cache = await SqliteCache.getInstance();
-                            ChocoTurTourStop stop = await cache
-                                .getTourStopFromId(_lastTourNextStopId!);
-                            _moveCameraToCoordinates(stop.coordinates, 16);
-                          } else {
-                            showDialog(
-                              context: context,
-                              builder: (_) => GenericAlertDialog(
-                                title: AppLocalizations.of(context)!
-                                    .noActiveTourToGoTo,
-                                content: AppLocalizations.of(context)!
-                                    .noActiveTourToGoToIndication,
-                              ),
-                              barrierDismissible: true,
-                            );
-                          }
-                        },
-                        heroTag: "ToursButton",
-                        backgroundColor: Styles.redShade,
-                        child: const FaIcon(
-                          Icons.tour_outlined,
-                          color: Styles.onRedShade,
-                        ),
-                      ),
+                      child: MapTourButton(_lastActiveTourId,
+                          _lastTourNextStopId, _moveCameraToCoordinates),
                     ),
                   ],
                 );
@@ -288,10 +290,6 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void dispose() async {
-    if (_userLocationStreamSubscription != null) {
-      _userLocationStreamSubscription!.cancel();
-    }
-
     if (_cameraPosition != null) {
       Provider.of<ChocoTurUser>(context, listen: false)
           .setCameraPosition(_cameraPosition!);

@@ -45,5 +45,6 @@
   "cannotRevert": "Cannot revert tour stop",
   "cannotRevertIndication": "The tour is already at the first stop, cannot go back further",
   "generalSettingsSection": "General",
-  "languageSetting": "Language"
+  "languageSetting": "Language",
+  "visitStopButton": "Visit stop!"
 }

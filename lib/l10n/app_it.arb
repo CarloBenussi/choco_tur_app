@@ -45,5 +45,6 @@
   "cannotRevert": "Non è possibile tornare alla fermata precedente",
   "cannotRevertIndication": "Il tour è già impostato alla prima fermata",
   "generalSettingsSection": "Generali",
-  "languageSetting": "Lingua"
+  "languageSetting": "Lingua",
+  "visitStopButton": "Visita lo stop!"
 }
