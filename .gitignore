@@ -46,6 +46,9 @@ app.*.map.json
 # Dart defines
 
 # Secrets
+/android/app/google-services.json
 /android/app/src/main/res/values/secrets.xml
+/android/app/src/main/res/values/strings.xml
+/assets/keystore/*
 /ios/runner/Secret.swift
 /web/index.html
