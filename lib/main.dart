@@ -1,5 +1,8 @@
+import 'package:choco_tur/email_confirmation_page.dart';
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/my_tours_page.dart';
+import 'package:choco_tur/registration_process_page.dart';
+import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/settings_page.dart';
 import 'package:choco_tur/tour_start_page.dart';
 import 'package:choco_tur/tour_stop_story_pages_loading_page.dart';
@@ -23,6 +26,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   var chocoUser = await ChocoTurUser.init();
   await SqliteCache.init();
+  await WebappService.init();
   FlutterNativeSplash.remove();
 
   runApp(MultiProvider(
@@ -63,7 +67,7 @@ class ChocoTurApp extends StatelessWidget {
         ),
         home: (user.language == null)
             ? const LanguageSelection()
-            : ((user.isLoggedIn != null) && user.isLoggedIn!)
+            : (user.loggedIn)
                 ? const ToursHomePage()
                 : const LoginPage(),
         locale: Provider.of<ChocoTurUser>(context).locale,
@@ -82,6 +86,10 @@ class ChocoTurApp extends StatelessWidget {
                 stopId: ModalRoute.of(context)!.settings.arguments as int,
               ),
           RouteNames.settings: (context) => const SettingsPage(),
+          RouteNames.registrationProcess: (context) =>
+              const RegistrationProcessPage(),
+          RouteNames.emailConfirmation: (context) => EmailConfirmationPage(
+              email: ModalRoute.of(context)!.settings.arguments as String),
         },
       );
     });

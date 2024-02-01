@@ -39,11 +39,15 @@ dependencies:
   dynamic_color: ^1.4.0
   flutter_animarker: ^3.2.0
   flutter_launcher_icons: ^0.13.1
+  flutter_login_facebook: ^1.9.0
   flutter_native_splash: ^2.3.5
   focus_detector: ^2.0.1
   font_awesome_flutter: ^10.6.0
   geolocator: ^8.2.1
   google_maps_flutter: ^2.5.0
+  google_sign_in: ^6.2.1
+  google_sign_in_ios: ^5.7.3
+  http: ^1.2.0
   intl: any
   logger: ^2.0.2+1
   path: ^1.8.3
@@ -67,6 +71,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  dart_define: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -115,6 +120,7 @@ flutter:
     - assets/markers/10.png
     - assets/markers/11.png
     - assets/markers/12.png
+    - assets/keystore/chocotur.p12
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -178,3 +184,44 @@ flutter_launcher_icons:
     image_path: "assets/chocolateIcon.png"
     background_color: "#hexcode"
     theme_color: "#hexcode"
+
+dart_define:
+
+    # OPTIONAL: Whether to generate the dart boilerplate or not. 
+    # Defaults to true
+    dart: true 
+
+    # OPTIONAL: Whether to generate the json boilerplate or not. 
+    # Defaults to true
+    json: true 
+
+    # OPTIONAL: The path to the json file to generate. 
+    # Defaults to dart_define.json
+    json_path: dart_define.json 
+       
+    # OPTIONAL: The path to the dart file to generate. 
+    # Defaults to lib/dart_define.gen.dart
+    dart_path: lib/dart_define.gen.dart 
+       
+    # OPTIONAL: The name of the generated class. 
+    # Defaults to dart_define
+    class_name: dart_define 
+
+    # REQUIRED: The variables to add to the generated config files
+    variables: 
+        - name: WEBAPP_URL
+          description: The Spring Boot Web Application URL
+          default: localhost:8080
+          required: true
+        - name: HTTPS_KEYSTORE_PASSWORD
+          description: The password to the HTTPS keystore
+          required: true
+        - name: GOOGLE_CLIENT_ID
+          description: The Google OAuth Client ID
+          required: false
+
+    flavors:
+        - name: production 
+          description: The production flavor
+        - name: development
+          description: The development flavor

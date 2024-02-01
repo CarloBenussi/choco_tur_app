@@ -15,10 +15,11 @@ class MarkerInfoWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          width: 5,
+          width: 3,
           color: Styles.redShade,
         ),
       ),
@@ -32,27 +33,31 @@ class MarkerInfoWindow extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 5),
+            padding: const EdgeInsets.only(top: 10),
             child: Text(
               stop.description,
               textAlign: TextAlign.center,
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.popAndPushNamed(context, RouteNames.tourStopStoryPages,
-                  arguments: stop.id);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Styles.redShade,
-            ),
-            icon: const Icon(
-              Icons.arrow_forward_rounded,
-              color: Styles.onRedShade,
-            ),
-            label: Text(
-              AppLocalizations.of(context)!.visitStopButton,
-              style: const TextStyle(color: Styles.onRedShade),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.popAndPushNamed(
+                    context, RouteNames.tourStopStoryPages,
+                    arguments: stop.id);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Styles.redShade,
+              ),
+              icon: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Styles.onRedShade,
+              ),
+              label: Text(
+                AppLocalizations.of(context)!.visitStopButton,
+                style: const TextStyle(color: Styles.onRedShade),
+              ),
             ),
           )
         ],

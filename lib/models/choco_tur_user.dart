@@ -1,11 +1,21 @@
+import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
+import 'package:choco_tur/services/google_login_service.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+enum LoginType {
+  withGoogle,
+  withFacebook,
+  withApple,
+}
 
 class ChocoTurUser extends ChangeNotifier {
   static Future<ChocoTurUser> init() async {
@@ -24,8 +34,35 @@ class ChocoTurUser extends ChangeNotifier {
       );
     }
 
+    LoginType? loginType;
+    bool loggedIn = false;
+
+    int? loginTypeIndex = _prefs.getInt(_loginTypeIndexKey);
+    String? loginToken = _prefs.getString(_loginTokenKey);
+    if ((loginTypeIndex != null) && (loginToken != null)) {
+      loginType = LoginType.values[loginTypeIndex];
+
+      if (loginType == LoginType.withGoogle) {
+        try {
+          GoogleSignInAccount? account =
+              await GoogleLoginService.signInWithGoogleWithToken(loginToken);
+          loggedIn = (account != null);
+        } catch (error) {
+          LoggerInstance.logger.e(error);
+        }
+      } else if (loginType == LoginType.withFacebook) {
+        FacebookLoginResult? res =
+            await FacebookLoginService.signInWithFacebook();
+        loggedIn = (res != null);
+      } else {
+        LoggerInstance.logger.e('Unsupported login type $loginType');
+      }
+    }
+
     return ChocoTurUser(
-      isLoggedIn: _prefs.getBool(_isLoggedInKey),
+      loginEmail: _prefs.getString(_loginEmailKey),
+      loginType: loginType,
+      loggedIn: loggedIn,
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
       activeTourId: _prefs.getInt(_activeTourIdKey),
@@ -35,16 +72,20 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   ChocoTurUser({
-    this.isLoggedIn,
+    this.loginEmail,
+    this.loginType,
+    required this.loggedIn,
     this.language,
     this.cameraPosition,
-    required this.activeTourId,
-    required this.tourNextStopId,
-    required this.tourNextStopStoryPageIndex,
+    this.activeTourId,
+    this.tourNextStopId,
+    this.tourNextStopStoryPageIndex,
   });
 
   // SharedPreferences keys.
-  static const String _isLoggedInKey = "isLoggedIn";
+  static const String _loginEmailKey = "email";
+  static const String _loginTypeIndexKey = "loginType";
+  static const String _loginTokenKey = "loginToken";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
@@ -53,17 +94,18 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _tourNextStopStoryPageIndexKey =
       "tourNextStopStoryPageIndex";
   static const String _tourNextStopIdKey = "tourNextStopId";
-  static const String _tokenKey = "token";
 
   // User preferences to store.
-  bool? isLoggedIn; // TODO: Remove once token is utilized.
+  String? loginEmail;
+  LoginType? loginType;
+  bool loggedIn;
   String? language;
   CameraPosition? cameraPosition;
   int? activeTourId;
   int? tourNextStopId;
   int? tourNextStopStoryPageIndex;
-
   static late final SharedPreferences _prefs;
+
   Locale _locale = const Locale(LanguageCodes.EN);
 
   Locale get locale {
@@ -87,9 +129,17 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void recordLoginInfo() {
-    isLoggedIn = true;
-    _prefs.setBool(_isLoggedInKey, true);
+  void setExtProviderLoginInfo(
+    String email,
+    String? accessToken,
+    LoginType loginType,
+  ) {
+    _prefs.setString(_loginEmailKey, email);
+    _prefs.setInt(_loginTypeIndexKey, loginType.index);
+    if (accessToken != null) _prefs.setString(_loginTokenKey, accessToken);
+
+    this.loginType = loginType;
+    loggedIn = true;
     notifyListeners();
   }
 
@@ -212,5 +262,19 @@ class ChocoTurUser extends ChangeNotifier {
     _prefs.setInt(_tourNextStopStoryPageIndexKey, tourNextStopStoryPageIndex!);
 
     notifyListeners();
+  }
+
+  Future<void> logout() async {
+    loginEmail = null;
+    _prefs.remove(_loginEmailKey);
+    _prefs.remove(_loginTokenKey);
+
+    // Logout from Google if used.
+    if (loginType == LoginType.withGoogle) {
+      await GoogleLoginService.googleSignIn.signOut();
+    } else if (loginType == LoginType.withFacebook) {
+      await FacebookLoginService.facebookLogin.logOut();
+    }
+    _prefs.remove(_loginTypeIndexKey);
   }
 }

@@ -1,11 +1,17 @@
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/facebook_login_service.dart';
+import 'package:choco_tur/services/google_login_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/validation.dart';
+import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,31 +24,14 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _userNameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   final _passwordController = TextEditingController();
 
   bool isRememberMeChecked = false;
 
-  String? validateUsername(String? username) {
-    if (username == null || username.isEmpty) {
-      return "Please insert your username";
-    } else if (username.length < 5) {
-      return "Your username should be at least 5 characters.";
-    }
-
-    return null;
-  }
-
-  String? validatePassword(String? password) {
-    // TODO: Implement.
-    return null;
-  }
-
   void loginUser() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      // TODO: Login and record token on ChocoTurModel.
-      Provider.of<ChocoTurUser>(context, listen: false).recordLoginInfo();
       LoggerInstance.logger.i("Successfully logged in.");
 
       Navigator.pushReplacementNamed(context, RouteNames.home);
@@ -51,15 +40,99 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void loginWithGoogle() {} // TODO: Implement.
+  void loginWithGoogle(BuildContext context) async {
+    try {
+      GoogleSignInAccount? account =
+          await GoogleLoginService.signInWithGoogle();
+      if (account == null) {
+        throw Exception("Failed to log in with Google.");
+      }
+
+      GoogleSignInAuthentication authentication = await account.authentication;
+
+      // ignore: use_build_context_synchronously
+      Provider.of<ChocoTurUser>(context, listen: false).setExtProviderLoginInfo(
+        account.email,
+        authentication.accessToken,
+        LoginType.withGoogle,
+      );
+
+      // TODO: send token to spring app for validation and user registration, and save
+      // JWT token into Bearer header.
+
+      LoggerInstance.logger.i("Successfully logged in with Google.");
+
+      Navigator.pushReplacementNamed(context, RouteNames.home);
+    } catch (e) {
+      LoggerInstance.logger.e(e.toString());
+      // ignore: use_build_context_synchronously
+      return showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.loginFailedTitle,
+          content:
+              '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
+        ),
+        barrierDismissible: true,
+      );
+    }
+  }
 
   void loginWithApple() {} // TODO: Implement.
 
-  void loginWithFacebook() {} // TODO: Implement.
+  void loginWithFacebook() async {
+    try {
+      FacebookLoginResult? res =
+          await FacebookLoginService.signInWithFacebook();
+      if (res == null) {
+        throw Exception("Failed to log in with Facebook.");
+      }
 
-  void createAccount() {} // TODO: Implement.
+      String? email = await FacebookLoginService.facebookLogin.getUserEmail();
+      if (email == null) {
+        throw Exception("Email permission not granted.");
+      }
+
+      FacebookAccessToken? accessToken = res.accessToken;
+
+      // ignore: use_build_context_synchronously
+      Provider.of<ChocoTurUser>(context, listen: false).setExtProviderLoginInfo(
+        email,
+        accessToken?.token,
+        LoginType.withFacebook,
+      );
+
+      // TODO: send token to spring app for validation and user registration, and save
+      // JWT token into Bearer header.
+
+      LoggerInstance.logger.i("Successfully logged in with Facebook.");
+
+      Navigator.pushReplacementNamed(context, RouteNames.home);
+    } catch (e) {
+      LoggerInstance.logger.e(e.toString());
+      // ignore: use_build_context_synchronously
+      return showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.loginFailedTitle,
+          content:
+              '${AppLocalizations.of(context)!.loginWithFacebookFailed}\n\n${e.toString()}',
+        ),
+        barrierDismissible: true,
+      );
+    }
+  }
 
   void forgotPassword() {} // TODO: Implement.
+
+  @override
+  void initState() {
+    super.initState();
+
+    GoogleLoginService.googleSignIn.onCurrentUserChanged.listen((event) {
+      // TODO: Implement current user changed?
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,15 +170,17 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   children: [
                     UserTextInput(
-                      controller: _userNameController,
+                      controller: _emailController,
                       hintText: AppLocalizations.of(context)!.email,
-                      validator: validateUsername,
+                      validator: (email) =>
+                          Validation.validateEmail(context, email),
                     ),
                     UserTextInput(
                       controller: _passwordController,
                       hintText: AppLocalizations.of(context)!.password,
                       obscured: true,
-                      validator: validatePassword,
+                      validator: (password) =>
+                          Validation.validatePassword(context, password),
                     ),
                   ],
                 ),
@@ -184,7 +259,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: LoginWithButton(
-                  onPressedFunction: loginWithGoogle,
+                  onPressedFunction: () => loginWithGoogle(context),
                   labelText: AppLocalizations.of(context)!.signInWithGoogle,
                   icon: const FaIcon(
                     FontAwesomeIcons.google,
@@ -227,7 +302,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   TextButton(
-                      onPressed: createAccount,
+                      onPressed: () => {
+                            Navigator.pushNamed(
+                                context, RouteNames.registrationProcess)
+                          },
                       child: Text(
                         AppLocalizations.of(context)!.createAnAccount,
                         style:

@@ -30,6 +30,14 @@
       "type": "dart",
       "flutterMode": "debug",
       "args": ["-d", "emulator-5554"],
+      "toolArgs": [
+        "--dart-define",
+        "WEBAPP_URL=10.0.2.2:8080",
+        "--dart-define",
+        "HTTPS_KEYSTORE_PASSWORD=chocotur",
+        "--dart-define",
+        "GOOGLE_CLIENT_ID=823850501986-m7kv2ar75b0fogju34e3fekpqiffkna2.apps.googleusercontent.com"
+      ]
     }
   ]
 }

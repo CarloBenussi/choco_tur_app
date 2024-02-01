@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "823850501986",
+    "project_id": "chocotur",
+    "storage_bucket": "chocotur.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823850501986:android:bd2b20f1641e65f9380e3b",
+        "android_client_info": {
+          "package_name": "com.choco_tur.choco_tur"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "823850501986-m7kv2ar75b0fogju34e3fekpqiffkna2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.choco_tur.choco_tur",
+            "certificate_hash": "0c39c77bacd9ef95113343e917bb23b21300a5b4"
+          }
+        },
+        {
+          "client_id": "823850501986-ii6e55mmkevoieire7nrnv2i9d8kqs5k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqkS7oHXLjk4Q-ixnaIhqSgQX-lrhBvBM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "823850501986-ii6e55mmkevoieire7nrnv2i9d8kqs5k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

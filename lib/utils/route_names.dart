@@ -8,4 +8,6 @@ class RouteNames {
   static const String tourStopStoryPages = "/tour_stop_story_pages";
   static const String map = "/map";
   static const String settings = "/settings";
+  static const String registrationProcess = "/registration";
+  static const String emailConfirmation = "/email_confirmation";
 }

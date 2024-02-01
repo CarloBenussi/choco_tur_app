@@ -43,6 +43,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Dart defines
+
 # Secrets
 /android/app/src/main/res/values/secrets.xml
 /ios/runner/Secret.swift

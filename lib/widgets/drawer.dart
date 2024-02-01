@@ -1,9 +1,16 @@
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ChocoTurDrawer extends StatelessWidget {
   const ChocoTurDrawer({super.key});
+
+  void _onLogoutPressed(BuildContext context) async {
+    await Provider.of<ChocoTurUser>(context, listen: false).logout();
+    Navigator.pushReplacementNamed(context, RouteNames.login);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +52,10 @@ class ChocoTurDrawer extends StatelessWidget {
                         .areYouSureLogoutIndication),
                     actions: [
                       TextButton(
-                          onPressed: null,
+                          onPressed: () => _onLogoutPressed(context),
                           child: Text(AppLocalizations.of(context)!.yesButton)),
                       TextButton(
-                          onPressed: null,
+                          onPressed: () => {Navigator.pop(context)},
                           child: Text(AppLocalizations.of(context)!.noButton)),
                     ],
                     elevation: 24.0,
