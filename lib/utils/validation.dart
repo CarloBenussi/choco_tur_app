@@ -4,6 +4,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class Validation {
   static RegExp emailRegex = RegExp(
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+  static RegExp specialSymbol = RegExp(r'[$()?\-!@#%&_~+=]');
+  static RegExp uppercaseLetter = RegExp(r'[A-Z]');
+  static RegExp number = RegExp(r'[1-9]');
 
   static String? validateEmail(BuildContext context, String? email) {
     if (email == null || email.isEmpty) {
@@ -21,7 +24,13 @@ class Validation {
     if (password == null || password.isEmpty) {
       return AppLocalizations.of(context)!.pleaseInsertPassword;
     } else if (password.length < 8) {
-      return AppLocalizations.of(context)!.invalidPassword;
+      return AppLocalizations.of(context)!.shortPassword;
+    } else if (!password.contains(specialSymbol)) {
+      return AppLocalizations.of(context)!.missingSpecialSymbol;
+    } else if (!password.contains(uppercaseLetter)) {
+      return AppLocalizations.of(context)!.missingUppercase;
+    } else if (!password.contains(number)) {
+      return AppLocalizations.of(context)!.missingNumber;
     }
 
     return null;

@@ -9,6 +9,7 @@ import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/info_window_widget.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/map_tour_button.dart';
 import 'package:choco_tur/widgets/marker_info_window.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
@@ -260,7 +261,7 @@ class _MapPageState extends State<MapPage> {
                   ],
                 );
               } else {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: LoadingAnimation());
               }
             },
           ),

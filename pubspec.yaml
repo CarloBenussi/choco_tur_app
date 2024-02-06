@@ -49,6 +49,7 @@ dependencies:
   google_sign_in_ios: ^5.7.3
   http: ^1.2.0
   intl: any
+  loading_animation_widget: ^1.2.0+4
   logger: ^2.0.2+1
   path: ^1.8.3
   provider: ^6.1.1

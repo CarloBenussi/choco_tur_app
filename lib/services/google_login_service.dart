@@ -13,7 +13,7 @@ class GoogleLoginService {
   );
 
   static Future<GoogleSignInAccount?> signInWithGoogleWithToken(
-      String accessToken) async {
+      String email, String accessToken) async {
     // TODO: Implement.
     return null;
   }

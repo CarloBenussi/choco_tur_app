@@ -3,6 +3,7 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -53,7 +54,7 @@ class TourStartPage extends StatelessWidget {
                 onFinished: () => _onAnimationFinished(context),
               );
             } else {
-              return const CircularProgressIndicator();
+              return const LoadingAnimation();
             }
           },
         ),

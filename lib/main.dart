@@ -24,9 +24,9 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  var chocoUser = await ChocoTurUser.init();
   await SqliteCache.init();
   await WebappService.init();
+  var chocoUser = await ChocoTurUser.init();
   FlutterNativeSplash.remove();
 
   runApp(MultiProvider(

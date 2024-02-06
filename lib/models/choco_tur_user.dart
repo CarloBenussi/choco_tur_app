@@ -1,6 +1,7 @@
 import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/services/google_login_service.dart';
+import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
@@ -12,6 +13,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum LoginType {
+  manual,
   withGoogle,
   withFacebook,
   withApple,
@@ -38,14 +40,28 @@ class ChocoTurUser extends ChangeNotifier {
     bool loggedIn = false;
 
     int? loginTypeIndex = _prefs.getInt(_loginTypeIndexKey);
-    String? loginToken = _prefs.getString(_loginTokenKey);
-    if ((loginTypeIndex != null) && (loginToken != null)) {
+    String? loginEmail = _prefs.getString(_loginEmailKey);
+    String? loginAccessToken = _prefs.getString(_loginAccessTokenKey);
+    String? loginRefreshToken = _prefs.getString(_loginRefreshTokenKey);
+    if ((loginTypeIndex != null) &&
+        (loginEmail != null) &&
+        (loginAccessToken != null)) {
       loginType = LoginType.values[loginTypeIndex];
 
-      if (loginType == LoginType.withGoogle) {
+      if (loginType == LoginType.manual) {
+        Map<String, dynamic>? loginWithTokenResponse =
+            await WebappService.loginUserWithToken(
+                loginEmail, loginAccessToken, loginRefreshToken);
+        if (loginWithTokenResponse != null) {
+          loggedIn = true;
+          loginAccessToken = loginWithTokenResponse['accessToken'];
+          loginRefreshToken = loginWithTokenResponse['refreshToken'];
+        }
+      } else if (loginType == LoginType.withGoogle) {
         try {
           GoogleSignInAccount? account =
-              await GoogleLoginService.signInWithGoogleWithToken(loginToken);
+              await GoogleLoginService.signInWithGoogleWithToken(
+                  loginEmail, loginAccessToken);
           loggedIn = (account != null);
         } catch (error) {
           LoggerInstance.logger.e(error);
@@ -60,7 +76,7 @@ class ChocoTurUser extends ChangeNotifier {
     }
 
     return ChocoTurUser(
-      loginEmail: _prefs.getString(_loginEmailKey),
+      loginEmail: loginEmail,
       loginType: loginType,
       loggedIn: loggedIn,
       language: _prefs.getString(_languageKey),
@@ -85,7 +101,8 @@ class ChocoTurUser extends ChangeNotifier {
   // SharedPreferences keys.
   static const String _loginEmailKey = "email";
   static const String _loginTypeIndexKey = "loginType";
-  static const String _loginTokenKey = "loginToken";
+  static const String _loginAccessTokenKey = "loginAccessToken";
+  static const String _loginRefreshTokenKey = "loginRefreshToken";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
@@ -129,14 +146,20 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setExtProviderLoginInfo(
+  void saveLoginInfo(
     String email,
     String? accessToken,
+    String? refreshToken,
     LoginType loginType,
   ) {
     _prefs.setString(_loginEmailKey, email);
     _prefs.setInt(_loginTypeIndexKey, loginType.index);
-    if (accessToken != null) _prefs.setString(_loginTokenKey, accessToken);
+    if (accessToken != null) {
+      _prefs.setString(_loginAccessTokenKey, accessToken);
+    }
+    if (refreshToken != null) {
+      _prefs.setString(_loginRefreshTokenKey, refreshToken);
+    }
 
     this.loginType = loginType;
     loggedIn = true;
@@ -267,7 +290,7 @@ class ChocoTurUser extends ChangeNotifier {
   Future<void> logout() async {
     loginEmail = null;
     _prefs.remove(_loginEmailKey);
-    _prefs.remove(_loginTokenKey);
+    _prefs.remove(_loginAccessTokenKey);
 
     // Logout from Google if used.
     if (loginType == LoginType.withGoogle) {

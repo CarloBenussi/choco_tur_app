@@ -2,6 +2,7 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchase_tour_button.dart';
 import 'package:choco_tur/widgets/start_tour_button.dart';
@@ -157,7 +158,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
                       tourStopTastings: _tourStopTastings!,
                     );
                   } else {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: LoadingAnimation());
                   }
                 },
               ),

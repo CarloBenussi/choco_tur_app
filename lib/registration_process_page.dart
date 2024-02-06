@@ -5,6 +5,7 @@ import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/utils/validation.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -191,7 +192,7 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                         sigmaY: 5,
                       ),
                       child: const Center(
-                        child: CircularProgressIndicator(),
+                        child: LoadingAnimation(),
                       ),
                     ),
                 ],

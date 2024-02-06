@@ -1,5 +1,7 @@
 import 'package:choco_tur/services/webapp_service.dart';
+import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,16 +16,16 @@ class EmailConfirmationPage extends StatefulWidget {
 }
 
 class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
-  final codeController = TextEditingController();
   bool _waitingForWebResponse = false;
 
-  void _checkCodeCompletion(BuildContext context) async {
-    if (codeController.text.length == 6) {
+  void _checkCodeCompletion(String text, BuildContext context) async {
+    LoggerInstance.logger.d(text);
+    if (text.length == 6) {
       setState(() {
         _waitingForWebResponse = true;
       });
       bool confirmSuccess =
-          await WebappService.confirmEmail(widget.email, codeController.text);
+          await WebappService.confirmEmail(widget.email, text);
       setState(() {
         _waitingForWebResponse = false;
       });
@@ -41,13 +43,6 @@ class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-
-    codeController.addListener(() => _checkCodeCompletion);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -59,7 +54,6 @@ class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextField(
-                  controller: codeController,
                   decoration: InputDecoration(
                       labelText:
                           AppLocalizations.of(context)!.confirmEmailCode),
@@ -69,6 +63,7 @@ class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
                   ),
                   maxLength: 6,
                   keyboardType: TextInputType.number,
+                  onChanged: (text) => _checkCodeCompletion(text, context),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
@@ -85,18 +80,12 @@ class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
               const Opacity(
                 opacity: 0.5,
                 child: Center(
-                  child: CircularProgressIndicator(),
+                  child: LoadingAnimation(),
                 ),
               ),
           ],
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    codeController.dispose();
-    super.dispose();
   }
 }

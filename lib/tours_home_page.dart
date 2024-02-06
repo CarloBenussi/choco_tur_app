@@ -4,6 +4,7 @@ import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/home_page_tour.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -58,7 +59,7 @@ class _ToursHomePageState extends State<ToursHomePage> {
                     },
                   );
                 } else {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: LoadingAnimation());
                 }
               })
         ],

@@ -1,10 +1,14 @@
+import 'dart:ui';
+
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/google_login_service.dart';
+import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/validation.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
@@ -28,15 +32,27 @@ class _LoginPageState extends State<LoginPage> {
 
   final _passwordController = TextEditingController();
 
-  bool isRememberMeChecked = false;
+  bool _isRememberMeChecked = false;
+  bool _loggingIn = false;
 
-  void loginUser() {
+  void loginUser() async {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      LoggerInstance.logger.i("Successfully logged in.");
+      setState(() {
+        _loggingIn = true;
+      });
+      bool loginSuccess = await WebappService.loginUser(
+        context,
+        _emailController.text,
+        _passwordController.text,
+        _isRememberMeChecked,
+      );
+      setState(() {
+        _loggingIn = false;
+      });
 
-      Navigator.pushReplacementNamed(context, RouteNames.home);
-    } else {
-      LoggerInstance.logger.i("Error in loggin in.");
+      if (loginSuccess) {
+        Navigator.pushReplacementNamed(context, RouteNames.home);
+      }
     }
   }
 
@@ -51,9 +67,10 @@ class _LoginPageState extends State<LoginPage> {
       GoogleSignInAuthentication authentication = await account.authentication;
 
       // ignore: use_build_context_synchronously
-      Provider.of<ChocoTurUser>(context, listen: false).setExtProviderLoginInfo(
+      Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
         account.email,
         authentication.accessToken,
+        null,
         LoginType.withGoogle,
       );
 
@@ -96,9 +113,10 @@ class _LoginPageState extends State<LoginPage> {
       FacebookAccessToken? accessToken = res.accessToken;
 
       // ignore: use_build_context_synchronously
-      Provider.of<ChocoTurUser>(context, listen: false).setExtProviderLoginInfo(
+      Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
         email,
         accessToken?.token,
+        null,
         LoginType.withFacebook,
       );
 
@@ -141,178 +159,193 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 15, right: 15),
-          child: ListView(
+          child: Stack(
             children: [
-              const Center(
-                child: Text("ChocoTur",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                    )),
-              ),
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset("assets/chocolateGobino.jpg",
-                        fit: BoxFit.cover)),
-              ),
-              Center(
-                child: Text(
-                    AppLocalizations.of(context)!.loginWithCredentialsTitle,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w300,
-                    )),
-              ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    UserTextInput(
-                      controller: _emailController,
-                      hintText: AppLocalizations.of(context)!.email,
-                      validator: (email) =>
-                          Validation.validateEmail(context, email),
-                    ),
-                    UserTextInput(
-                      controller: _passwordController,
-                      hintText: AppLocalizations.of(context)!.password,
-                      obscured: true,
-                      validator: (password) =>
-                          Validation.validatePassword(context, password),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ListView(
                 children: [
-                  Flexible(
-                    child: CheckboxListTile(
-                      title: Text(AppLocalizations.of(context)!.rememberMe,
-                          style: const TextStyle(
-                            fontSize: 12,
-                          )),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      checkColor: Colors.black,
-                      activeColor: Colors.white,
-                      value: isRememberMeChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isRememberMeChecked = value!;
-                        });
-                      },
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                        onPressed: forgotPassword,
-                        child: Text(
-                          AppLocalizations.of(context)!.forgotPassword,
-                          style:
-                              const TextStyle(fontSize: 15, color: Colors.blue),
+                  const Center(
+                    child: Text("ChocoTur",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
                         )),
-                  )
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                          onPressed: loginUser,
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightBlue),
-                          child: Text(
-                            AppLocalizations.of(context)!.signInButtonLabel,
-                            style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
-                          )),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top: 20, bottom: 20),
-                child: Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Container(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      child: Text(AppLocalizations.of(context)!.or,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300,
-                          )),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: LoginWithButton(
-                  onPressedFunction: () => loginWithGoogle(context),
-                  labelText: AppLocalizations.of(context)!.signInWithGoogle,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.google,
-                    color: Colors.white,
                   ),
-                  buttonColor: Colors.red,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: LoginWithButton(
-                  onPressedFunction: loginWithApple,
-                  labelText: AppLocalizations.of(context)!.signInWithApple,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.apple,
-                    color: Colors.white,
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset("assets/chocolateGobino.jpg",
+                            fit: BoxFit.cover)),
                   ),
-                  buttonColor: Colors.black,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: LoginWithButton(
-                  onPressedFunction: loginWithFacebook,
-                  labelText: AppLocalizations.of(context)!.signInWithFacebook,
-                  icon: const FaIcon(
-                    FontAwesomeIcons.facebook,
-                    color: Colors.white,
+                  Center(
+                    child: Text(
+                        AppLocalizations.of(context)!.loginWithCredentialsTitle,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300,
+                        )),
                   ),
-                  buttonColor: Colors.blue,
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.dontHaveAnAccountQ,
-                    style: const TextStyle(
-                      fontSize: 15,
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        UserTextInput(
+                          controller: _emailController,
+                          hintText: AppLocalizations.of(context)!.email,
+                          validator: (email) =>
+                              Validation.validateEmail(context, email),
+                        ),
+                        UserTextInput(
+                          controller: _passwordController,
+                          hintText: AppLocalizations.of(context)!.password,
+                          obscured: true,
+                          validator: (password) =>
+                              Validation.validatePassword(context, password),
+                        ),
+                      ],
                     ),
                   ),
-                  TextButton(
-                      onPressed: () => {
-                            Navigator.pushNamed(
-                                context, RouteNames.registrationProcess)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: CheckboxListTile(
+                          title: Text(AppLocalizations.of(context)!.rememberMe,
+                              style: const TextStyle(
+                                fontSize: 12,
+                              )),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          checkColor: Colors.black,
+                          activeColor: Colors.white,
+                          value: _isRememberMeChecked,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _isRememberMeChecked = value!;
+                            });
                           },
-                      child: Text(
-                        AppLocalizations.of(context)!.createAnAccount,
-                        style:
-                            const TextStyle(fontSize: 15, color: Colors.blue),
-                      ))
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                            onPressed: forgotPassword,
+                            child: Text(
+                              AppLocalizations.of(context)!.forgotPassword,
+                              style: const TextStyle(
+                                  fontSize: 15, color: Colors.blue),
+                            )),
+                      )
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: ElevatedButton(
+                              onPressed: loginUser,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.lightBlue),
+                              child: Text(
+                                AppLocalizations.of(context)!.signInButtonLabel,
+                                style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.white),
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 20, bottom: 20),
+                    child: Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Container(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          child: Text(AppLocalizations.of(context)!.or,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w300,
+                              )),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: LoginWithButton(
+                      onPressedFunction: () => loginWithGoogle(context),
+                      labelText: AppLocalizations.of(context)!.signInWithGoogle,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.google,
+                        color: Colors.white,
+                      ),
+                      buttonColor: Colors.red,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: LoginWithButton(
+                      onPressedFunction: loginWithApple,
+                      labelText: AppLocalizations.of(context)!.signInWithApple,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.apple,
+                        color: Colors.white,
+                      ),
+                      buttonColor: Colors.black,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: LoginWithButton(
+                      onPressedFunction: loginWithFacebook,
+                      labelText:
+                          AppLocalizations.of(context)!.signInWithFacebook,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.facebook,
+                        color: Colors.white,
+                      ),
+                      buttonColor: Colors.blue,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.dontHaveAnAccountQ,
+                        style: const TextStyle(
+                          fontSize: 15,
+                        ),
+                      ),
+                      TextButton(
+                          onPressed: () => {
+                                Navigator.pushNamed(
+                                    context, RouteNames.registrationProcess)
+                              },
+                          child: Text(
+                            AppLocalizations.of(context)!.createAnAccount,
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.blue),
+                          ))
+                    ],
+                  ),
                 ],
               ),
+              if (_loggingIn)
+                BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 5,
+                    sigmaY: 5,
+                  ),
+                  child: const Center(
+                    child: LoadingAnimation(),
+                  ),
+                ),
             ],
           ),
         ),

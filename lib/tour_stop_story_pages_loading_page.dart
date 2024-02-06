@@ -2,6 +2,7 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/tour_stop_story_pages_page.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -36,7 +37,7 @@ class TourStopStoryPagesLoadingPage extends StatelessWidget {
                 tourStopStoryPages: snapshot.data!,
               );
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: LoadingAnimation());
             }
           },
         ),
