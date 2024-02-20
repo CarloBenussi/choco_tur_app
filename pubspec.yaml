@@ -35,9 +35,14 @@ dependencies:
   animated_text_kit: ^4.2.2
   animations: ^2.0.8
   audioplayers: ^5.2.1
+  dob_input_field: ^2.0.0
   duration: ^3.0.13
   dynamic_color: ^1.4.0
+  firebase_app_check: ^0.2.1+13
+  firebase_core: ^2.25.4
+  firebase_storage: ^11.6.5
   flutter_animarker: ^3.2.0
+  flutter_cache_manager: ^3.3.1
   flutter_launcher_icons: ^0.13.1
   flutter_login_facebook: ^1.9.0
   flutter_native_splash: ^2.3.5
@@ -90,25 +95,12 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/gianduiotto.jpg
     - assets/chocolateGobino.jpg
-    - assets/farmaciaBosio.jpg
-    - assets/piazzaSanCarlo.jpg
-    - assets/piazzaSanCarloMain.jpg
-    - assets/caffeAlBicerin.jpg
-    - assets/piazzaPalazzoDiCitta.jpg
-    - assets/teatroGianduja.jpg
-    - assets/palazzoCarignano.jpg
-    - assets/caffarel.jpg
-    - assets/palazzoReale.jpg
-    - assets/barattiMilano.jpg
-    - assets/gianduiottoShop.jpg
-    - assets/cuneesiShop.jpg
     - assets/giordano.jpg
     - assets/chocolateIcon.png
     - assets/flags/it.png
     - assets/flags/en.png
-    - assets/mock_db/tour_saturday.db
+    # - assets/mock_db/tour_saturday.db
     - assets/markers/1.png
     - assets/markers/2.png
     - assets/markers/3.png
@@ -213,6 +205,22 @@ dart_define:
         - name: WEBAPP_URL
           description: The Spring Boot Web Application URL
           default: localhost:8080
+          required: true
+        - name: FIREBASE_APP_ID
+          description: The Firebase app ID
+          default: "Default App ID"
+          required: true
+        - name: FIREBASE_API_KEY
+          description: The Firebase API KEY
+          default: "Default API KEY"
+          required: true
+        - name: FIREBASE_PROJECT_ID
+          description: The Firebase project ID
+          default: "Default Project ID"
+          required: true
+        - name: FIREBASE_BUCKET
+          description: The Firebase archive bucket
+          default: gs://chocotur.appspot.com
           required: true
         - name: HTTPS_KEYSTORE_PASSWORD
           description: The password to the HTTPS keystore

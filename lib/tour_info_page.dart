@@ -1,13 +1,12 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
-import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchase_tour_button.dart';
 import 'package:choco_tur/widgets/start_tour_button.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
-import 'package:choco_tur/widgets/tour_stops_info_animation.dart';
+import 'package:choco_tur/widgets/tour_stop_infos_animation.dart';
+import 'package:choco_tur/widgets/tour_tasting_infos_animation.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -26,24 +25,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
 
   bool _purchased = false;
   bool _active = false;
-
-  Future<List<ChocoTurTourStop>>? _tourStops;
-  List<Chocolate?>? _tourStopTastings;
-
-  Future<List<ChocoTurTourStop>> _getOrReturnTourStops() async {
-    if (_tourStops == null) {
-      SqliteCache cache = await SqliteCache.getInstance();
-      _tourStops = cache.getTourStops(tour.id);
-
-      _tourStopTastings = [];
-      var tourStops = await _getOrReturnTourStops();
-      for (var i = 0; i < tourStops.length; ++i) {
-        _tourStopTastings!.add(await cache.getStopchocolate(tourStops[i].id));
-      }
-    }
-
-    return _tourStops!;
-  }
+  String? _langCode;
 
   void onPurchasePressed() {
     setState(() {
@@ -61,7 +43,8 @@ class _TourInfoPageState extends State<TourInfoPage> {
     super.didChangeDependencies();
 
     tour = ModalRoute.of(context)!.settings.arguments as ChocoTurTour;
-    _active = (tour.id == Provider.of<ChocoTurUser>(context).activeTourId);
+    _active = (tour.id == Provider.of<ChocoTurUser>(context, listen: true).activeTour?.id);
+    _langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
   }
 
   @override
@@ -77,7 +60,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
               tag: tour.id,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(tour.mainImageUrl),
+                child: Image.memory(tour.imageData!),
               ),
             ),
             Padding(
@@ -89,7 +72,7 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 children: [
                   StartTourButton(
                     available: !_active && (_purchased || tour.isFree()),
-                    tourId: tour.id,
+                    tour: tour,
                   ),
                   if (!tour.isFree())
                     PurchaseTourButton(
@@ -102,13 +85,12 @@ class _TourInfoPageState extends State<TourInfoPage> {
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: TitleAndDescription(
-                title: tour.name,
-                subTitle:
-                    "${tour.numStops} ${AppLocalizations.of(context)!.stops} | "
-                    "${tour.numTastings} ${AppLocalizations.of(context)!.tastings} | "
-                    "${tour.lengthInKms}km | "
+                title: tour.title,
+                subTitle: "${tour.stopInfos.length} ${AppLocalizations.of(context)!.stops} | "
+                    "${tour.tastingInfos.length} ${AppLocalizations.of(context)!.tastings} | "
+                    "${tour.lengthKm}km | "
                     "${printDuration(tour.avgDuration, abbreviated: true)}",
-                description: tour.description,
+                description: tour.descriptions[_langCode]!,
               ),
             ),
             Padding(
@@ -147,20 +129,52 @@ class _TourInfoPageState extends State<TourInfoPage> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: FutureBuilder(
-                future: _getOrReturnTourStops(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData &&
-                      snapshot.connectionState == ConnectionState.done) {
-                    return TourStopsInfoAnimation(
-                      tourId: tour.id,
-                      tourStops: snapshot.data!,
-                      tourStopTastings: _tourStopTastings!,
-                    );
-                  } else {
-                    return const Center(child: LoadingAnimation());
-                  }
-                },
+              child: TourStopInfosAnimation(
+                langCode: _langCode!,
+                tourId: tour.id,
+                tourStopInfos: tour.stopInfos,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: Divider(
+                        color: Colors.black54,
+                        thickness: 0.7,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!.tourTastingsTitle,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Divider(
+                        color: Colors.black54,
+                        thickness: 0.7,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TourTastingInfosAnimation(
+                langCode: _langCode!,
+                tourId: tour.id,
+                tourTastingInfos: tour.tastingInfos,
               ),
             ),
           ],

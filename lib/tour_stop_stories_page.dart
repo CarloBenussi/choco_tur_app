@@ -3,40 +3,37 @@ import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
-import 'package:choco_tur/widgets/tour_stop_story_page_quiz.dart';
-import 'package:choco_tur/widgets/tour_stop_story_page_text.dart';
+import 'package:choco_tur/widgets/tour_stop_story_quiz.dart';
+import 'package:choco_tur/widgets/tour_stop_story_text.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class TourStopStoryPagesPage extends StatefulWidget {
-  const TourStopStoryPagesPage({super.key, required this.tourStopStoryPages});
+class TourStopStoriesPage extends StatefulWidget {
+  const TourStopStoriesPage({super.key, required this.tourStopStories});
 
-  final List<ChocoTurStopPage> tourStopStoryPages;
+  final List<ChocoTurStopStory> tourStopStories;
 
   @override
-  State<TourStopStoryPagesPage> createState() => _TourStopStoryPagesPageState();
+  State<TourStopStoriesPage> createState() => _TourStopStoriesPageState();
 }
 
-class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
+class _TourStopStoriesPageState extends State<TourStopStoriesPage> {
   late int _currentPageIndex;
   bool _backPressed = false;
 
   void _onNextPressed(BuildContext context, int stopStoryPagesLength) async {
     if (_currentPageIndex < stopStoryPagesLength - 1) {
       _currentPageIndex++;
-      Provider.of<ChocoTurUser>(context, listen: false)
-          .tourNextStopStoryPageIndex = _currentPageIndex;
       _backPressed = false;
       setState(() {});
     } else {
-      await Provider.of<ChocoTurUser>(context, listen: false).advanceTour();
+      ChocoTurUserTour? userTour = Provider.of<ChocoTurUser>(context, listen: false).activeTour;
+      await Provider.of<ChocoTurUser>(context, listen: false).advanceTour(userTour!);
       if (mounted) {
-        if (Provider.of<ChocoTurUser>(context, listen: false).activeTourId !=
-            null) {
-          Navigator.pushReplacementNamed(context, RouteNames.map,
-              arguments: true);
+        if (Provider.of<ChocoTurUser>(context, listen: false).activeTour != null) {
+          Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
         } else {
           Navigator.pushReplacementNamed(context, RouteNames.home);
         }
@@ -46,8 +43,6 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
 
   void _onBackPressed(BuildContext context) {
     _currentPageIndex--;
-    Provider.of<ChocoTurUser>(context, listen: false)
-        .tourNextStopStoryPageIndex = _currentPageIndex;
     _backPressed = true;
     setState(() {});
   }
@@ -56,9 +51,7 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
   void initState() {
     super.initState();
 
-    _currentPageIndex = Provider.of<ChocoTurUser>(context, listen: false)
-            .tourNextStopStoryPageIndex ??
-        0;
+    _currentPageIndex = 0;
   }
 
   @override
@@ -83,23 +76,17 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
         key: ValueKey<int>(_currentPageIndex),
         child: Stack(
           children: [
-            if (widget.tourStopStoryPages[_currentPageIndex].type ==
-                ChocoTurStopPageType.text)
-              TourStopStoryPageText(
-                  stopStoryPage: widget.tourStopStoryPages[_currentPageIndex]),
-            if (widget.tourStopStoryPages[_currentPageIndex].type ==
-                ChocoTurStopPageType.quiz)
-              TourStopStoryPageQuiz(
-                  stopStoryPage: widget.tourStopStoryPages[_currentPageIndex]),
+            if (widget.tourStopStories[_currentPageIndex].type == ChocoTurStopStoryType.text)
+              TourStopStoryText(stopStory: widget.tourStopStories[_currentPageIndex]),
+            if (widget.tourStopStories[_currentPageIndex].type == ChocoTurStopStoryType.quiz)
+              TourStopStoryQuiz(stopStory: widget.tourStopStories[_currentPageIndex]),
             Align(
               alignment: Alignment.bottomCenter,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                    onPressed: _currentPageIndex > 0
-                        ? () => _onBackPressed(context)
-                        : null,
+                    onPressed: _currentPageIndex > 0 ? () => _onBackPressed(context) : null,
                     child: Text(
                       AppLocalizations.of(context)!.backButton,
                       style: TextStyle(
@@ -110,10 +97,9 @@ class _TourStopStoryPagesPageState extends State<TourStopStoryPagesPage> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => _onNextPressed(
-                        context, widget.tourStopStoryPages.length),
+                    onPressed: () => _onNextPressed(context, widget.tourStopStories.length),
                     child: Text(
-                      (_currentPageIndex < widget.tourStopStoryPages.length - 1)
+                      (_currentPageIndex < widget.tourStopStories.length - 1)
                           ? AppLocalizations.of(context)!.nextButton
                           : "-->",
                       style: TextStyle(

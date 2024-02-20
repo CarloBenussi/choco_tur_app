@@ -1,6 +1,6 @@
-import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'dart:ui';
+
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
@@ -17,28 +17,11 @@ class MyTourPage extends StatefulWidget {
 }
 
 class _MyTourPageState extends State<MyTourPage> {
-  Future<List<ChocoTurTour>>? _myTours;
-  List<double>? _myTourProgresses;
+  List<ChocoTurUserTour>? _userTours;
+  bool _processing = false;
 
-  Future<List<ChocoTurTour>> _getMyTours(BuildContext context) async {
-    int? activeTourId =
-        Provider.of<ChocoTurUser>(context, listen: true).activeTourId;
-    int? tourNextStopId =
-        Provider.of<ChocoTurUser>(context, listen: true).tourNextStopId;
-
-    List<ChocoTurTour> myTours = [];
-    _myTourProgresses = [];
-
-    if (activeTourId != null) {
-      SqliteCache cache = await SqliteCache.getInstance();
-
-      myTours = [await cache.getTourFromId(activeTourId)];
-      var tourStopIds = await cache.getTourStopIds(myTours[0].id);
-      var tourNextStopIndex = tourStopIds.indexOf(tourNextStopId!);
-      _myTourProgresses = [tourNextStopIndex / myTours[0].numStops];
-    }
-
-    return myTours;
+  List<ChocoTurUserTour>? _getUserTours(BuildContext context) {
+    return Provider.of<ChocoTurUser>(context, listen: true).userTours;
   }
 
   @override
@@ -50,7 +33,7 @@ class _MyTourPageState extends State<MyTourPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _myTours = _getMyTours(context);
+    _userTours = _getUserTours(context);
   }
 
   @override
@@ -60,14 +43,12 @@ class _MyTourPageState extends State<MyTourPage> {
       backgroundColor: Colors.white,
       body: Consumer<ChocoTurUser>(
         builder: (context, user, child) {
-          return FutureBuilder(
-            future: _myTours,
-            builder: (context, snapshot) {
-              if (snapshot.hasData &&
-                  snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.data!.isNotEmpty) {
-                  return ListView.separated(
-                    itemCount: snapshot.data!.length,
+          if (_userTours != null) {
+            return Column(
+              children: [
+                Flexible(
+                  child: ListView.separated(
+                    itemCount: _userTours!.length,
                     scrollDirection: Axis.vertical,
                     padding: const EdgeInsets.all(5),
                     separatorBuilder: (BuildContext context, int index) {
@@ -83,56 +64,74 @@ class _MyTourPageState extends State<MyTourPage> {
                           textColor: Styles.onRedShade,
                           leading: const Icon(Icons.tour_outlined),
                           iconColor: Styles.onRedShade,
-                          title: Text(snapshot.data![index].name),
+                          title: Text(_userTours![index].title),
                           subtitle: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               LinearProgressIndicator(
                                 backgroundColor: Styles.onRedShade,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.grey.shade500),
-                                value: _myTourProgresses![index],
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade500),
+                                value: _userTours![index].progress,
                               ),
                               Text(
-                                AppLocalizations.of(context)!.active,
-                                style:
-                                    const TextStyle(color: Styles.onRedShade),
+                                _userTours![index].isActive
+                                    ? AppLocalizations.of(context)!.active
+                                    : AppLocalizations.of(context)!.inactive,
+                                style: const TextStyle(color: Styles.onRedShade),
                               ),
                             ],
                           ),
                           trailing: PopupMenuButton<PopupMenuItem>(
                             itemBuilder: (BuildContext context) => [
                               PopupMenuItem(
-                                onTap: () {
-                                  user.revertTourStop(context);
+                                onTap: () async {
+                                  setState(() {
+                                    _processing = true;
+                                  });
+                                  await user.revertTourStop(context, _userTours![index]);
+                                  setState(() {
+                                    _processing = false;
+                                  });
                                 },
-                                child: Text(
-                                    AppLocalizations.of(context)!.previousStop),
+                                child: Text(AppLocalizations.of(context)!.previousStop),
                               ),
                               PopupMenuItem(
-                                onTap: () {
-                                  user.deactivateTour(user.activeTourId!);
+                                onTap: () async {
+                                  setState(() {
+                                    _processing = true;
+                                  });
+                                  await user.deactivateTour(_userTours![index]);
+                                  setState(() {
+                                    _processing = false;
+                                  });
                                 },
-                                child: Text(
-                                    AppLocalizations.of(context)!.deactivate),
+                                child: Text(AppLocalizations.of(context)!.deactivate),
                               ),
                             ],
                           ),
                         ),
                       );
                     },
-                  );
-                } else {
-                  return Center(
-                      child: Text(
-                          AppLocalizations.of(context)!.noActiveTourFound));
-                }
-              } else {
-                return const Center(child: LoadingAnimation());
-              }
-            },
-          );
+                  ),
+                ),
+                if (_processing)
+                  Flexible(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 5,
+                        sigmaY: 5,
+                      ),
+                      child: const Center(
+                        child: LoadingAnimation(),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          } else {
+            return Center(child: Text(AppLocalizations.of(context)!.noActiveTourFound));
+          }
         },
       ),
       bottomNavigationBar: const ChocoTurNavigationBar(

@@ -1,3 +1,4 @@
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/services/google_login_service.dart';
@@ -23,6 +24,46 @@ class ChocoTurUser extends ChangeNotifier {
   static Future<ChocoTurUser> init() async {
     _prefs = await SharedPreferences.getInstance();
 
+    LoginType? loginType;
+    bool loggedIn = false;
+
+    int? loginTypeIndex = _prefs.getInt(_loginTypeIndexKey);
+    String? loginEmail = _prefs.getString(_loginEmailKey);
+    String? loginAccessToken = _prefs.getString(_loginAccessTokenKey);
+    String? loginRefreshToken = _prefs.getString(_loginRefreshTokenKey);
+    if ((loginTypeIndex != null) && (loginEmail != null) && (loginAccessToken != null)) {
+      loginType = LoginType.values[loginTypeIndex];
+
+      if (loginType == LoginType.manual) {
+        String? loginWithTokenResponse =
+            await WebappService.loginUserWithToken(loginEmail, loginAccessToken, loginRefreshToken);
+        if (loginWithTokenResponse != null) {
+          loggedIn = true;
+          // Copy eventually refreshed access token.
+          loginAccessToken = loginWithTokenResponse;
+          _prefs.setString(_loginAccessTokenKey, loginWithTokenResponse);
+        }
+      } else if (loginType == LoginType.withGoogle) {
+        try {
+          GoogleSignInAccount? account =
+              await GoogleLoginService.signInWithGoogleWithToken(loginEmail, loginAccessToken);
+          loggedIn = (account != null);
+        } catch (error) {
+          LoggerInstance.logger.e(error);
+        }
+      } else if (loginType == LoginType.withFacebook) {
+        FacebookLoginResult? res = await FacebookLoginService.signInWithFacebook();
+        loggedIn = (res != null);
+      } else {
+        LoggerInstance.logger.e('Unsupported login type $loginType');
+      }
+    }
+
+    List<ChocoTurUserTour>? userTours;
+    if (loggedIn) {
+      userTours = await WebappService.getUserTours(loginAccessToken);
+    }
+
     CameraPosition? cameraPosition;
     if (_prefs.containsKey(_cameraLatituteKey) &&
         _prefs.containsKey(_cameraLongitudeKey) &&
@@ -36,66 +77,27 @@ class ChocoTurUser extends ChangeNotifier {
       );
     }
 
-    LoginType? loginType;
-    bool loggedIn = false;
-
-    int? loginTypeIndex = _prefs.getInt(_loginTypeIndexKey);
-    String? loginEmail = _prefs.getString(_loginEmailKey);
-    String? loginAccessToken = _prefs.getString(_loginAccessTokenKey);
-    String? loginRefreshToken = _prefs.getString(_loginRefreshTokenKey);
-    if ((loginTypeIndex != null) &&
-        (loginEmail != null) &&
-        (loginAccessToken != null)) {
-      loginType = LoginType.values[loginTypeIndex];
-
-      if (loginType == LoginType.manual) {
-        Map<String, dynamic>? loginWithTokenResponse =
-            await WebappService.loginUserWithToken(
-                loginEmail, loginAccessToken, loginRefreshToken);
-        if (loginWithTokenResponse != null) {
-          loggedIn = true;
-          loginAccessToken = loginWithTokenResponse['accessToken'];
-          loginRefreshToken = loginWithTokenResponse['refreshToken'];
-        }
-      } else if (loginType == LoginType.withGoogle) {
-        try {
-          GoogleSignInAccount? account =
-              await GoogleLoginService.signInWithGoogleWithToken(
-                  loginEmail, loginAccessToken);
-          loggedIn = (account != null);
-        } catch (error) {
-          LoggerInstance.logger.e(error);
-        }
-      } else if (loginType == LoginType.withFacebook) {
-        FacebookLoginResult? res =
-            await FacebookLoginService.signInWithFacebook();
-        loggedIn = (res != null);
-      } else {
-        LoggerInstance.logger.e('Unsupported login type $loginType');
-      }
-    }
-
     return ChocoTurUser(
       loginEmail: loginEmail,
+      loginAccessToken: loginAccessToken,
+      loginRefreshToken: loginRefreshToken,
       loginType: loginType,
       loggedIn: loggedIn,
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
-      activeTourId: _prefs.getInt(_activeTourIdKey),
-      tourNextStopId: _prefs.getInt(_tourNextStopIdKey),
-      tourNextStopStoryPageIndex: _prefs.getInt(_tourNextStopStoryPageIndexKey),
+      userTours: userTours,
     );
   }
 
   ChocoTurUser({
     this.loginEmail,
+    this.loginAccessToken,
+    this.loginRefreshToken,
     this.loginType,
     required this.loggedIn,
     this.language,
     this.cameraPosition,
-    this.activeTourId,
-    this.tourNextStopId,
-    this.tourNextStopStoryPageIndex,
+    this.userTours,
   });
 
   // SharedPreferences keys.
@@ -107,20 +109,16 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
   static const String _cameraZoomKey = "cameraZoom";
-  static const String _activeTourIdKey = "activeTourId";
-  static const String _tourNextStopStoryPageIndexKey =
-      "tourNextStopStoryPageIndex";
-  static const String _tourNextStopIdKey = "tourNextStopId";
 
   // User preferences to store.
   String? loginEmail;
+  String? loginAccessToken;
+  String? loginRefreshToken;
   LoginType? loginType;
   bool loggedIn;
   String? language;
   CameraPosition? cameraPosition;
-  int? activeTourId;
-  int? tourNextStopId;
-  int? tourNextStopStoryPageIndex;
+  List<ChocoTurUserTour>? userTours;
   static late final SharedPreferences _prefs;
 
   Locale _locale = const Locale(LanguageCodes.EN);
@@ -133,10 +131,25 @@ class ChocoTurUser extends ChangeNotifier {
     return _locale;
   }
 
+  ChocoTurUserTour? get activeTour {
+    if (userTours == null) {
+      LoggerInstance.logger.d('No tours found for user');
+      return null;
+    }
+
+    for (var userTour in userTours!) {
+      if (userTour.isActive) {
+        return userTour;
+      }
+    }
+
+    LoggerInstance.logger.d('No active tour found among ${userTours!.length} tours for user');
+    return null;
+  }
+
   void setLanguage(BuildContext context, String lang) {
     if (language != null && language == lang) {
-      LoggerInstance.logger.d(
-          'Language set is equivalent to language saved in preferences ($lang).');
+      LoggerInstance.logger.d('Language set is equivalent to language saved in preferences ($lang).');
       return;
     }
 
@@ -151,18 +164,27 @@ class ChocoTurUser extends ChangeNotifier {
     String? accessToken,
     String? refreshToken,
     LoginType loginType,
-  ) {
-    _prefs.setString(_loginEmailKey, email);
-    _prefs.setInt(_loginTypeIndexKey, loginType.index);
-    if (accessToken != null) {
-      _prefs.setString(_loginAccessTokenKey, accessToken);
-    }
-    if (refreshToken != null) {
-      _prefs.setString(_loginRefreshTokenKey, refreshToken);
-    }
-
+    bool rememberUser,
+  ) async {
+    loginEmail = email;
+    loginAccessToken = accessToken;
+    loginRefreshToken = refreshToken;
     this.loginType = loginType;
     loggedIn = true;
+
+    if (rememberUser) {
+      _prefs.setString(_loginEmailKey, email);
+      _prefs.setInt(_loginTypeIndexKey, loginType.index);
+      if (accessToken != null) {
+        _prefs.setString(_loginAccessTokenKey, accessToken);
+      }
+      if (refreshToken != null) {
+        _prefs.setString(_loginRefreshTokenKey, refreshToken);
+      }
+    }
+
+    // We logged in, hence we can download user tours.
+    userTours = await WebappService.getUserTours(loginAccessToken);
     notifyListeners();
   }
 
@@ -174,16 +196,14 @@ class ChocoTurUser extends ChangeNotifier {
     // notifyListeners(); Disabled since it is set on focus lost of map page.
   }
 
-  Future<bool> activateTour(BuildContext context, int tourId) async {
-    if (activeTourId == tourId) {
-      LoggerInstance.logger
-          .i("Activating a tour that is already active, nothing to do.");
-      return false;
-    }
+  Future<bool> activateTour(BuildContext context, ChocoTurTour tour) async {
+    if (activeTour != null) {
+      if (activeTour!.id == tour.id) {
+        LoggerInstance.logger.i("Activating a tour that is already active, nothing to do.");
+        return false;
+      }
 
-    if (activeTourId != null) {
-      LoggerInstance.logger
-          .w("Activating a tour while there is one already active!");
+      LoggerInstance.logger.w("Activating a tour while there is a different one already active!");
 
       showDialog(
         context: context,
@@ -197,52 +217,56 @@ class ChocoTurUser extends ChangeNotifier {
       return false;
     }
 
-    SqliteCache cache = await SqliteCache.getInstance();
-    List<int> tourStopIds = await cache.getTourStopIds(tourId);
-    if (tourStopIds.isEmpty) {
-      throw Exception('No stops found for tour $tourId!');
+    int userTourIndex = -1;
+    if ((userTours == null) || (-1 == (userTourIndex = userTours!.indexWhere((element) => element.id == tour.id)))) {
+      LoggerInstance.logger.e('No user tour found for ID ${tour.id}');
+      return false;
     }
 
-    activeTourId = tourId;
-    tourNextStopId = tourStopIds[0];
-    _prefs.setInt(_activeTourIdKey, tourId);
-    _prefs.setInt(_tourNextStopIdKey, tourStopIds[0]);
+    // TODO: Activate tour on webapp.
+    userTours!.elementAt(userTourIndex).isActive = true;
     notifyListeners();
 
     return true;
   }
 
-  void deactivateTour(int tourId) {
-    if (activeTourId != tourId) {
-      LoggerInstance.logger.w('Tour $tourId is already unactive.');
+  Future<void> deactivateTour(ChocoTurUserTour tour) async {
+    if (activeTour == null) {
+      LoggerInstance.logger.w('No active tour present for user.');
       return;
     }
 
-    activeTourId = null;
-    tourNextStopId = null;
-    _prefs.remove(_activeTourIdKey);
-    _prefs.remove(_tourNextStopIdKey);
+    if (activeTour!.id != tour.id) {
+      LoggerInstance.logger.w('Tour ${tour.id} is already unactive.');
+      return;
+    }
+
+    // TODO: Deactivate tour on webapp.
+    userTours!.firstWhere((element) => element.id == tour.id).isActive = false;
     notifyListeners();
   }
 
-  Future<void> revertTourStop(BuildContext context) async {
-    if (activeTourId == null) {
+  Future<void> revertTourStop(BuildContext context, ChocoTurUserTour userTour) async {
+    if (activeTour == null) {
       throw Exception('No active tour present!');
     }
 
-    SqliteCache cache = await SqliteCache.getInstance();
-    List<int> tourStopIds = await cache.getTourStopIds(activeTourId!);
-    if (tourStopIds.isEmpty) {
-      throw Exception('No stops found for tour $activeTourId!');
+    if (activeTour!.id != userTour.id) {
+      throw Exception('Tour ${userTour.id} is not active');
     }
 
-    var tourStopIndex = tourStopIds.indexOf(tourNextStopId!);
+    SqliteCache cache = await SqliteCache.getInstance();
+    ChocoTurTour? tour = await cache.getTourFromId(userTour.id);
+    if (tour == null) {
+      throw Exception('No tour on cache for ID ${userTour.id}');
+    }
+
+    var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
     if (--tourStopIndex < 0) {
-      LoggerInstance.logger.i(
-          'Tour $activeTourId is already at the first stop, cannot go back further.');
+      LoggerInstance.logger.i('Tour ${userTour.id} is already at the first stop, cannot go back further.');
 
       // ignore: use_build_context_synchronously
-      return showDialog(
+      showDialog(
         context: context,
         builder: (_) => GenericAlertDialog(
           title: AppLocalizations.of(context)!.cannotRevert,
@@ -252,38 +276,35 @@ class ChocoTurUser extends ChangeNotifier {
       );
     }
 
-    tourNextStopId = tourStopIds[tourStopIndex];
-    tourNextStopStoryPageIndex = 0;
-    _prefs.setInt(_tourNextStopIdKey, tourNextStopId!);
-    _prefs.setInt(_tourNextStopStoryPageIndexKey, tourNextStopStoryPageIndex!);
-
+    // TODO: Revert tour stop on webapp.
+    activeTour!.nextStopId = tour.stopIds[tourStopIndex];
     notifyListeners();
   }
 
-  Future<void> advanceTour() async {
-    if (activeTourId == null) {
+  Future<void> advanceTour(ChocoTurUserTour userTour) async {
+    if (activeTour == null) {
       throw Exception('No active tour present!');
     }
 
+    if (activeTour!.id != userTour.id) {
+      throw Exception('Tour ${userTour.id} is not active');
+    }
+
     SqliteCache cache = await SqliteCache.getInstance();
-    List<int> tourStopIds = await cache.getTourStopIds(activeTourId!);
-    if (tourStopIds.isEmpty) {
-      throw Exception('No stops found for tour $activeTourId!');
+    ChocoTurTour? tour = await cache.getTourFromId(userTour.id);
+    if (tour == null) {
+      throw Exception('No tour on cache for ID ${userTour.id}');
     }
 
-    var tourStopIndex = tourStopIds.indexOf(tourNextStopId!);
-    if (++tourStopIndex == tourStopIds.length) {
-      LoggerInstance.logger.i(
-          'Tour $activeTourId is finished, removing from active tours for user.');
+    var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
+    if (++tourStopIndex == tour.stopIds.length) {
+      LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
 
-      return deactivateTour(activeTourId!);
+      return deactivateTour(activeTour!);
     }
 
-    tourNextStopId = tourStopIds[tourStopIndex];
-    tourNextStopStoryPageIndex = 0;
-    _prefs.setInt(_tourNextStopIdKey, tourNextStopId!);
-    _prefs.setInt(_tourNextStopStoryPageIndexKey, tourNextStopStoryPageIndex!);
-
+    // TODO: Advance tour on webapp.
+    activeTour!.nextStopId = tour.stopIds[tourStopIndex];
     notifyListeners();
   }
 
@@ -299,5 +320,33 @@ class ChocoTurUser extends ChangeNotifier {
       await FacebookLoginService.facebookLogin.logOut();
     }
     _prefs.remove(_loginTypeIndexKey);
+  }
+}
+
+class ChocoTurUserTour {
+  ChocoTurUserTour();
+
+  late final String id;
+  late final String title;
+  late final String nextStopId;
+  late final bool isActive;
+  late final double progress;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'nextStopId': nextStopId,
+      'active': isActive,
+      'progress': progress,
+    };
+  }
+
+  ChocoTurUserTour.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    title = map['title'];
+    nextStopId = map['nextStopId'];
+    isActive = map['active'];
+    progress = map['progress'];
   }
 }

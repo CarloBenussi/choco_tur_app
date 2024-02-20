@@ -32,13 +32,13 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   InfoWidgetRoute? _infoWidgetRoute;
 
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   bool? _showGoToNextStopDialog;
 
-  int? _lastActiveTourId;
-  int? _lastTourNextStopId;
+  List<ChocoTurStop>? _activeTourStops;
+  LatLng? _nextStopCoordinates;
+  String? _langCode;
 
   // ignore: prefer_final_fields
   Future<Set<Marker>>? _markers;
@@ -47,8 +47,7 @@ class _MapPageState extends State<MapPage> {
 
   /// First it creates the Info Widget Route and then
   /// animates the Camera to the stop coordinates.
-  void _onTap(BuildContext context, ChocoTurTourStop stop,
-      [double? zoom]) async {
+  void _onTap(BuildContext context, ChocoTurStop stop, [double? zoom]) async {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     Rect itemRect = renderBox.localToGlobal(Offset.zero) & renderBox.size;
 
@@ -78,55 +77,47 @@ class _MapPageState extends State<MapPage> {
 
   Future<Uint8List> _getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
-        targetWidth: width);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
 
   Future<Set<Marker>> _getActiveToursMarkers(BuildContext context) async {
-    int? activeTourId =
-        Provider.of<ChocoTurUser>(context, listen: true).activeTourId;
-    int? tourNextStopId =
-        Provider.of<ChocoTurUser>(context, listen: true).tourNextStopId;
+    ChocoTurUserTour? activeUserTour = Provider.of<ChocoTurUser>(context, listen: true).activeTour;
 
-    _lastActiveTourId = activeTourId;
-    _lastTourNextStopId = tourNextStopId;
     Set<Marker> markers = {};
-    if (activeTourId != null) {
+    if (activeUserTour != null) {
       SqliteCache cache = await SqliteCache.getInstance();
-      List<ChocoTurTourStop> tourStops = await cache.getTourStops(activeTourId);
+      _activeTourStops = await cache.getTourStops(activeUserTour.id);
+      if (_activeTourStops != null) {
+        for (var i = 0; i < _activeTourStops!.length; ++i) {
+          final ChocoTurStop stop = _activeTourStops![i];
+          final String markerIdStr = '${activeUserTour.id.toString()} - ${stop.id.toString()}';
+          final Uint8List markerIcon = await _getBytesFromAsset('assets/markers/${i + 1}.png', 100);
 
-      for (var i = 0; i < tourStops.length; ++i) {
-        final ChocoTurTourStop stop = tourStops[i];
-        final String markerIdStr =
-            '${activeTourId.toString()} - ${stop.id.toString()}';
-        final Uint8List markerIcon =
-            await _getBytesFromAsset('assets/markers/${i + 1}.png', 100);
-
-        Marker? tourStopMarker;
-        if (stop.id == tourNextStopId) {
-          tourStopMarker = RippleMarker(
+          Marker? tourStopMarker;
+          if (stop.id == activeUserTour.nextStopId) {
+            _nextStopCoordinates = stop.coordinates;
+            tourStopMarker = RippleMarker(
+                markerId: MarkerId(markerIdStr),
+                position: stop.coordinates,
+                icon: BitmapDescriptor.fromBytes(markerIcon),
+                // ignore: use_build_context_synchronously
+                onTap: () => _onTap(context, stop));
+          } else {
+            tourStopMarker = Marker(
               markerId: MarkerId(markerIdStr),
               position: stop.coordinates,
+              infoWindow: InfoWindow(
+                title: stop.titles[_langCode],
+              ),
               icon: BitmapDescriptor.fromBytes(markerIcon),
-              // ignore: use_build_context_synchronously
-              onTap: () => _onTap(context, stop));
-        } else {
-          tourStopMarker = Marker(
-            markerId: MarkerId(markerIdStr),
-            position: stop.coordinates,
-            infoWindow: InfoWindow(
-              title: stop.name,
-            ),
-            icon: BitmapDescriptor.fromBytes(markerIcon),
-          );
-        }
+            );
+          }
 
-        if (!markers.add(tourStopMarker)) {
-          LoggerInstance.logger.w('Marker $markerIdStr is already in set!');
+          if (!markers.add(tourStopMarker)) {
+            LoggerInstance.logger.w('Marker $markerIdStr is already in set!');
+          }
         }
       }
     }
@@ -138,8 +129,7 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
 
-    _cameraPosition ??=
-        Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
+    _cameraPosition ??= Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if ((_showGoToNextStopDialog != null) && _showGoToNextStopDialog!) {
@@ -153,8 +143,7 @@ class _MapPageState extends State<MapPage> {
               AppLocalizations.of(context)!.goToTheNextStop,
               style: const TextStyle(color: Styles.onRedShade),
             ),
-            content: Text(
-                AppLocalizations.of(context)!.goToTheNextStopIndication,
+            content: Text(AppLocalizations.of(context)!.goToTheNextStopIndication,
                 style: const TextStyle(color: Styles.onRedShade)),
             elevation: 24.0,
           ),
@@ -168,6 +157,7 @@ class _MapPageState extends State<MapPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    _langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
     _markers = _getActiveToursMarkers(context);
 
     var showGoToNextStopDialogObj = ModalRoute.of(context)!.settings.arguments;
@@ -181,8 +171,7 @@ class _MapPageState extends State<MapPage> {
     return FocusDetector(
       onFocusLost: () {
         if (_cameraPosition != null) {
-          Provider.of<ChocoTurUser>(context, listen: false)
-              .setCameraPosition(_cameraPosition!);
+          Provider.of<ChocoTurUser>(context, listen: false).setCameraPosition(_cameraPosition!);
         }
       },
       child: SafeArea(
@@ -192,15 +181,13 @@ class _MapPageState extends State<MapPage> {
           body: FutureBuilder(
             future: _markers,
             builder: (context, snapshot) {
-              if (snapshot.hasData &&
-                  snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
                 return Stack(
                   children: [
                     Animarker(
                       curve: Curves.ease,
                       rippleRadius: 0.1,
-                      mapId: _controller.future.then<int>(
-                          (value) => value.mapId), //Grab Google Map Id
+                      mapId: _controller.future.then<int>((value) => value.mapId), //Grab Google Map Id
                       markers: snapshot.data!,
                       child: GoogleMap(
                         mapType: MapType.normal,
@@ -224,9 +211,7 @@ class _MapPageState extends State<MapPage> {
                         /// If onCameraIdle does not work see https://github.com/flutter/flutter/issues/37682)
                         onCameraIdle: () {
                           if (_infoWidgetRoute != null) {
-                            Navigator.of(context, rootNavigator: true)
-                                .push(_infoWidgetRoute!)
-                                .then<void>(
+                            Navigator.of(context, rootNavigator: true).push(_infoWidgetRoute!).then<void>(
                               (newValue) {
                                 _infoWidgetRoute = null;
                               },
@@ -245,18 +230,15 @@ class _MapPageState extends State<MapPage> {
                       top: 15,
                       child: DrawerButton(
                         style: ButtonStyle(
-                          iconColor:
-                              const MaterialStatePropertyAll(Styles.onRedShade),
-                          backgroundColor:
-                              MaterialStatePropertyAll(Styles.redShade),
+                          iconColor: const MaterialStatePropertyAll(Styles.onRedShade),
+                          backgroundColor: MaterialStatePropertyAll(Styles.redShade),
                         ),
                       ),
                     ),
                     Positioned(
                       right: 15,
                       bottom: 85,
-                      child: MapTourButton(_lastActiveTourId,
-                          _lastTourNextStopId, _moveCameraToCoordinates),
+                      child: MapTourButton(_nextStopCoordinates, _moveCameraToCoordinates),
                     ),
                   ],
                 );
@@ -292,8 +274,7 @@ class _MapPageState extends State<MapPage> {
   @override
   void dispose() async {
     if (_cameraPosition != null) {
-      Provider.of<ChocoTurUser>(context, listen: false)
-          .setCameraPosition(_cameraPosition!);
+      Provider.of<ChocoTurUser>(context, listen: false).setCameraPosition(_cameraPosition!);
     }
 
     super.dispose();

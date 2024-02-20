@@ -3,22 +3,22 @@ import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-class TourStopStoryPageQuiz extends StatefulWidget {
-  const TourStopStoryPageQuiz({super.key, required this.stopStoryPage});
+class TourStopStoryQuiz extends StatefulWidget {
+  const TourStopStoryQuiz({super.key, required this.stopStory});
 
-  final ChocoTurStopPage stopStoryPage;
+  final ChocoTurStopStory stopStory;
 
   @override
-  State<TourStopStoryPageQuiz> createState() => _TourStopStoryPageQuizState();
+  State<TourStopStoryQuiz> createState() => _TourStopStoryQuizState();
 }
 
-class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
+class _TourStopStoryQuizState extends State<TourStopStoryQuiz> {
   int? _selectedAnswerIndex;
 
   Color _decideOnColor(int answerIndex) {
     if (_selectedAnswerIndex == null) {
       return Colors.grey.shade300;
-    } else if (answerIndex == widget.stopStoryPage.correctAnswerIndex) {
+    } else if (answerIndex == widget.stopStory.correctAnswerIndex) {
       return Colors.green;
     } else if (answerIndex == _selectedAnswerIndex) {
       return Colors.red;
@@ -31,8 +31,7 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
     _selectedAnswerIndex = answerIndex;
     setState(() {});
 
-    bool isAnswerCorret =
-        (_selectedAnswerIndex == widget.stopStoryPage.correctAnswerIndex);
+    bool isAnswerCorret = (_selectedAnswerIndex == widget.stopStory.correctAnswerIndex);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -47,21 +46,18 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
                 color: Styles.onRedShade,
               ),
         title: Text(
-          isAnswerCorret
-              ? AppLocalizations.of(context)!.correct
-              : AppLocalizations.of(context)!.wrong,
+          isAnswerCorret ? AppLocalizations.of(context)!.correct : AppLocalizations.of(context)!.wrong,
           style: const TextStyle(color: Styles.onRedShade),
         ),
         content: RichText(
           text: TextSpan(
             children: [
               TextSpan(
-                text:
-                    '${widget.stopStoryPage.onAnswerTexts![_selectedAnswerIndex!]}\n',
+                text: '${widget.stopStory.onAnswerTexts![_selectedAnswerIndex!]}\n',
                 style: const TextStyle(color: Styles.onRedShade),
               ),
               TextSpan(
-                text: widget.stopStoryPage.afterQuizText!,
+                text: widget.stopStory.afterQuizText!,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
             ],
@@ -94,26 +90,22 @@ class _TourStopStoryPageQuizState extends State<TourStopStoryPageQuiz> {
             child: Container(
               width: double.infinity,
               height: 50,
-              decoration: BoxDecoration(
-                  color: Styles.redShade,
-                  borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Styles.redShade, borderRadius: BorderRadius.circular(8)),
               child: Center(
                   child: Text(
-                widget.stopStoryPage.quizQuestion!,
+                widget.stopStory.quizQuestion!,
                 style: const TextStyle(color: Styles.onRedShade),
               )),
             ),
           ),
-          for (var i = 0; i < widget.stopStoryPage.quizAnswers!.length; ++i)
+          for (var i = 0; i < widget.stopStory.quizAnswers!.length; ++i)
             Padding(
               padding: const EdgeInsets.only(top: 5),
               child: Container(
-                decoration: BoxDecoration(
-                    color: _decideOnColor(i),
-                    borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: _decideOnColor(i), borderRadius: BorderRadius.circular(8)),
                 child: ListTile(
                   leading: Text((i + 1).toString()),
-                  title: Text(widget.stopStoryPage.quizAnswers![i]),
+                  title: Text(widget.stopStory.quizAnswers![i]),
                   onTap: () => _giveAnswer(context, i),
                 ),
               ),

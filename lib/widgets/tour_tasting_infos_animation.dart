@@ -6,23 +6,23 @@ import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:flutter/material.dart';
 
-class TourStopsInfoAnimation extends StatefulWidget {
-  const TourStopsInfoAnimation({
+class TourTastingInfosAnimation extends StatefulWidget {
+  const TourTastingInfosAnimation({
     super.key,
+    required this.langCode,
     required this.tourId,
-    required this.tourStops,
-    required this.tourStopTastings,
+    required this.tourTastingInfos,
   });
 
-  final int tourId;
-  final List<ChocoTurTourStop> tourStops;
-  final List<Chocolate?> tourStopTastings;
+  final String langCode;
+  final String tourId;
+  final List<ChocoTurTourTastingInfo> tourTastingInfos;
 
   @override
-  State<TourStopsInfoAnimation> createState() => _TourStopsInfoAnimationState();
+  State<TourTastingInfosAnimation> createState() => _TourTastingInfosAnimationState();
 }
 
-class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
+class _TourTastingInfosAnimationState extends State<TourTastingInfosAnimation> {
   int _currentSelectedIndex = 0;
   int _previousSelectedIndex = 0;
   bool _swipeEnabled = true;
@@ -51,7 +51,7 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
   }
 
   void _onSwipeRight() {
-    if (_currentSelectedIndex == widget.tourStops.length - 1) {
+    if (_currentSelectedIndex == widget.tourTastingInfos.length - 1) {
       return;
     }
 
@@ -79,21 +79,19 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            for (var i = 0; i < widget.tourStops.length; ++i) ...[
+            for (var i = 0; i < widget.tourTastingInfos.length; ++i) ...[
               Flexible(
                 flex: 1,
                 child: ElevatedButton(
                   onPressed: () => _onPressed(i),
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
-                    backgroundColor: (i == _currentSelectedIndex)
-                        ? Colors.white
-                        : Styles.redShade,
+                    backgroundColor: (i == _currentSelectedIndex) ? Colors.white : Styles.redShade,
                   ),
                   child: null,
                 ),
               ),
-              if (i < widget.tourStops.length - 1)
+              if (i < widget.tourTastingInfos.length - 1)
                 Flexible(
                   flex: 1,
                   child: Padding(
@@ -149,9 +147,8 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
                   Flexible(
                     flex: 1,
                     child: TitleAndDescription(
-                      title: widget.tourStops[_currentSelectedIndex].name,
-                      description:
-                          widget.tourStops[_currentSelectedIndex].description,
+                      title: widget.tourTastingInfos[_currentSelectedIndex].titles[widget.langCode]!,
+                      description: widget.tourTastingInfos[_currentSelectedIndex].descriptions[widget.langCode]!,
                     ),
                   ),
                   Flexible(
@@ -160,26 +157,12 @@ class _TourStopsInfoAnimationState extends State<TourStopsInfoAnimation> {
                       padding: const EdgeInsets.only(top: 20),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.asset(
-                          widget.tourStops[_currentSelectedIndex].mainImageUrl,
+                        child: Image.memory(
+                          widget.tourTastingInfos[_currentSelectedIndex].imageData!,
                         ),
                       ),
                     ),
                   ),
-                  if (widget.tourStops[_currentSelectedIndex].hasTasting)
-                    Flexible(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: TitleAndDescription(
-                          title: widget
-                              .tourStopTastings[_currentSelectedIndex]!.name,
-                          description: widget
-                              .tourStopTastings[_currentSelectedIndex]!
-                              .description,
-                        ),
-                      ),
-                    )
                 ],
               ),
             ),

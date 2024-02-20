@@ -50,7 +50,8 @@ class _LoginPageState extends State<LoginPage> {
         _loggingIn = false;
       });
 
-      if (loginSuccess) {
+      if (loginSuccess && mounted) {
+        LoggerInstance.logger.i('Successfully logged in');
         Navigator.pushReplacementNamed(context, RouteNames.home);
       }
     }
@@ -58,8 +59,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void loginWithGoogle(BuildContext context) async {
     try {
-      GoogleSignInAccount? account =
-          await GoogleLoginService.signInWithGoogle();
+      GoogleSignInAccount? account = await GoogleLoginService.signInWithGoogle();
       if (account == null) {
         throw Exception("Failed to log in with Google.");
       }
@@ -72,6 +72,7 @@ class _LoginPageState extends State<LoginPage> {
         authentication.accessToken,
         null,
         LoginType.withGoogle,
+        true,
       );
 
       // TODO: send token to spring app for validation and user registration, and save
@@ -79,7 +80,9 @@ class _LoginPageState extends State<LoginPage> {
 
       LoggerInstance.logger.i("Successfully logged in with Google.");
 
-      Navigator.pushReplacementNamed(context, RouteNames.home);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, RouteNames.home);
+      }
     } catch (e) {
       LoggerInstance.logger.e(e.toString());
       // ignore: use_build_context_synchronously
@@ -87,8 +90,7 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (_) => GenericAlertDialog(
           title: AppLocalizations.of(context)!.loginFailedTitle,
-          content:
-              '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
+          content: '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
         ),
         barrierDismissible: true,
       );
@@ -99,8 +101,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void loginWithFacebook() async {
     try {
-      FacebookLoginResult? res =
-          await FacebookLoginService.signInWithFacebook();
+      FacebookLoginResult? res = await FacebookLoginService.signInWithFacebook();
       if (res == null) {
         throw Exception("Failed to log in with Facebook.");
       }
@@ -118,6 +119,7 @@ class _LoginPageState extends State<LoginPage> {
         accessToken?.token,
         null,
         LoginType.withFacebook,
+        true,
       );
 
       // TODO: send token to spring app for validation and user registration, and save
@@ -125,7 +127,9 @@ class _LoginPageState extends State<LoginPage> {
 
       LoggerInstance.logger.i("Successfully logged in with Facebook.");
 
-      Navigator.pushReplacementNamed(context, RouteNames.home);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, RouteNames.home);
+      }
     } catch (e) {
       LoggerInstance.logger.e(e.toString());
       // ignore: use_build_context_synchronously
@@ -133,8 +137,7 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (_) => GenericAlertDialog(
           title: AppLocalizations.of(context)!.loginFailedTitle,
-          content:
-              '${AppLocalizations.of(context)!.loginWithFacebookFailed}\n\n${e.toString()}',
+          content: '${AppLocalizations.of(context)!.loginWithFacebookFailed}\n\n${e.toString()}',
         ),
         barrierDismissible: true,
       );
@@ -174,12 +177,10 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Image.asset("assets/chocolateGobino.jpg",
-                            fit: BoxFit.cover)),
+                        child: Image.asset("assets/chocolateGobino.jpg", fit: BoxFit.cover)),
                   ),
                   Center(
-                    child: Text(
-                        AppLocalizations.of(context)!.loginWithCredentialsTitle,
+                    child: Text(AppLocalizations.of(context)!.loginWithCredentialsTitle,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w300,
@@ -192,15 +193,13 @@ class _LoginPageState extends State<LoginPage> {
                         UserTextInput(
                           controller: _emailController,
                           hintText: AppLocalizations.of(context)!.email,
-                          validator: (email) =>
-                              Validation.validateEmail(context, email),
+                          validator: (email) => Validation.validateEmail(context, email),
                         ),
                         UserTextInput(
                           controller: _passwordController,
                           hintText: AppLocalizations.of(context)!.password,
                           obscured: true,
-                          validator: (password) =>
-                              Validation.validatePassword(context, password),
+                          validator: (password) => Validation.validatePassword(context, password),
                         ),
                       ],
                     ),
@@ -231,8 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: forgotPassword,
                             child: Text(
                               AppLocalizations.of(context)!.forgotPassword,
-                              style: const TextStyle(
-                                  fontSize: 15, color: Colors.blue),
+                              style: const TextStyle(fontSize: 15, color: Colors.blue),
                             )),
                       )
                     ],
@@ -246,14 +244,10 @@ class _LoginPageState extends State<LoginPage> {
                           flex: 1,
                           child: ElevatedButton(
                               onPressed: loginUser,
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.lightBlue),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlue),
                               child: Text(
                                 AppLocalizations.of(context)!.signInButtonLabel,
-                                style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w300,
-                                    color: Colors.white),
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w300, color: Colors.white),
                               )),
                         ),
                       ],
@@ -304,8 +298,7 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.only(bottom: 10),
                     child: LoginWithButton(
                       onPressedFunction: loginWithFacebook,
-                      labelText:
-                          AppLocalizations.of(context)!.signInWithFacebook,
+                      labelText: AppLocalizations.of(context)!.signInWithFacebook,
                       icon: const FaIcon(
                         FontAwesomeIcons.facebook,
                         color: Colors.white,
@@ -323,14 +316,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       TextButton(
-                          onPressed: () => {
-                                Navigator.pushNamed(
-                                    context, RouteNames.registrationProcess)
-                              },
+                          onPressed: () => {Navigator.pushNamed(context, RouteNames.registrationProcess)},
                           child: Text(
                             AppLocalizations.of(context)!.createAnAccount,
-                            style: const TextStyle(
-                                fontSize: 15, color: Colors.blue),
+                            style: const TextStyle(fontSize: 15, color: Colors.blue),
                           ))
                     ],
                   ),

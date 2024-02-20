@@ -22,20 +22,17 @@ class HomePageTour extends StatelessWidget {
             tag: chocoTurTour.id,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(chocoTurTour.mainImageUrl),
+              child: Image.memory(chocoTurTour.imageData!),
             ),
           ),
           Positioned(
             bottom: 5,
             left: 5,
             child: Text(
-              chocoTurTour.name,
+              chocoTurTour.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300, color: Colors.white),
             ),
           ),
           Positioned(
@@ -50,7 +47,7 @@ class HomePageTour extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: chocoTurTour.costInEuros.toString(),
+                          text: chocoTurTour.costEuros.toString(),
                           style: const TextStyle(color: Colors.white),
                         ),
                         const WidgetSpan(
@@ -68,7 +65,7 @@ class HomePageTour extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: chocoTurTour.numTastings.toString(),
+                        text: chocoTurTour.tastingInfos.length.toString(),
                         style: const TextStyle(color: Colors.white),
                       ),
                       const WidgetSpan(

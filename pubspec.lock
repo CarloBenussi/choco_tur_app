@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "64.0.0"
+  _flutterfire_internals:
+    dependency: transitive
+    description:
+      name: _flutterfire_internals
+      sha256: "1a52f1afae8ab7ac4741425114713bdbba802f1ce1e0648e167ffcc6e05e96cf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.21"
   analyzer:
     dependency: transitive
     description:
@@ -257,6 +265,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.4"
+  dob_input_field:
+    dependency: "direct main"
+    description:
+      name: dob_input_field
+      sha256: "35e75d922d025febc7d272f81a39fcff82f9ab8fde50a44a32c74c5eb237ea3a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   duration:
     dependency: "direct main"
     description:
@@ -305,6 +321,78 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.4"
+  firebase_app_check:
+    dependency: "direct main"
+    description:
+      name: firebase_app_check
+      sha256: "055f9c735018081975e3a9adfff92876771e0291fc329ab69695d12ad9995c3f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1+13"
+  firebase_app_check_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_app_check_platform_interface
+      sha256: a301a28d03aef9aabe4a52434984337e5cad18c856b77df1d667ac693b43a77b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+15"
+  firebase_app_check_web:
+    dependency: transitive
+    description:
+      name: firebase_app_check_web
+      sha256: "7ad135792c929c680c4462fb81f01c2b55f8ddc50d603dda1b07513e1c36840e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+15"
+  firebase_core:
+    dependency: "direct main"
+    description:
+      name: firebase_core
+      sha256: "7e049e32a9d347616edb39542cf92cd53fdb4a99fb6af0a0bff327c14cd76445"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.25.4"
+  firebase_core_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_core_platform_interface
+      sha256: c437ae5d17e6b5cc7981cf6fd458a5db4d12979905f9aafd1fea930428a9fe63
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
+  firebase_core_web:
+    dependency: transitive
+    description:
+      name: firebase_core_web
+      sha256: "57e61d6010e253b36d38191cefd6199d7849152cdcd234b61ca290cdb278a0ba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.11.4"
+  firebase_storage:
+    dependency: "direct main"
+    description:
+      name: firebase_storage
+      sha256: b87029b506972987a827feaf296c21cd0fe1bb69c2595be1672253ba5205573e
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.6.5"
+  firebase_storage_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_storage_platform_interface
+      sha256: "180822103b164d0d597131f2fb658cd1c438148abafc6f2256b565227303ba35"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.8"
+  firebase_storage_web:
+    dependency: transitive
+    description:
+      name: firebase_storage_web
+      sha256: "9523c455521b0497ee436be8614aab52f719309d16147a5b11091e44e4c5aa0a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.22"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -318,6 +406,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  flutter_cache_manager:
+    dependency: "direct main"
+    description:
+      name: flutter_cache_manager
+      sha256: "8207f27539deb83732fdda03e259349046a39a4c767269285f449ade355d54ba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.1"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
@@ -861,6 +957,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.1"
+  rxdart:
+    dependency: transitive
+    description:
+      name: rxdart
+      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.27.7"
   sanitize_html:
     dependency: transitive
     description:

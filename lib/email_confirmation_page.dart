@@ -25,15 +25,13 @@ class _EmailConfirmationPageState extends State<EmailConfirmationPage> {
         _waitingForWebResponse = true;
       });
       bool confirmSuccess =
-          await WebappService.confirmEmail(widget.email, text);
+          await WebappService.confirmEmail(context, widget.email, text);
       setState(() {
         _waitingForWebResponse = false;
       });
 
-      if (confirmSuccess) {
+      if (confirmSuccess && mounted) {
         Navigator.pushReplacementNamed(context, RouteNames.home);
-      } else {
-        // TODO: Show alert dialog (wrong code).
       }
     }
   }

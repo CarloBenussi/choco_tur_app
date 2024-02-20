@@ -9,6 +9,7 @@ class ChocoTurDrawer extends StatelessWidget {
 
   void _onLogoutPressed(BuildContext context) async {
     await Provider.of<ChocoTurUser>(context, listen: false).logout();
+    // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, RouteNames.login);
   }
 

@@ -8,6 +8,8 @@
 
 #include <audioplayers_windows/audioplayers_windows_plugin.h>
 #include <dynamic_color/dynamic_color_plugin_c_api.h>
+#include <firebase_core/firebase_core_plugin_c_api.h>
+#include <firebase_storage/firebase_storage_plugin_c_api.h>
 #include <geolocator_windows/geolocator_windows.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
@@ -15,6 +17,10 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("AudioplayersWindowsPlugin"));
   DynamicColorPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("DynamicColorPluginCApi"));
+  FirebaseCorePluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FirebaseCorePluginCApi"));
+  FirebaseStoragePluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FirebaseStoragePluginCApi"));
   GeolocatorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("GeolocatorWindows"));
 }

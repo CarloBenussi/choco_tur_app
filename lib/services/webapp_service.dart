@@ -1,13 +1,18 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/widgets/generic_alert_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WebappService {
   static const String webAppUrl = String.fromEnvironment('WEBAPP_URL');
@@ -16,6 +21,10 @@ class WebappService {
   static const String loginEndpoint = "/users/login";
   static const String loginWithTokenEndpoint = "/users/loginWithToken";
   static const String refreshTokenEndpoint = "/users/refreshToken";
+
+  static const String userToursEndpoint = "/tours/userTours";
+  static const String toursEndpoint = "/tours/tours";
+  static const String tourStopsEndpoint = "/tours/tourStops";
 
   static HttpClient? _client;
 
@@ -28,34 +37,49 @@ class WebappService {
     );
     _client = HttpClient(context: securityContext);
     _client!.connectionTimeout = const Duration(seconds: 5);
-    _client!.badCertificateCallback =
-        (X509Certificate cert, String host, int port) => true;
+    _client!.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 
   static Future<bool> registerUser(
-      String email, String password, String matchingPassword) async {
+    BuildContext context,
+    String email,
+    String password,
+    String matchingPassword,
+    String? dateOfBirth,
+    String? nationality,
+  ) async {
     Uri uri = Uri.https(webAppUrl, registrationEndpoint);
     HttpClientRequest request = await _client!.postUrl(uri);
     request.headers.set('Content-Type', 'application/json');
     String body = jsonEncode({
       'email': email,
       'password': password,
-      'matchingPassword': matchingPassword,
+      'dateOfBirth': dateOfBirth,
+      'nationality': nationality,
     });
     request.add(utf8.encode(body));
     HttpClientResponse response = await request.close();
 
     if (response.statusCode != 200) {
-      LoggerInstance.logger.e(
-          'Got error response for registration: ${response.statusCode}, ${response.reasonPhrase}');
+      String reason = await response.transform(utf8.decoder).join();
+      LoggerInstance.logger.e('Got error response for registration: ${response.statusCode}, $reason');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.registrationFailed,
+          content: reason,
+        ),
+        barrierDismissible: true,
+      );
+
       return false;
     }
 
-    //var decodedResponse = jsonDecode(utf8.decode(response.)) as Map;
     return true;
   }
 
-  static Future<bool> confirmEmail(String email, String numberSequence) async {
+  static Future<bool> confirmEmail(BuildContext context, String email, String numberSequence) async {
     var params = {
       'email': email,
       'number': numberSequence,
@@ -64,18 +88,33 @@ class WebappService {
     HttpClientRequest request = await _client!.getUrl(uri);
     HttpClientResponse response = await request.close();
     if (response.statusCode != 200) {
-      LoggerInstance.logger.e(
-          'Got error response for email confirmation: ${response.statusCode}');
+      String reason = await response.transform(utf8.decoder).join();
+      LoggerInstance.logger.e('Got error response for email confirmation: ${response.statusCode}, $reason');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.registrationConfirmationFailed,
+          content: reason,
+        ),
+        barrierDismissible: true,
+      );
+
       return false;
     }
 
-    //var decodedResponse = jsonDecode(utf8.decode(response.)) as Map;
-    // TODO: Extract and save token.
+    Map<String, dynamic> body = jsonDecode(await response.transform(utf8.decoder).join());
+    Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
+      email,
+      body["accessToken"],
+      body["refreshToken"],
+      LoginType.manual,
+      true,
+    );
     return true;
   }
 
-  static Future<bool> loginUser(BuildContext context, String email,
-      String password, bool rememberUser) async {
+  static Future<bool> loginUser(BuildContext context, String email, String password, bool rememberUser) async {
     Uri uri = Uri.https(webAppUrl, loginEndpoint);
     HttpClientRequest request = await _client!.postUrl(uri);
     request.headers.set('Content-Type', 'application/json');
@@ -84,26 +123,34 @@ class WebappService {
     HttpClientResponse response = await request.close();
 
     if (response.statusCode != 200) {
-      LoggerInstance.logger.e(
-          'Got error response for registration: ${response.statusCode}, ${response.reasonPhrase}');
+      String reason = await response.transform(utf8.decoder).join();
+      LoggerInstance.logger.e('Got error response for registration: ${response.statusCode}, $reason');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.loginFailed,
+          content: reason,
+        ),
+        barrierDismissible: true,
+      );
+
       return false;
     }
 
-    if (rememberUser) {
-      Map<String, dynamic> body =
-          jsonDecode(await response.transform(utf8.decoder).join());
-      Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
-        email,
-        body["accessToken"],
-        body["refreshToken"],
-        LoginType.manual,
-      );
-    }
+    Map<String, dynamic> returnBody = jsonDecode(await response.transform(utf8.decoder).join());
+    Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
+      email,
+      returnBody["accessToken"],
+      returnBody["refreshToken"],
+      LoginType.manual,
+      rememberUser,
+    );
+
     return true;
   }
 
-  static Future<Map<String, dynamic>?> loginUserWithToken(
-      String email, String accessToken, String? refreshToken) async {
+  static Future<String?> loginUserWithToken(String email, String accessToken, String? refreshToken) async {
     Uri uri = Uri.https(webAppUrl, loginWithTokenEndpoint);
     HttpClientRequest request = await _client!.postUrl(uri);
     request.headers.set('Content-Type', 'application/json');
@@ -114,38 +161,162 @@ class WebappService {
     if (response.statusCode == 200) {
       LoggerInstance.logger.d("Login with token successful");
 
-      return {
-        'accessToken': accessToken,
-        'refreshToken': refreshToken,
-      };
+      return accessToken;
     } else if (response.statusCode == 401) {
-      LoggerInstance.logger
-          .d("Expired access token, trying to use refresh token.");
+      LoggerInstance.logger.d("Expired access token, trying to use refresh token.");
 
       if (refreshToken == null) {
         LoggerInstance.logger.w("No refresh token save on user preferences.");
         return null;
       }
 
-      var params = {
-        'email': email,
-        'refreshToken': refreshToken,
-      };
-      uri = Uri.https(webAppUrl, refreshTokenEndpoint, params);
-      request = await _client!.getUrl(uri);
-      response = await request.close();
-
-      if (response.statusCode != 200) {
-        LoggerInstance.logger.w(
-            'Got error response for refresh token: ${response.statusCode}, ${response.reasonPhrase}');
-        return null;
-      }
-
-      return jsonDecode(await response.transform(utf8.decoder).join());
+      return _refreshToken(email, refreshToken);
     } else {
-      LoggerInstance.logger.e(
-          'Got error response for registration: ${response.statusCode}, ${response.reasonPhrase}');
+      LoggerInstance.logger.e('Got error response for registration: ${response.statusCode}, ${response.reasonPhrase}');
       return null;
     }
+  }
+
+  static Future<List<ChocoTurUserTour>?> getUserTours(String? accessToken) async {
+    Uri uri = Uri.https(webAppUrl, userToursEndpoint);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+
+    if (response.statusCode == 200) {
+      List<dynamic> userTourMaps = jsonDecode(body);
+      List<ChocoTurUserTour> userTours = [];
+      for (var userTourMap in userTourMaps) {
+        userTours.add(ChocoTurUserTour.fromMap(userTourMap));
+      }
+      return userTours;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tours download: ${response.statusCode}, $body');
+      return null;
+    }
+  }
+
+  static Future<List<ChocoTurTour>?> getTours(BuildContext context, String? accessToken) async {
+    Uri uri = Uri.https(webAppUrl, toursEndpoint);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (response.statusCode == 401) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      List<dynamic> tourMaps = jsonDecode(body)["tours"];
+      List<ChocoTurTour> tours = [];
+      for (var tourMap in tourMaps) {
+        tours.add(ChocoTurTour.fromMap(tourMap));
+      }
+      return tours;
+    } else {
+      LoggerInstance.logger.e('Got error response for tours download: ${response.statusCode}, $body');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.tourInfoDownloadFailed,
+          content: body,
+        ),
+        barrierDismissible: true,
+      );
+
+      return null;
+    }
+  }
+
+  static Future<List<ChocoTurStop>?> getTourStops(BuildContext context, String tourId, String? accessToken) async {
+    var params = {
+      'tourId': tourId,
+    };
+    Uri uri = Uri.https(webAppUrl, tourStopsEndpoint, params);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (response.statusCode == 401) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      List<dynamic> tourStopMaps = jsonDecode(body);
+      List<ChocoTurStop> tourStops = [];
+      for (var tourStopMap in tourStopMaps) {
+        tourStops.add(ChocoTurStop.fromMap(tourStopMap));
+      }
+      return tourStops;
+    } else {
+      LoggerInstance.logger.e('Got error response for tours download: ${response.statusCode}, $body');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.tourStopDownloadFailed,
+          content: body,
+        ),
+        barrierDismissible: true,
+      );
+
+      return null;
+    }
+  }
+
+  static Future<HttpClientResponse?> _redoRequestWithRefreshedToken(
+      BuildContext context, HttpClientRequest request) async {
+    String? email = Provider.of<ChocoTurUser>(context, listen: false).loginEmail;
+    String? refreshToken = Provider.of<ChocoTurUser>(context, listen: false).loginRefreshToken;
+    if ((email == null) || (refreshToken == null)) {
+      LoggerInstance.logger.e("No email or refresh token stored for user, cannot download tours info.");
+      return null;
+    }
+
+    String? newAccessToken = await _refreshToken(email, refreshToken);
+    if (newAccessToken != null) {
+      LoggerInstance.logger.e("Failed to refresh user token.");
+      return null;
+    }
+
+    // Save refreshed user token.
+    Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken = newAccessToken;
+
+    // Redo request.
+    request.headers.set('Authorization', "Bearer $newAccessToken");
+    return await request.close();
+  }
+
+  static Future<String?> _refreshToken(String email, String refreshToken) async {
+    var params = {
+      'email': email,
+      'refreshToken': refreshToken,
+    };
+    Uri uri = Uri.https(webAppUrl, refreshTokenEndpoint, params);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (response.statusCode != 200) {
+      LoggerInstance.logger.w('Got error response for refresh token: ${response.statusCode}, $body');
+      return null;
+    }
+
+    return jsonDecode(body)["accessToken"];
   }
 }

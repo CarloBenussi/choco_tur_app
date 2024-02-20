@@ -7,6 +7,7 @@ import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/utils/validation.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
+import 'package:dob_input_field/dob_input_field.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -14,11 +15,10 @@ import 'package:flutter/material.dart';
 class RegistrationProcessPage extends StatefulWidget {
   const RegistrationProcessPage({super.key});
 
-  static const int pagesCount = 3;
+  static const int pagesCount = 6;
 
   @override
-  State<RegistrationProcessPage> createState() =>
-      _RegistrationProcessPageState();
+  State<RegistrationProcessPage> createState() => _RegistrationProcessPageState();
 }
 
 class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
@@ -32,9 +32,10 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
   late String _collectedEmail;
   late String _collectedPassword;
   late String _collectedMatchingPassword;
+  DateTime? _birthday;
+  String? _nationality;
 
-  String? _validateMatchingPassword(
-      BuildContext context, String? matchingPassword) {
+  String? _validateMatchingPassword(BuildContext context, String? matchingPassword) {
     if (matchingPassword != _collectedPassword) {
       return AppLocalizations.of(context)!.invalidMatchingPassword;
     }
@@ -66,14 +67,19 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
         _registering = true;
       });
       bool registrationSuccess = await WebappService.registerUser(
-          _collectedEmail, _collectedPassword, _collectedMatchingPassword);
+        context,
+        _collectedEmail,
+        _collectedPassword,
+        _collectedMatchingPassword,
+        (_birthday != null) ? _birthday!.toIso8601String() : null,
+        _nationality,
+      );
       setState(() {
         _registering = false;
       });
 
-      if (registrationSuccess) {
-        Navigator.pushReplacementNamed(context, RouteNames.emailConfirmation,
-            arguments: _collectedEmail);
+      if (registrationSuccess && mounted) {
+        Navigator.pushReplacementNamed(context, RouteNames.emailConfirmation, arguments: _collectedEmail);
       } else {
         // TODO: Show alert dialog.
       }
@@ -86,6 +92,12 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
     setState(() {
       _controller.clear();
     });
+  }
+
+  void _onSkipPressed(BuildContext context) {
+    _currentPageIndex++;
+    _backPressed = false;
+    setState(() {});
   }
 
   @override
@@ -127,24 +139,36 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                         key: _formKey,
                         child: Column(
                           children: [
-                            UserTextInput(
-                              controller: _controller,
-                              hintText: (_currentPageIndex == 0)
-                                  ? AppLocalizations.of(context)!.email
-                                  : (_currentPageIndex == 1)
-                                      ? AppLocalizations.of(context)!.password
-                                      : AppLocalizations.of(context)!
-                                          .matchingPassword,
-                              validator: (input) => (_currentPageIndex == 0)
-                                  ? Validation.validateEmail(context, input)
-                                  : (_currentPageIndex == 1)
-                                      ? Validation.validatePassword(
-                                          context, input)
-                                      : _validateMatchingPassword(
-                                          context, input),
-                              obscured: (_currentPageIndex == 1) ||
-                                  (_currentPageIndex == 2),
-                            ),
+                            if (_currentPageIndex < 3) ...[
+                              UserTextInput(
+                                controller: _controller,
+                                hintText: (_currentPageIndex == 0)
+                                    ? AppLocalizations.of(context)!.email
+                                    : (_currentPageIndex == 1)
+                                        ? AppLocalizations.of(context)!.password
+                                        : AppLocalizations.of(context)!.matchingPassword,
+                                validator: (input) => (_currentPageIndex == 0)
+                                    ? Validation.validateEmail(context, input)
+                                    : (_currentPageIndex == 1)
+                                        ? Validation.validatePassword(context, input)
+                                        : _validateMatchingPassword(context, input),
+                                obscured: (_currentPageIndex == 1) || (_currentPageIndex == 2),
+                              ),
+                            ] else if (_currentPageIndex == 3) ...[
+                              Text(
+                                AppLocalizations.of(context)!.pleaseInsertBirthday,
+                                style: TextStyle(fontSize: 16, color: Styles.redShade),
+                              ),
+                              DOBInputField(
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                                showLabel: true,
+                                dateFormatType: DateFormatType.DDMMYYYY,
+                                autovalidateMode: AutovalidateMode.always,
+                                errorFormatText: "",
+                                onDateSubmitted: (date) => {_birthday = date},
+                              ),
+                            ]
                           ],
                         ),
                       ),
@@ -152,28 +176,34 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           TextButton(
-                            onPressed: _currentPageIndex > 0
-                                ? () => _onBackPressed(context)
-                                : null,
+                            onPressed: _currentPageIndex > 0 ? () => _onBackPressed(context) : null,
                             child: Text(
                               AppLocalizations.of(context)!.backButton,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: (_currentPageIndex > 0)
-                                    ? Styles.redShade
-                                    : null,
+                                color: (_currentPageIndex > 0) ? Styles.redShade : null,
                               ),
                             ),
                           ),
+                          if (_currentPageIndex > 2)
+                            TextButton(
+                              onPressed: () => _onSkipPressed(context),
+                              child: Text(
+                                AppLocalizations.of(context)!.skipButton,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: (_currentPageIndex > 0) ? Styles.redShade : null,
+                                ),
+                              ),
+                            ),
                           TextButton(
                             onPressed: () => _onNextPressed(context),
                             child: Text(
-                              (_currentPageIndex <
-                                      RegistrationProcessPage.pagesCount - 1)
+                              (_currentPageIndex < RegistrationProcessPage.pagesCount - 1)
                                   ? AppLocalizations.of(context)!.nextButton
-                                  : AppLocalizations.of(context)!
-                                      .registerButton,
+                                  : AppLocalizations.of(context)!.registerButton,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,

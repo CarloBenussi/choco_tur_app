@@ -1,35 +1,18 @@
-import 'dart:io';
-
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/logger.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SqliteCache {
   static const _toursTableName = "tours";
-  static const _tourStopsTableName = "tourStops";
-  static const _chocolatesTableName = "chocolates";
-  static const _tourStopsRelationsTableName = "tourStopsRelations";
-  static const _tourStopChocolatesRelationsTableName =
-      "tourStopChocolatesRelations";
-  static const _stopStoryPagesTableName = "stopStoryPages";
+  static const _stopsTableName = "stops";
+  static const _tastingsTableName = "tastings";
 
   static const String _toursTableSchema =
-      "id INTEGER PRIMARY KEY, name TEXT, costEuro REAL, lengthKm REAL, avgDuration TEXT, description TEXT, numStops INTEGER, numTastings INTEGER, mainImageUrl TEXT";
-  static const String _tourStopsTableSchema =
-      "id INTEGER PRIMARY KEY, name TEXT, description TEXT, latitude REAL, longitude REAL, hasTasting INTEGER, mainImageUrl TEXT";
-  static const String _chocolatesTableSchema =
-      "id INTEGER PRIMARY KEY, name TEXT, description TEXT, mainImageUrl TEXT";
-  static const String _tourStopsRelationsTableSchema =
-      "id INTEGER PRIMARY KEY, tourId INTEGER, stopId INTEGER, stopPosition INTEGER";
-  static const String _stopChocolatesRelationsTableSchema =
-      "id INTEGER PRIMARY KEY, stopId INTEGER, chocolateId INTEGER";
-
-  // These should be stored only remotely since they will contain most content.
-  static const String _stopStoryPagesTableSchema =
-      "id INTEGER PRIMARY KEY, stopId INTEGER, pagePosition INTEGER, pageContentJson TEXT";
+      "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
+  static const String _stopsTableSchema =
+      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, tastingId TEXT, imageId TEXT";
+  static const String _tastingsTableSchema = "id INTEGER PRIMARY KEY, title TEXT, descriptions TEXT, mainImageUrl TEXT";
 
   static Future<Database>? _db;
   static SqliteCache? _cache;
@@ -42,18 +25,16 @@ class SqliteCache {
 
     // MOCK DATA (not supported on web).
     bool exists = await databaseExists(path);
-    if (!exists && !kIsWeb) {
-      // Copy from asset.
-      ByteData data =
-          await rootBundle.load(url.join("assets/mock_db", "tour_saturday.db"));
-      List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    // if (!exists && !kIsWeb) {
+    //   // Copy from asset.
+    //   ByteData data = await rootBundle.load(url.join("assets/mock_db", "tour_saturday.db"));
+    //   List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
-      // Write and flush the bytes written.
-      await File(path).writeAsBytes(bytes, flush: true);
+    //   // Write and flush the bytes written.
+    //   await File(path).writeAsBytes(bytes, flush: true);
 
-      exists = true;
-    }
+    //   exists = true;
+    // }
 
     _db = openDatabase(
       path,
@@ -63,19 +44,10 @@ class SqliteCache {
             'CREATE TABLE $_toursTableName($_toursTableSchema)',
           );
           db.execute(
-            'CREATE TABLE $_tourStopsTableName($_tourStopsTableSchema)',
+            'CREATE TABLE $_stopsTableName($_stopsTableSchema)',
           );
           db.execute(
-            'CREATE TABLE $_chocolatesTableName($_chocolatesTableSchema)',
-          );
-          db.execute(
-            'CREATE TABLE $_tourStopsRelationsTableName($_tourStopsRelationsTableSchema)',
-          );
-          db.execute(
-            'CREATE TABLE $_tourStopChocolatesRelationsTableName($_stopChocolatesRelationsTableSchema)',
-          );
-          db.execute(
-            'CREATE TABLE $_stopStoryPagesTableName($_stopStoryPagesTableSchema)',
+            'CREATE TABLE $_tastingsTableName($_tastingsTableSchema)',
           );
         }
       },
@@ -90,226 +62,131 @@ class SqliteCache {
     return (_cache != null) ? _cache! : SqliteCache();
   }
 
-  Future<List<ChocoTurTour>> getAllTours() async {
+  Future<List<ChocoTurTour>?> getTours() async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourMaps = await database.query(
       _toursTableName,
       columns: [
         'id',
-        'name',
-        'costEuro',
+        'title',
+        'costEuros',
         'lengthKm',
         'avgDuration',
-        'description',
-        'numStops',
-        'numTastings',
-        'mainImageUrl'
+        'descriptions',
+        'stopIds',
+        'stopInfos',
+        'tastingInfos',
+        'imageId',
       ],
     );
 
     List<ChocoTurTour> tours = [];
-    for (var i = 0; i < tourMaps.length; ++i) {
-      tours.add(ChocoTurTour.fromMap(tourMaps[i]));
+    for (var tourMap in tourMaps) {
+      tours.add(ChocoTurTour.fromCacheMap(tourMap));
     }
 
     return tours;
   }
 
-  Future<ChocoTurTour> getTourFromId(int tourId) async {
+  Future<void> saveTours(List<ChocoTurTour> tours) async {
+    final database = await _db!;
+
+    for (var tour in tours) {
+      Map<String, dynamic> tourInfoMap = tour.toCacheMap();
+      if (await database.update(_toursTableName, tourInfoMap) > 0) {
+        LoggerInstance.logger.d('Tour ${tourInfoMap["id"]} was updated.');
+      } else {
+        LoggerInstance.logger.d('Tour ${tourInfoMap["id"]} did not exist yet on cache, inserting it.');
+        await database.insert(_toursTableName, tourInfoMap);
+      }
+    }
+  }
+
+  Future<ChocoTurTour?> getTourFromId(String tourId) async {
     final database = await _db!;
 
     List<Map<String, dynamic>> tourMaps = await database.query(
       _toursTableName,
       columns: [
         'id',
-        'name',
-        'costEuro',
+        'title',
+        'costEuros',
         'lengthKm',
         'avgDuration',
-        'description',
-        'numStops',
-        'numTastings',
-        'mainImageUrl'
+        'descriptions',
+        'stopIds',
+        'stopInfos',
+        'tastingInfos',
+        'imageId',
       ],
       where: "id = ?",
       whereArgs: [tourId],
     );
 
     if (tourMaps.isEmpty) {
-      return Future.error(Exception('Got no name for tour $tourId'));
-    }
-
-    if (tourMaps.length > 1) {
-      return Future.error(Exception('Got multiple tours with id $tourId'));
-    }
-
-    return ChocoTurTour.fromMap(tourMaps[0]);
-  }
-
-  Future<List<ChocoTurTourStop>> getTourStops(int tourId) async {
-    final database = await _db!;
-
-    List<Map<String, dynamic>> tourRelationsMaps = await database.query(
-      _tourStopsRelationsTableName,
-      columns: [
-        'id',
-        'tourId',
-        'stopId',
-        'stopPosition',
-      ],
-      where: "tourId = ?",
-      whereArgs: [tourId],
-      orderBy: "stopPosition ASC",
-    );
-
-    if (tourRelationsMaps.isEmpty) {
-      return Future.error(Exception('Got no stops for tour $tourId'));
-    }
-
-    List<ChocoTurTourStop> tourStops = [];
-    for (var i = 0; i < tourRelationsMaps.length; ++i) {
-      tourStops.add(await getTourStopFromId(tourRelationsMaps[i]['stopId']));
-    }
-
-    return tourStops;
-  }
-
-  Future<List<int>> getTourStopIds(int tourId) async {
-    final database = await _db!;
-
-    List<Map<String, dynamic>> tourRelationsMaps = await database.query(
-      _tourStopsRelationsTableName,
-      columns: [
-        'id',
-        'tourId',
-        'stopId',
-        'stopPosition',
-      ],
-      where: "tourId = ?",
-      whereArgs: [tourId],
-      orderBy: "stopPosition ASC",
-    );
-
-    if (tourRelationsMaps.isEmpty) {
-      return Future.error(Exception('Got no stops for tour $tourId'));
-    }
-
-    List<int> tourStopIds = [];
-    for (var i = 0; i < tourRelationsMaps.length; ++i) {
-      tourStopIds.add(tourRelationsMaps[i]['stopId']);
-    }
-
-    return tourStopIds;
-  }
-
-  Future<ChocoTurTourStop> getTourStopFromId(int stopId) async {
-    final database = await _db!;
-
-    List<Map<String, dynamic>> tourStopMap = await database.query(
-      _tourStopsTableName,
-      columns: [
-        'id',
-        'name',
-        'description',
-        'latitude',
-        'longitude',
-        'hasTasting',
-        'mainImageUrl',
-      ],
-      where: "id = ?",
-      whereArgs: [stopId],
-    );
-
-    if (tourStopMap.isEmpty) {
-      return Future.error(Exception('Found no stop with id $stopId'));
-    }
-
-    if (tourStopMap.length > 1) {
-      return Future.error(Exception('Found multiple stops with id $stopId'));
-    }
-
-    return ChocoTurTourStop.fromMap(tourStopMap[0]);
-  }
-
-  Future<Chocolate?> getStopchocolate(int stopId) async {
-    final database = await _db!;
-
-    List<Map<String, dynamic>> stopChocolateRelationsMap = await database.query(
-      _tourStopChocolatesRelationsTableName,
-      columns: [
-        'id',
-        'stopId',
-        'chocolateId',
-      ],
-      where: "stopId = ?",
-      whereArgs: [stopId],
-    );
-
-    if (stopChocolateRelationsMap.isEmpty) {
-      LoggerInstance.logger.d('Stop $stopId has no chocolate tastings.');
+      LoggerInstance.logger.e('Got no data for tour $tourId');
       return null;
     }
 
-    if (stopChocolateRelationsMap.length > 1) {
-      LoggerInstance.logger.w(
-          'Found multiple chocolates for stop $stopId, only the first one will be considered.');
+    if (tourMaps.length > 1) {
+      LoggerInstance.logger.e('Got multiple tours with id $tourId');
+      return null;
     }
 
-    return getChocolateFromId(stopChocolateRelationsMap[0]['chocolateId']);
+    return ChocoTurTour.fromCacheMap(tourMaps[0]);
   }
 
-  Future<Chocolate> getChocolateFromId(int chocolateId) async {
+  Future<List<ChocoTurStop>?> getTourStops(String tourId) async {
     final database = await _db!;
 
-    List<Map<String, dynamic>> chocolateMap = await database.query(
-      _chocolatesTableName,
-      columns: [
-        'id',
-        'name',
-        'description',
-        'mainImageUrl',
-      ],
-      where: "id = ?",
-      whereArgs: [chocolateId],
-    );
-
-    if (chocolateMap.isEmpty) {
-      return Future.error(Exception('Found no chocolate with id $chocolateId'));
+    ChocoTurTour? tour = await getTourFromId(tourId);
+    if (tour == null) {
+      LoggerInstance.logger.e('Got no data for tour $tourId');
+      return null;
     }
 
-    if (chocolateMap.length > 1) {
-      return Future.error(
-          Exception('Found multiple chocolates with id $chocolateId'));
+    List<ChocoTurStop> stops = [];
+    for (var stopId in tour.stopIds) {
+      List<Map<String, dynamic>> stopMaps = await database.query(
+        _stopsTableName,
+        columns: [
+          'id',
+          'titles',
+          'descriptions',
+          'latitude',
+          'longitude',
+          'tastingIs',
+          'imageId',
+        ],
+        where: "id = ?",
+        whereArgs: [stopId],
+      );
+
+      if (stopMaps.isEmpty) {
+        LoggerInstance.logger.w('No stop found on cache for ID $stopId');
+        return null;
+      } else if (stopMaps.length > 1) {
+        throw Exception('Multiple stops found on cache with ID $stopId');
+      } else {
+        stops.add(ChocoTurStop.fromMap(stopMaps[0]));
+      }
     }
 
-    return Chocolate.fromMap(chocolateMap[0]);
+    return stops;
   }
 
-  Future<List<ChocoTurStopPage>> getStopStoryPages(int stopId) async {
+  Future<void> saveTourStops(List<ChocoTurStop> tourStops) async {
     final database = await _db!;
 
-    List<Map<String, dynamic>> tourStopStoryPagesMap = await database.query(
-      _stopStoryPagesTableName,
-      columns: [
-        'pageContentJson',
-      ],
-      where: "stopId = ?",
-      whereArgs: [stopId],
-      orderBy: "pagePosition ASC",
-    );
-
-    if (tourStopStoryPagesMap.isEmpty) {
-      return Future.error(
-          Exception('Got no stop story pages for stop $stopId'));
+    for (var tourStop in tourStops) {
+      Map<String, dynamic> tourStopMap = tourStop.toCacheMap();
+      if (await database.update(_stopsTableName, tourStopMap) > 0) {
+        LoggerInstance.logger.d('Stop ${tourStopMap["id"]} was updated.');
+      } else {
+        LoggerInstance.logger.d('Stop ${tourStopMap["id"]} did not exist yet on cache, inserting it.');
+        await database.insert(_toursTableName, tourStopMap);
+      }
     }
-
-    List<ChocoTurStopPage> stopStoryPages = [];
-    for (var i = 0; i < tourStopStoryPagesMap.length; ++i) {
-      stopStoryPages.add(ChocoTurStopPage.fromJson(
-          tourStopStoryPagesMap[i]['pageContentJson']));
-    }
-
-    return stopStoryPages;
   }
 }

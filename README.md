@@ -1,4 +1,4 @@
-# choco_tur
+# choco_tur_app
 
 A new Flutter project.
 
