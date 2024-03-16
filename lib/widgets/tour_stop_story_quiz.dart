@@ -1,12 +1,16 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class TourStopStoryQuiz extends StatefulWidget {
-  const TourStopStoryQuiz({super.key, required this.stopStory});
+  TourStopStoryQuiz({super.key, required this.stopStory});
 
   final ChocoTurStopStory stopStory;
+  String? langCode;
 
   @override
   State<TourStopStoryQuiz> createState() => _TourStopStoryQuizState();
@@ -57,7 +61,7 @@ class _TourStopStoryQuizState extends State<TourStopStoryQuiz> {
                 style: const TextStyle(color: Styles.onRedShade),
               ),
               TextSpan(
-                text: widget.stopStory.afterQuizText!,
+                text: widget.stopStory.afterQuizText![widget.langCode],
                 style: const TextStyle(color: Styles.onRedShade),
               ),
             ],
@@ -66,6 +70,13 @@ class _TourStopStoryQuizState extends State<TourStopStoryQuiz> {
       ),
       barrierDismissible: true,
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    widget.langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
   }
 
   @override
@@ -93,7 +104,7 @@ class _TourStopStoryQuizState extends State<TourStopStoryQuiz> {
               decoration: BoxDecoration(color: Styles.redShade, borderRadius: BorderRadius.circular(8)),
               child: Center(
                   child: Text(
-                widget.stopStory.quizQuestion!,
+                widget.stopStory.quizQuestion![widget.langCode]!,
                 style: const TextStyle(color: Styles.onRedShade),
               )),
             ),
@@ -105,7 +116,7 @@ class _TourStopStoryQuizState extends State<TourStopStoryQuiz> {
                 decoration: BoxDecoration(color: _decideOnColor(i), borderRadius: BorderRadius.circular(8)),
                 child: ListTile(
                   leading: Text((i + 1).toString()),
-                  title: Text(widget.stopStory.quizAnswers![i]),
+                  title: Text(widget.stopStory.quizAnswers![i][widget.langCode]!),
                   onTap: () => _giveAnswer(context, i),
                 ),
               ),

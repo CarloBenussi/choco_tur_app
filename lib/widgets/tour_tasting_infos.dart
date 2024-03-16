@@ -6,23 +6,21 @@ import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/title_and_description.dart';
 import 'package:flutter/material.dart';
 
-class TourTastingInfosAnimation extends StatefulWidget {
-  const TourTastingInfosAnimation({
+class TourTastingInfos extends StatefulWidget {
+  const TourTastingInfos({
     super.key,
     required this.langCode,
-    required this.tourId,
     required this.tourTastingInfos,
   });
 
   final String langCode;
-  final String tourId;
   final List<ChocoTurTourTastingInfo> tourTastingInfos;
 
   @override
-  State<TourTastingInfosAnimation> createState() => _TourTastingInfosAnimationState();
+  State<TourTastingInfos> createState() => _TourTastingInfosState();
 }
 
-class _TourTastingInfosAnimationState extends State<TourTastingInfosAnimation> {
+class _TourTastingInfosState extends State<TourTastingInfos> {
   int _currentSelectedIndex = 0;
   int _previousSelectedIndex = 0;
   bool _swipeEnabled = true;

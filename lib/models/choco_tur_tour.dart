@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:choco_tur/services/firebase_service.dart';
-import 'package:choco_tur/utils/logger.dart';
 import 'package:duration/duration.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -131,26 +130,27 @@ class ChocoTurTourStopInfo {
   ChocoTurTourStopInfo();
 
   late final Map<String, String> titles;
-  late final Map<String, String> descriptions;
+  late final LatLng coordinates;
   late final String imageId;
   Uint8List? imageData;
 
   ChocoTurTourStopInfo.fromMap(Map<String, dynamic> map) {
     titles = Map.from(map['titles']);
-    descriptions = Map.from(map['descriptions']);
+    coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
   }
 
   ChocoTurTourStopInfo.fromCacheMap(Map<String, dynamic> map) {
     titles = Map.from(jsonDecode(map['titles']));
-    descriptions = Map.from(jsonDecode(map['descriptions']));
+    coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
   }
 
   Map<String, dynamic> toMap() {
     return {
       'titles': titles,
-      'descriptions': descriptions,
+      'latitude': coordinates.latitude,
+      'longitude': coordinates.longitude,
       'imageId': imageId,
     };
   }
@@ -158,7 +158,8 @@ class ChocoTurTourStopInfo {
   Map<String, dynamic> toCacheMap() {
     return {
       'titles': jsonEncode(titles),
-      'descriptions': jsonEncode(descriptions),
+      'latitude': coordinates.latitude,
+      'longitude': coordinates.longitude,
       'imageId': imageId,
     };
   }
@@ -291,48 +292,54 @@ enum ChocoTurStopStoryType {
 }
 
 class ChocoTurStopStory {
+  late final String id;
   late final ChocoTurStopStoryType type;
 
-  String? text;
-  String? topImageUrl;
+  Map<String, String>? texts;
+  String? imageId;
+  int? imagePosition;
 
-  String? quizQuestion;
-  List<dynamic>? quizAnswers;
-  List<dynamic>? onAnswerTexts;
+  Map<String, String>? quizQuestion;
+  List<Map<String, String>>? quizAnswers;
+  List<Map<String, String>>? onAnswerTexts;
   int? correctAnswerIndex;
-  String? afterQuizText;
+  Map<String, String>? afterQuizText;
 
-  ChocoTurStopStory.fromJson(String pageContentJson) {
-    try {
-      var pageContent = jsonDecode(pageContentJson);
-      String typeStr = pageContent['type'];
-      switch (typeStr) {
-        case "text":
-          type = ChocoTurStopStoryType.text;
-          break;
+  ChocoTurStopStory.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    switch (map['type']) {
+      case 1:
+        type = ChocoTurStopStoryType.text;
+        break;
 
-        case "quiz":
-          type = ChocoTurStopStoryType.quiz;
-          break;
+      case 2:
+        type = ChocoTurStopStoryType.quiz;
+        break;
 
-        default:
-          throw Exception('Page type $typeStr is unknown');
+      default:
+        throw Exception('Story type ${map['type']} is unknown');
+    }
+    var pageContent = jsonDecode(map['contentJson']);
+
+    imageId = pageContent['imageId'];
+
+    if (type == ChocoTurStopStoryType.text) {
+      texts = Map.from(pageContent['text']);
+      imagePosition = pageContent['imagePosition'];
+    } else if (type == ChocoTurStopStoryType.quiz) {
+      quizQuestion = Map.from(pageContent['question']);
+      var quizAnswerMaps = List.from(pageContent['answers']);
+      quizAnswers = [];
+      for (var quizAnswerMap in quizAnswerMaps) {
+        quizAnswers!.add(Map.from(quizAnswerMap));
       }
-
-      topImageUrl = pageContent['top_image_url'];
-
-      if (type == ChocoTurStopStoryType.text) {
-        text = pageContent['text'];
-      } else if (type == ChocoTurStopStoryType.quiz) {
-        quizQuestion = pageContent['quiz_question'];
-        quizAnswers = pageContent['quiz_answers'];
-        onAnswerTexts = pageContent['on_answer_texts'];
-        correctAnswerIndex = pageContent['correct_answer_index'];
-        afterQuizText = pageContent['after_quiz_text'];
+      var onAnswerMaps = List.from(pageContent['answerTexts']);
+      onAnswerTexts = [];
+      for (var onAnswerMap in onAnswerMaps) {
+        onAnswerTexts!.add(Map.from(onAnswerMap));
       }
-    } catch (e) {
-      LoggerInstance.logger.e("Failed to parse stop page json.");
-      rethrow;
+      correctAnswerIndex = pageContent['correctAnswerIndex'];
+      afterQuizText = Map.from(pageContent['afterQuizText']);
     }
   }
 }

@@ -17,8 +17,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return NavigationBarTheme(
       data: const NavigationBarThemeData(
-        labelTextStyle:
-            MaterialStatePropertyAll(TextStyle(color: Styles.onRedShade)),
+        labelTextStyle: MaterialStatePropertyAll(TextStyle(color: Styles.onRedShade)),
       ),
       child: NavigationBar(
           backgroundColor: Styles.redShade,
@@ -48,11 +47,11 @@ class ChocoTurNavigationBar extends StatelessWidget {
             ),
             NavigationDestination(
               selectedIcon: Icon(
-                Icons.tour_rounded,
+                Icons.person_2_rounded,
                 color: Styles.redShade,
               ),
               icon: const Icon(
-                Icons.tour_outlined,
+                Icons.person_2_outlined,
                 color: Styles.onRedShade,
               ),
               label: AppLocalizations.of(context)!.myToursButton,

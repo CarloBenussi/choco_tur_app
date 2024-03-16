@@ -25,6 +25,7 @@ class WebappService {
   static const String userToursEndpoint = "/tours/userTours";
   static const String toursEndpoint = "/tours/tours";
   static const String tourStopsEndpoint = "/tours/tourStops";
+  static const String tourStopStoriesEndpoint = "/tours/tourStopStories";
 
   static HttpClient? _client;
 
@@ -203,7 +204,7 @@ class WebappService {
     request.headers.set('Authorization', "Bearer $accessToken");
     HttpClientResponse response = await request.close();
     String body = await response.transform(utf8.decoder).join();
-    if (response.statusCode == 401) {
+    if ((response.statusCode == 401) | (response.statusCode == 403)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
       HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
       if (newResponse == null) {
@@ -265,12 +266,56 @@ class WebappService {
       }
       return tourStops;
     } else {
-      LoggerInstance.logger.e('Got error response for tours download: ${response.statusCode}, $body');
+      LoggerInstance.logger.e('Got error response for tour stops download: ${response.statusCode}, $body');
 
       showDialog(
         context: context,
         builder: (_) => GenericAlertDialog(
           title: AppLocalizations.of(context)!.tourStopDownloadFailed,
+          content: body,
+        ),
+        barrierDismissible: true,
+      );
+
+      return null;
+    }
+  }
+
+  static Future<List<ChocoTurStopStory>?> getTourStopStories(
+      BuildContext context, String stopId, String? accessToken) async {
+    var params = {
+      'stopId': stopId,
+    };
+    Uri uri = Uri.https(webAppUrl, tourStopStoriesEndpoint, params);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (response.statusCode == 401) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      List<dynamic> tourStopStoryMaps = jsonDecode(body);
+      List<ChocoTurStopStory> tourStopStories = [];
+      for (var tourStopStoryMap in tourStopStoryMaps) {
+        tourStopStories.add(ChocoTurStopStory.fromMap(tourStopStoryMap));
+      }
+      return tourStopStories;
+    } else {
+      LoggerInstance.logger.e('Got error response for tour stop stories download: ${response.statusCode}, $body');
+
+      showDialog(
+        context: context,
+        builder: (_) => GenericAlertDialog(
+          title: AppLocalizations.of(context)!.tourStopStoriesDownloadFailed,
           content: body,
         ),
         barrierDismissible: true,

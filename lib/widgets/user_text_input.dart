@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 
 class UserTextInput extends StatelessWidget {
-  const UserTextInput(
-      {super.key,
-      required this.controller,
-      required this.hintText,
-      this.validator,
-      this.obscured = false});
+  const UserTextInput({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.validator,
+    this.onTap,
+    this.obscured = false,
+  });
 
   final TextEditingController controller;
   final String hintText;
   final bool obscured;
   final String? Function(String?)? validator;
+  final Function? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +35,7 @@ class UserTextInput extends StatelessWidget {
           fontSize: 24,
           fontWeight: FontWeight.w300,
         ),
+        onTap: () => onTap,
       ),
     );
   }
