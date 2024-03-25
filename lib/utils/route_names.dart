@@ -5,7 +5,7 @@ class RouteNames {
   static const String home = "/home";
   static const String myTours = "/my_tours";
   static const String tourPlay = "/tour_play";
-  static const String tourStopStoryPages = "/tour_stop_story_pages";
+  static const String tourStopStoryChat = "/tour_stop_story_chat";
   static const String map = "/map";
   static const String settings = "/settings";
   static const String registrationProcess = "/registration";

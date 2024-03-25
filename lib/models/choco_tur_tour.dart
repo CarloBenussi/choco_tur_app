@@ -29,12 +29,6 @@ class ChocoTurTour {
       return false;
     }
 
-    for (var stopInfo in stopInfos) {
-      if (stopInfo.imageData == null) {
-        return false;
-      }
-    }
-
     for (var tastingInfo in tastingInfos) {
       if (tastingInfo.imageData == null) {
         return false;
@@ -46,11 +40,6 @@ class ChocoTurTour {
 
   Future<void> downloadImages({bool tryFromCache = true, bool saveToCache = true}) async {
     imageData ??= await FirebaseService.downloadImage(imageId, tryFromCache: tryFromCache, saveToCache: saveToCache);
-
-    for (var stopInfo in stopInfos) {
-      stopInfo.imageData ??=
-          await FirebaseService.downloadImage(stopInfo.imageId, tryFromCache: tryFromCache, saveToCache: saveToCache);
-    }
 
     for (var tastingInfo in tastingInfos) {
       tastingInfo.imageData ??= await FirebaseService.downloadImage(tastingInfo.imageId,
@@ -131,19 +120,15 @@ class ChocoTurTourStopInfo {
 
   late final Map<String, String> titles;
   late final LatLng coordinates;
-  late final String imageId;
-  Uint8List? imageData;
 
   ChocoTurTourStopInfo.fromMap(Map<String, dynamic> map) {
     titles = Map.from(map['titles']);
     coordinates = LatLng(map['latitude'], map['longitude']);
-    imageId = map['imageId'];
   }
 
   ChocoTurTourStopInfo.fromCacheMap(Map<String, dynamic> map) {
     titles = Map.from(jsonDecode(map['titles']));
     coordinates = LatLng(map['latitude'], map['longitude']);
-    imageId = map['imageId'];
   }
 
   Map<String, dynamic> toMap() {
@@ -151,7 +136,6 @@ class ChocoTurTourStopInfo {
       'titles': titles,
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
-      'imageId': imageId,
     };
   }
 
@@ -160,7 +144,6 @@ class ChocoTurTourStopInfo {
       'titles': jsonEncode(titles),
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
-      'imageId': imageId,
     };
   }
 }
@@ -209,7 +192,6 @@ class ChocoTurStop {
   late final Map<String, String> titles;
   late final Map<String, String> descriptions;
   late final LatLng coordinates;
-  late final String tastingId;
   late final String imageId;
   late final Uint8List? imageData;
 
@@ -220,7 +202,6 @@ class ChocoTurStop {
       'descriptions': descriptions,
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
-      'tastingId': tastingId,
       'imageId': imageId,
     };
   }
@@ -232,17 +213,15 @@ class ChocoTurStop {
       'descriptions': jsonEncode(descriptions),
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
-      'tastingId': tastingId,
       'imageId': imageId,
     };
   }
 
   ChocoTurStop.fromMap(Map<String, dynamic> map) {
     id = map['id'];
-    titles = Map.from(map['name']);
-    descriptions = Map.from(map['description']);
+    titles = Map.from(jsonDecode(map['titles']));
+    descriptions = Map.from(jsonDecode(map['descriptions']));
     coordinates = LatLng(map['latitude'], map['longitude']);
-    tastingId = map['tastingId'];
     imageId = map['imageId'];
   }
 }
@@ -279,67 +258,44 @@ class ChocoTurTasting {
 
   ChocoTurTasting.fromMap(Map<String, dynamic> map) {
     id = map['id'];
-    titles = Map.from(map['name']);
+    titles = Map.from(map['titles']);
     descriptions = Map.from(map['description']);
     ingredients = Map.from(map['ingredients']);
     imageId = map['imageId'];
   }
 }
 
-enum ChocoTurStopStoryType {
-  text, // A page displaying a text with an image.
-  quiz // A page displaying a quiz question with options.
-}
+enum ChocoTurStopStoryType { text, image, answers, onAnswers }
 
 class ChocoTurStopStory {
-  late final String id;
+  late final int index;
   late final ChocoTurStopStoryType type;
 
   Map<String, String>? texts;
+  List<Map<String, String>>? answers;
+  List<Map<String, String>>? onAnswers;
   String? imageId;
-  int? imagePosition;
-
-  Map<String, String>? quizQuestion;
-  List<Map<String, String>>? quizAnswers;
-  List<Map<String, String>>? onAnswerTexts;
-  int? correctAnswerIndex;
-  Map<String, String>? afterQuizText;
 
   ChocoTurStopStory.fromMap(Map<String, dynamic> map) {
-    id = map['id'];
-    switch (map['type']) {
-      case 1:
-        type = ChocoTurStopStoryType.text;
-        break;
-
-      case 2:
-        type = ChocoTurStopStoryType.quiz;
-        break;
-
-      default:
-        throw Exception('Story type ${map['type']} is unknown');
-    }
+    index = map['index'];
+    type = map['type'];
     var pageContent = jsonDecode(map['contentJson']);
 
     imageId = pageContent['imageId'];
-
-    if (type == ChocoTurStopStoryType.text) {
-      texts = Map.from(pageContent['text']);
-      imagePosition = pageContent['imagePosition'];
-    } else if (type == ChocoTurStopStoryType.quiz) {
-      quizQuestion = Map.from(pageContent['question']);
-      var quizAnswerMaps = List.from(pageContent['answers']);
-      quizAnswers = [];
-      for (var quizAnswerMap in quizAnswerMaps) {
-        quizAnswers!.add(Map.from(quizAnswerMap));
+    texts = Map.from(pageContent['text']);
+    if (pageContent['answers'] != null) {
+      List<dynamic> answerMaps = List.from(jsonDecode(pageContent['answers']));
+      answers = [];
+      for (var i = 0; i < answerMaps.length; ++i) {
+        answers!.add(Map.from(answerMaps[i]));
       }
-      var onAnswerMaps = List.from(pageContent['answerTexts']);
-      onAnswerTexts = [];
-      for (var onAnswerMap in onAnswerMaps) {
-        onAnswerTexts!.add(Map.from(onAnswerMap));
+    }
+    if (pageContent['onAnswers'] != null) {
+      List<dynamic> onAnswerMaps = List.from(jsonDecode(pageContent['onAnswers']));
+      onAnswers = [];
+      for (var i = 0; i < onAnswerMaps.length; ++i) {
+        onAnswers!.add(Map.from(onAnswerMaps[i]));
       }
-      correctAnswerIndex = pageContent['correctAnswerIndex'];
-      afterQuizText = Map.from(pageContent['afterQuizText']);
     }
   }
 }

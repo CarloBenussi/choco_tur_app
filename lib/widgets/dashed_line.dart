@@ -8,7 +8,7 @@ class DashedLine extends StatelessWidget {
   }
 
   static const double thickness = 3.0;
-  static const int dashCount = 4;
+  static const int dashCount = 3;
   late final double width;
   late final double height;
   final Axis direction;
@@ -22,18 +22,19 @@ class DashedLine extends StatelessWidget {
         for (var i = 0; i < dashCount; ++i) ...[
           SizedBox(
             width: width,
-            height: height / 2,
-            child: const DecoratedBox(
-              decoration: BoxDecoration(color: Colors.white),
-            ),
-          ),
-          SizedBox(
-            width: width,
             height: height,
             child: DecoratedBox(
               decoration: BoxDecoration(color: Styles.redShade),
             ),
           ),
+          if (i < dashCount - 1)
+            SizedBox(
+              width: width,
+              height: height / 2,
+              child: const DecoratedBox(
+                decoration: BoxDecoration(color: Colors.white),
+              ),
+            ),
         ],
       ],
     );

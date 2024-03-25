@@ -71,7 +71,7 @@ class _MyTourPageState extends State<MyTourPage> {
                             children: [
                               LinearProgressIndicator(
                                 backgroundColor: Styles.onRedShade,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade500),
+                                valueColor: AlwaysStoppedAnimation<Color>(Styles.gold),
                                 value: _userTours![index].progress,
                               ),
                               Text(
@@ -89,6 +89,18 @@ class _MyTourPageState extends State<MyTourPage> {
                                   setState(() {
                                     _processing = true;
                                   });
+                                  await user.advanceTour(context, _userTours![index]);
+                                  setState(() {
+                                    _processing = false;
+                                  });
+                                },
+                                child: Text(AppLocalizations.of(context)!.nextStop),
+                              ),
+                              PopupMenuItem(
+                                onTap: () async {
+                                  setState(() {
+                                    _processing = true;
+                                  });
                                   await user.revertTourStop(context, _userTours![index]);
                                   setState(() {
                                     _processing = false;
@@ -101,7 +113,7 @@ class _MyTourPageState extends State<MyTourPage> {
                                   setState(() {
                                     _processing = true;
                                   });
-                                  await user.deactivateTour(_userTours![index]);
+                                  await user.deactivateTour(context, _userTours![index]);
                                   setState(() {
                                     _processing = false;
                                   });

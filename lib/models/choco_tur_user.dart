@@ -223,14 +223,18 @@ class ChocoTurUser extends ChangeNotifier {
       return false;
     }
 
-    // TODO: Activate tour on webapp.
+    bool userTourActivationSuccess = await WebappService.activateUserTour(context, loginAccessToken, tour.id);
+    if (!userTourActivationSuccess) {
+      LoggerInstance.logger.e('Failed to activate tour ${tour.id} on webapp');
+    }
+
     userTours!.elementAt(userTourIndex).isActive = true;
     notifyListeners();
 
     return true;
   }
 
-  Future<void> deactivateTour(ChocoTurUserTour tour) async {
+  Future<void> deactivateTour(BuildContext context, ChocoTurUserTour tour) async {
     if (activeTour == null) {
       LoggerInstance.logger.w('No active tour present for user.');
       return;
@@ -241,8 +245,45 @@ class ChocoTurUser extends ChangeNotifier {
       return;
     }
 
-    // TODO: Deactivate tour on webapp.
+    bool userTourDeactivationSuccess = await WebappService.deactivateUserTour(context, loginAccessToken, tour.id);
+    if (!userTourDeactivationSuccess) {
+      LoggerInstance.logger.e('Failed to deactivate tour ${tour.id} on webapp');
+    }
     userTours!.firstWhere((element) => element.id == tour.id).isActive = false;
+    userTours!.firstWhere((element) => element.id == tour.id).nextStopId = "";
+    userTours!.firstWhere((element) => element.id == tour.id).progress = 0;
+    notifyListeners();
+  }
+
+  Future<void> advanceTour(BuildContext context, ChocoTurUserTour userTour) async {
+    if (activeTour == null) {
+      throw Exception('No active tour present!');
+    }
+
+    if (activeTour!.id != userTour.id) {
+      throw Exception('Tour ${userTour.id} is not active');
+    }
+
+    SqliteCache cache = await SqliteCache.getInstance();
+    ChocoTurTour? tour = await cache.getTourFromId(userTour.id);
+    if (tour == null) {
+      throw Exception('No tour on cache for ID ${userTour.id}');
+    }
+
+    var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
+    if (++tourStopIndex == tour.stopIds.length) {
+      LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
+
+      // ignore: use_build_context_synchronously
+      return deactivateTour(context, activeTour!);
+    }
+
+    bool userTourAdvanceSuccess = await WebappService.advanceUserTour(context, loginAccessToken, tour.id);
+    if (!userTourAdvanceSuccess) {
+      LoggerInstance.logger.e('Failed to advance tour ${tour.id} on webapp');
+    }
+    activeTour!.nextStopId = tour.stopIds[tourStopIndex];
+    activeTour!.progress = tourStopIndex / tour.stopIds.length;
     notifyListeners();
   }
 
@@ -276,35 +317,12 @@ class ChocoTurUser extends ChangeNotifier {
       );
     }
 
-    // TODO: Revert tour stop on webapp.
+    bool userTourRevertSuccess = await WebappService.revertUserTour(context, loginAccessToken, tour.id);
+    if (!userTourRevertSuccess) {
+      LoggerInstance.logger.e('Failed to revert tour ${tour.id} on webapp');
+    }
     activeTour!.nextStopId = tour.stopIds[tourStopIndex];
-    notifyListeners();
-  }
-
-  Future<void> advanceTour(ChocoTurUserTour userTour) async {
-    if (activeTour == null) {
-      throw Exception('No active tour present!');
-    }
-
-    if (activeTour!.id != userTour.id) {
-      throw Exception('Tour ${userTour.id} is not active');
-    }
-
-    SqliteCache cache = await SqliteCache.getInstance();
-    ChocoTurTour? tour = await cache.getTourFromId(userTour.id);
-    if (tour == null) {
-      throw Exception('No tour on cache for ID ${userTour.id}');
-    }
-
-    var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
-    if (++tourStopIndex == tour.stopIds.length) {
-      LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
-
-      return deactivateTour(activeTour!);
-    }
-
-    // TODO: Advance tour on webapp.
-    activeTour!.nextStopId = tour.stopIds[tourStopIndex];
+    activeTour!.progress = tourStopIndex / tour.stopIds.length;
     notifyListeners();
   }
 
@@ -328,9 +346,9 @@ class ChocoTurUserTour {
 
   late final String id;
   late final String title;
-  late final String nextStopId;
-  late final bool isActive;
-  late final double progress;
+  late String nextStopId;
+  late bool isActive;
+  late double progress;
 
   Map<String, dynamic> toMap() {
     return {

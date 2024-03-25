@@ -1,12 +1,18 @@
+import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/dashed_line.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class TourStopInfos extends StatefulWidget {
-  const TourStopInfos({
+// ignore: must_be_immutable
+class TourStopInfos extends StatelessWidget {
+  TourStopInfos({
     super.key,
     required this.langCode,
     required this.tourStopInfos,
@@ -15,83 +21,107 @@ class TourStopInfos extends StatefulWidget {
   final String langCode;
   final List<ChocoTurTourStopInfo> tourStopInfos;
 
-  @override
-  State<TourStopInfos> createState() => _TourStopInfosState();
-}
+  Set<Marker>? _markers;
 
-class _TourStopInfosState extends State<TourStopInfos> {
-  static const double widgetSize = 200;
-
-  int _currentSelectedIndex = 0;
-  final Set<Marker> _markers = {};
-
-  void _onPressed(int index) {
-    setState(() {
-      _currentSelectedIndex = index;
-    });
+  Future<Uint8List> _getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    int markerId = 1;
-    for (var tourStopInfo in widget.tourStopInfos) {
-      Marker marker = Marker(
-        markerId: MarkerId(markerId.toString()),
-        position: tourStopInfo.coordinates,
-      );
-      _markers.add(marker);
-      markerId++;
+  Future<Set<Marker>> _getMarkers() async {
+    if (_markers == null) {
+      _markers = {};
+      int markerId = 0;
+      for (var tourStopInfo in tourStopInfos) {
+        final Uint8List markerIcon = await _getBytesFromAsset('assets/markers/${markerId + 1}.png', 70);
+        Marker marker = Marker(
+          markerId: MarkerId(markerId.toString()),
+          position: tourStopInfo.coordinates,
+          icon: BitmapDescriptor.fromBytes(markerIcon),
+          infoWindow: InfoWindow(
+            title: tourStopInfo.titles[langCode],
+          ),
+        );
+        _markers!.add(marker);
+        markerId++;
+      }
     }
+
+    return _markers!;
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (var i = 0; i < widget.tourStopInfos.length; ++i) ...[
-              ElevatedButton(
-                onPressed: () => _onPressed(i),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  backgroundColor: (i == _currentSelectedIndex) ? Colors.white : Styles.redShade,
-                  fixedSize: const Size(15, 15),
-                ),
-                child: null,
+            for (var i = 0; i < tourStopInfos.length; ++i) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Styles.redShade,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Text(
+                      tourStopInfos[i].titles[langCode]!,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w300, color: Colors.black),
+                    ),
+                  )
+                ],
               ),
-              if (i < widget.tourStopInfos.length - 1)
+              if (i < tourStopInfos.length - 1)
                 Padding(
-                  padding: const EdgeInsets.only(top: 5, bottom: 5),
+                  padding: const EdgeInsets.only(left: 4),
                   child: DashedLine(
-                    length: widgetSize,
+                    length: 15,
                     direction: Axis.vertical,
                   ),
                 ),
             ]
           ],
         ),
-        SizedBox(
-          height: widgetSize,
-          width: widgetSize,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: GoogleMap(
-              initialCameraPosition: const CameraPosition(
-                target: Coordinates.turinCenter,
-                zoom: 14.4746,
-              ),
-              mapToolbarEnabled: false,
-              myLocationEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
-              compassEnabled: true,
-              markers: _markers,
-            ),
+        Padding(
+          padding: const EdgeInsets.only(left: 30),
+          child: FutureBuilder(
+            future: _getMarkers(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
+                return LimitedBox(
+                  maxHeight: MediaQuery.of(context).size.width / 2,
+                  maxWidth: MediaQuery.of(context).size.width / 2,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: GoogleMap(
+                      initialCameraPosition: const CameraPosition(
+                        target: Coordinates.turinCenter,
+                        zoom: 14.4746,
+                      ),
+                      mapToolbarEnabled: false,
+                      myLocationEnabled: false,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      compassEnabled: false,
+                      markers: snapshot.data!,
+                    ),
+                  ),
+                );
+              } else {
+                return const Center(child: LoadingAnimation());
+              }
+            },
           ),
         )
       ],

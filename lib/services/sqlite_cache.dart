@@ -11,8 +11,9 @@ class SqliteCache {
   static const String _toursTableSchema =
       "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
   static const String _stopsTableSchema =
-      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, tastingId TEXT, imageId TEXT";
-  static const String _tastingsTableSchema = "id INTEGER PRIMARY KEY, title TEXT, descriptions TEXT, mainImageUrl TEXT";
+      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT";
+  static const String _tastingsTableSchema =
+      "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, mainImageUrl TEXT";
 
   static Future<Database>? _db;
   static SqliteCache? _cache;
@@ -156,7 +157,6 @@ class SqliteCache {
           'descriptions',
           'latitude',
           'longitude',
-          'tastingIs',
           'imageId',
         ],
         where: "id = ?",
@@ -181,11 +181,11 @@ class SqliteCache {
 
     for (var tourStop in tourStops) {
       Map<String, dynamic> tourStopMap = tourStop.toCacheMap();
-      if (await database.update(_stopsTableName, tourStopMap) > 0) {
+      if (await database.update(_stopsTableName, tourStopMap, where: "id = ?", whereArgs: [tourStopMap["id"]]) > 0) {
         LoggerInstance.logger.d('Stop ${tourStopMap["id"]} was updated.');
       } else {
         LoggerInstance.logger.d('Stop ${tourStopMap["id"]} did not exist yet on cache, inserting it.');
-        await database.insert(_toursTableName, tourStopMap);
+        await database.insert(_stopsTableName, tourStopMap);
       }
     }
   }

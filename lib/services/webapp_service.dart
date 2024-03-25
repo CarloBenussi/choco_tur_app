@@ -23,9 +23,15 @@ class WebappService {
   static const String refreshTokenEndpoint = "/users/refreshToken";
 
   static const String userToursEndpoint = "/tours/userTours";
+  static const String activateUserTourEndpoint = "/tours/activateUserTour";
+  static const String deactivateUserTourEndpoint = "/tours/deactivateUserTour";
+  static const String advanceUserTourEndpoint = "/tours/advanceUserTour";
+  static const String revertUserTourEndpoint = "/tours/revertUserTour";
   static const String toursEndpoint = "/tours/tours";
   static const String tourStopsEndpoint = "/tours/tourStops";
   static const String tourStopStoriesEndpoint = "/tours/tourStopStories";
+
+  static List<int> tokenExpiredStatusCodes = [401, 403];
 
   static HttpClient? _client;
 
@@ -163,7 +169,7 @@ class WebappService {
       LoggerInstance.logger.d("Login with token successful");
 
       return accessToken;
-    } else if (response.statusCode == 401) {
+    } else if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.d("Expired access token, trying to use refresh token.");
 
       if (refreshToken == null) {
@@ -178,42 +184,11 @@ class WebappService {
     }
   }
 
-  static Future<List<ChocoTurUserTour>?> getUserTours(String? accessToken) async {
-    Uri uri = Uri.https(webAppUrl, userToursEndpoint);
-    HttpClientRequest request = await _client!.getUrl(uri);
-    request.headers.set('Authorization', "Bearer $accessToken");
-    HttpClientResponse response = await request.close();
-    String body = await response.transform(utf8.decoder).join();
-
-    if (response.statusCode == 200) {
-      List<dynamic> userTourMaps = jsonDecode(body);
-      List<ChocoTurUserTour> userTours = [];
-      for (var userTourMap in userTourMaps) {
-        userTours.add(ChocoTurUserTour.fromMap(userTourMap));
-      }
-      return userTours;
-    } else {
-      LoggerInstance.logger.e('Got error response for user tours download: ${response.statusCode}, $body');
-      return null;
-    }
-  }
-
-  static Future<List<ChocoTurTour>?> getTours(BuildContext context, String? accessToken) async {
+  static Future<List<ChocoTurTour>?> getTours(BuildContext context) async {
     Uri uri = Uri.https(webAppUrl, toursEndpoint);
     HttpClientRequest request = await _client!.getUrl(uri);
-    request.headers.set('Authorization', "Bearer $accessToken");
     HttpClientResponse response = await request.close();
     String body = await response.transform(utf8.decoder).join();
-    if ((response.statusCode == 401) | (response.statusCode == 403)) {
-      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
-      if (newResponse == null) {
-        LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
-        Navigator.pushReplacementNamed(context, RouteNames.login);
-      }
-
-      response = newResponse!;
-    }
 
     if (response.statusCode == 200) {
       List<dynamic> tourMaps = jsonDecode(body)["tours"];
@@ -238,6 +213,130 @@ class WebappService {
     }
   }
 
+  static Future<List<ChocoTurUserTour>?> getUserTours(String? accessToken) async {
+    Uri uri = Uri.https(webAppUrl, userToursEndpoint);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+
+    if (response.statusCode == 200) {
+      List<dynamic> userTourMaps = jsonDecode(body);
+      List<ChocoTurUserTour> userTours = [];
+      for (var userTourMap in userTourMaps) {
+        userTours.add(ChocoTurUserTour.fromMap(userTourMap));
+      }
+      return userTours;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tours download: ${response.statusCode}, $body');
+      return null;
+    }
+  }
+
+  static Future<bool> activateUserTour(BuildContext context, String? accessToken, String tourId) async {
+    Uri uri = Uri.https(webAppUrl, activateUserTourEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.add(utf8.encode(tourId));
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend user tour activation request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tour activation: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<bool> deactivateUserTour(BuildContext context, String? accessToken, String tourId) async {
+    Uri uri = Uri.https(webAppUrl, deactivateUserTourEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.add(utf8.encode(tourId));
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend user tour deactivation request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tour deactivation: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<bool> advanceUserTour(BuildContext context, String? accessToken, String tourId) async {
+    Uri uri = Uri.https(webAppUrl, advanceUserTourEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.add(utf8.encode(tourId));
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend user tour advance request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tour advance: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<bool> revertUserTour(BuildContext context, String? accessToken, String tourId) async {
+    Uri uri = Uri.https(webAppUrl, revertUserTourEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.add(utf8.encode(tourId));
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend user tour revert request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user tour revert: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
   static Future<List<ChocoTurStop>?> getTourStops(BuildContext context, String tourId, String? accessToken) async {
     var params = {
       'tourId': tourId,
@@ -247,7 +346,7 @@ class WebappService {
     request.headers.set('Authorization', "Bearer $accessToken");
     HttpClientResponse response = await request.close();
     String body = await response.transform(utf8.decoder).join();
-    if (response.statusCode == 401) {
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
       HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
       if (newResponse == null) {
@@ -291,7 +390,7 @@ class WebappService {
     request.headers.set('Authorization', "Bearer $accessToken");
     HttpClientResponse response = await request.close();
     String body = await response.transform(utf8.decoder).join();
-    if (response.statusCode == 401) {
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
       HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
       if (newResponse == null) {

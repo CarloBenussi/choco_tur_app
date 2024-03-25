@@ -44,10 +44,12 @@ dependencies:
   firebase_storage: ^11.6.5
   flutter_animarker: ^3.2.0
   flutter_cache_manager: ^3.3.1
+  flutter_chat_types: ^3.6.2
+  flutter_chat_ui: ^1.6.12
   flutter_launcher_icons: ^0.13.1
   flutter_login_facebook: ^1.9.0
   flutter_native_splash: ^2.3.5
-  focus_detector: ^2.0.1
+  focus_detector_v2: ^3.1.0+1
   font_awesome_flutter: ^10.6.0
   geolocator: ^8.2.1
   google_maps_flutter: ^2.5.0
@@ -61,6 +63,7 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   sqflite: ^2.3.0
+  uuid: ^4.3.3
 
 
   # The following adds the Cupertino Icons font to your application.

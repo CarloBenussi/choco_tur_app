@@ -46,7 +46,7 @@ class MarkerInfoWindow extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () {
                 // TODO: Animation and meanwhile download (and cache, replacing the one spot) stop story
-                Navigator.popAndPushNamed(context, RouteNames.tourStopStoryPages, arguments: stop.id);
+                Navigator.popAndPushNamed(context, RouteNames.tourStopStoryChat, arguments: stop.id);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.redShade,

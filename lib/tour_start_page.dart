@@ -22,7 +22,6 @@ class TourStartPage extends StatelessWidget {
     SqliteCache cache = await SqliteCache.getInstance();
     await cache.saveTourStops(stops!);
     Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
-    //Navigator.pushNamed(context, RouteNames.tourStopStoryPages, arguments: 2);
   }
 
   @override

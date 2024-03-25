@@ -52,3 +52,4 @@ app.*.map.json
 /assets/keystore/*
 /ios/runner/Secret.swift
 /web/index.html
+flutterBuildApk.bat

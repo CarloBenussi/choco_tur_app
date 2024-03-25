@@ -1,11 +1,11 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/login_button.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchase_tour_button.dart';
 import 'package:choco_tur/widgets/start_tour_button.dart';
 import 'package:choco_tur/widgets/tour_stop_infos.dart';
-import 'package:choco_tur/widgets/tour_tasting_infos.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -143,24 +143,26 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 tourStopInfos: tour.stopInfos,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Text(
-                AppLocalizations.of(context)!.tourTastingsTitle,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+            if (tour.tastingInfos.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(
+                  AppLocalizations.of(context)!.tourTastingsTitle,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: TourTastingInfos(
-                langCode: _langCode!,
-                tourTastingInfos: tour.tastingInfos,
+            for (var i = 0; i < tour.tastingInfos.length; ++i)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                leading: const Icon(Icons.cake),
+                title: Text(tour.tastingInfos[i].titles[_langCode]!),
+                subtitle: Text(tour.tastingInfos[i].descriptions[_langCode]!),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: Wrap(
@@ -169,9 +171,12 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 spacing: 10,
                 children: [
                   StartTourButton(
-                    available: !_active && (_purchased || tour.isFree()),
+                    available: !_active &&
+                        (_purchased || tour.isFree()) &&
+                        (Provider.of<ChocoTurUser>(context, listen: false).loggedIn),
                     tour: tour,
                   ),
+                  if (!Provider.of<ChocoTurUser>(context, listen: false).loggedIn) const LoginButton(),
                   if (!tour.isFree())
                     PurchaseTourButton(
                       onPressedFunction: onPurchasePressed,

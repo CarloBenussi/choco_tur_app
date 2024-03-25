@@ -10,7 +10,19 @@ class LanguageSelection extends StatelessWidget {
     return Scaffold(
       backgroundColor: Styles.redShade,
       body: const Center(
-        child: LanguageSelectionDropdownMenu(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: 50),
+              child: Text(
+                "CHOCO TUR",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30, color: Styles.onRedShade),
+              ),
+            ),
+            LanguageSelectionDropdownMenu(),
+          ],
+        ),
       ),
     );
   }
