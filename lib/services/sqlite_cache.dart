@@ -11,7 +11,7 @@ class SqliteCache {
   static const String _toursTableSchema =
       "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
   static const String _stopsTableSchema =
-      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT";
+      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT";
   static const String _tastingsTableSchema =
       "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, mainImageUrl TEXT";
 
@@ -158,6 +158,7 @@ class SqliteCache {
           'latitude',
           'longitude',
           'imageId',
+          'audioId',
         ],
         where: "id = ?",
         whereArgs: [stopId],
@@ -169,7 +170,7 @@ class SqliteCache {
       } else if (stopMaps.length > 1) {
         throw Exception('Multiple stops found on cache with ID $stopId');
       } else {
-        stops.add(ChocoTurStop.fromMap(stopMaps[0]));
+        stops.add(ChocoTurStop.fromCacheMap(stopMaps[0]));
       }
     }
 

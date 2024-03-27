@@ -34,7 +34,6 @@ dependencies:
     sdk: flutter
   animated_text_kit: ^4.2.2
   animations: ^2.0.8
-  audioplayers: ^5.2.1
   country_picker: ^2.0.24
   dob_input_field: ^2.0.0
   duration: ^3.0.13
@@ -57,9 +56,11 @@ dependencies:
   google_sign_in_ios: ^5.7.3
   http: ^1.2.0
   intl: any
+  just_audio: ^0.9.36
   loading_animation_widget: ^1.2.0+4
   logger: ^2.0.2+1
   path: ^1.8.3
+  path_provider: ^2.1.2
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   sqflite: ^2.3.0
@@ -100,11 +101,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/chocolateGobino.jpg
-    - assets/giordano.jpg
-    - assets/chocolateIcon.png
     - assets/flags/it.png
     - assets/flags/en.png
-    # - assets/mock_db/tour_saturday.db
+    - assets/logo.png
     - assets/markers/1.png
     - assets/markers/2.png
     - assets/markers/3.png
@@ -146,7 +145,7 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
 flutter_native_splash:
-  color: "#ab0000"
+  color: "#9C4544"
   #background_image: "assets/background.png"
   image: assets/splash.png
 
@@ -174,11 +173,11 @@ flutter_native_splash:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/chocolateIcon.png"
+  image_path: "assets/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/chocolateIcon.png"
+    image_path: "assets/logo.png"
     background_color: "#hexcode"
     theme_color: "#hexcode"
 

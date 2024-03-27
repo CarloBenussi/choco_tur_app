@@ -2,6 +2,8 @@
 	"aboutButton": "About",
 	"accountButton": "Account",
 	"active": "ACTIVE",
+	"adjustAudioSpeed": "Adjust speed",
+	"adjustAudioVolume": "Adjust volume",
 	"alreadyActive": "A choco tour is already active!",
 	"alreadyActiveIndication": "To activate a new tour, complete first the active tour",
 	"areYouSureLogout": "Are you sure you want to logout?",
@@ -12,6 +14,7 @@
 	"chatOptionAudio": "Audio",
 	"chatOptionChat": "Chat",
 	"chatOptionSkip": "Skip stop",
+	"chatOptionEnd": "Finish",
 	"chatWelcomeMessage": "Hi! How would you like to go through this stop's content?",
 	"confirmEmailCode": "Enter the 6 digit code received via email",
 	"correct": "Correct!",
@@ -47,9 +50,9 @@
 	"myToursButton": "My tours",
 	"nextButton": "NEXT",
 	"nextStop": "Next stop",
-	"noActiveTourFound": "No active tour found",
 	"noActiveTourToGoTo": "No active choco tur found to set navigation to",
 	"noActiveTourToGoToIndication": "Once a tour is activated, this button will move the camera to the tour's next stop",
+	"noUserTourFound": "No user tour found: purchase one!",
 	"noButton": "No",
 	"or": "OR",
 	"password": "Password",
@@ -89,5 +92,6 @@
 	"welcomeToChocoTur": "Welcome to the Choco Tur...",
 	"welcomeToChocoTurHomeSubTitle": "Your walking-tour through Torino and chocolate",
 	"wrong": "Wrong",
-	"yesButton": "Yes"
+	"yesButton": "Yes",
+	"you": "You"
 }

@@ -2,6 +2,8 @@
 	"aboutButton": "Info Licenze",
 	"accountButton": "Account",
 	"active": "ATTIVO",
+	"adjustAudioSpeed": "Regola velocità di riproduzione",
+	"adjustAudioVolume": "Regola volume",
 	"alreadyActive": "Un choco tour è già attivo!",
 	"alreadyActiveIndication": "Per attivare un nuovo tour è necessario prima completare il tour attivo",
 	"areYouSureLogout": "Sei sicurə di voler effettuare il logout?",
@@ -12,6 +14,7 @@
 	"chatOptionAudio": "Audio",
 	"chatOptionChat": "Chat",
 	"chatOptionSkip": "Salta la fermata",
+	"chatOptionEnd": "Prossima",
 	"chatWelcomeMessage": "Ciao! Come vorresti usufruire del contenuto per questa fermata?",
 	"confirmEmailCode": "Inserisci il codice di 6 cifre ricevuto via mail",
 	"correct": "Corretto!",
@@ -47,9 +50,9 @@
 	"myToursButton": "I miei tour",
 	"nextButton": "AVANTI",
 	"nextStop": "Prossima fermata",
-	"noActiveTourFound": "Nessun tour attivo presente",
 	"noActiveTourToGoTo": "Nessun tour attivo trovato per impostare la navigazione",
 	"noActiveTourToGoToIndication": "Una volta che un tour viene attivato, questo bottone muoverà la camera verso la prossima fermata del tour",
+	"noUserTourFound": "Nessun tour utente presente: acquistane uno!",
 	"noButton": "No",
 	"or": "OPPURE",
 	"password": "Password",
@@ -89,5 +92,6 @@
 	"welcomeToChocoTur": "Benvenuti al Choco Tur...",
 	"welcomeToChocoTurHomeSubTitle": "Il tuo walking-tour attraverso Torino e cioccolato",
 	"wrong": "Sbagliato!",
-	"yesButton": "Sì"
+	"yesButton": "Sì",
+	"you": "Tu"
 }

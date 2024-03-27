@@ -193,6 +193,7 @@ class ChocoTurStop {
   late final Map<String, String> descriptions;
   late final LatLng coordinates;
   late final String imageId;
+  late final String audioId;
   late final Uint8List? imageData;
 
   Map<String, dynamic> toMap() {
@@ -203,6 +204,7 @@ class ChocoTurStop {
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
       'imageId': imageId,
+      'audioId': audioId,
     };
   }
 
@@ -214,15 +216,26 @@ class ChocoTurStop {
       'latitude': coordinates.latitude,
       'longitude': coordinates.longitude,
       'imageId': imageId,
+      'audioId': audioId,
     };
   }
 
   ChocoTurStop.fromMap(Map<String, dynamic> map) {
     id = map['id'];
+    titles = Map.from(map['titles']);
+    descriptions = Map.from(map['descriptions']);
+    coordinates = LatLng(map['latitude'], map['longitude']);
+    imageId = map['imageId'];
+    audioId = map['audioId'];
+  }
+
+  ChocoTurStop.fromCacheMap(Map<String, dynamic> map) {
+    id = map['id'];
     titles = Map.from(jsonDecode(map['titles']));
     descriptions = Map.from(jsonDecode(map['descriptions']));
     coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
+    audioId = map['audioId'];
   }
 }
 
@@ -278,20 +291,20 @@ class ChocoTurStopStory {
 
   ChocoTurStopStory.fromMap(Map<String, dynamic> map) {
     index = map['index'];
-    type = map['type'];
-    var pageContent = jsonDecode(map['contentJson']);
+    type = ChocoTurStopStoryType.values[map['type']];
+    var pageContent = Map.from(jsonDecode(map['contentJson']));
 
     imageId = pageContent['imageId'];
-    texts = Map.from(pageContent['text']);
+    texts = (pageContent['text'] != null) ? Map.from(pageContent['text']) : null;
     if (pageContent['answers'] != null) {
-      List<dynamic> answerMaps = List.from(jsonDecode(pageContent['answers']));
+      List<dynamic> answerMaps = List.from(pageContent['answers']);
       answers = [];
       for (var i = 0; i < answerMaps.length; ++i) {
         answers!.add(Map.from(answerMaps[i]));
       }
     }
     if (pageContent['onAnswers'] != null) {
-      List<dynamic> onAnswerMaps = List.from(jsonDecode(pageContent['onAnswers']));
+      List<dynamic> onAnswerMaps = List.from(pageContent['onAnswers']);
       onAnswers = [];
       for (var i = 0; i < onAnswerMaps.length; ++i) {
         onAnswers!.add(Map.from(onAnswerMaps[i]));

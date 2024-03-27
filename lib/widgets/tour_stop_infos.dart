@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/dashed_line.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -21,6 +22,7 @@ class TourStopInfos extends StatelessWidget {
   final String langCode;
   final List<ChocoTurTourStopInfo> tourStopInfos;
 
+  Polyline? _polyline;
   Set<Marker>? _markers;
 
   Future<Uint8List> _getBytesFromAsset(String path, int width) async {
@@ -47,6 +49,12 @@ class TourStopInfos extends StatelessWidget {
         _markers!.add(marker);
         markerId++;
       }
+
+      _polyline = Polyline(
+        polylineId: const PolylineId("Tour Line"),
+        color: Styles.redShade,
+        points: List.from(_markers!.map((e) => e.position)),
+      );
     }
 
     return _markers!;
@@ -105,8 +113,8 @@ class TourStopInfos extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: GoogleMap(
-                      initialCameraPosition: const CameraPosition(
-                        target: Coordinates.turinCenter,
+                      initialCameraPosition: CameraPosition(
+                        target: snapshot.data!.first.position,
                         zoom: 14.4746,
                       ),
                       mapToolbarEnabled: false,
@@ -115,6 +123,8 @@ class TourStopInfos extends StatelessWidget {
                       zoomControlsEnabled: false,
                       compassEnabled: false,
                       markers: snapshot.data!,
+                      polylines: {_polyline!},
+                      gestureRecognizers: {}..add(Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer())),
                     ),
                   ),
                 );

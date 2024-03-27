@@ -394,7 +394,7 @@ class WebappService {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
       HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
       if (newResponse == null) {
-        LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
+        LoggerInstance.logger.e("Failed to resend tour stop stories download request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
       }
 
@@ -434,7 +434,7 @@ class WebappService {
     }
 
     String? newAccessToken = await _refreshToken(email, refreshToken);
-    if (newAccessToken != null) {
+    if (newAccessToken == null) {
       LoggerInstance.logger.e("Failed to refresh user token.");
       return null;
     }

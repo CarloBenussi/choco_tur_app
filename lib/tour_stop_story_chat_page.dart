@@ -1,23 +1,27 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/services/webapp_service.dart';
+import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
-import 'package:choco_tur/widgets/app_bar.dart';
-import 'package:choco_tur/widgets/loading_animation.dart';
-import 'package:choco_tur/widgets/navigation_bar.dart';
+import 'package:choco_tur/widgets/audio_message.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as chat_types;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class TourStopStoryChatPage extends StatefulWidget {
-  const TourStopStoryChatPage({super.key, required this.stopId});
+  const TourStopStoryChatPage({super.key, required this.stopStories, required this.audioId});
 
-  final String stopId;
+  final List<ChocoTurStopStory> stopStories;
+  final String audioId;
 
   @override
   State<TourStopStoryChatPage> createState() => _TourStopStoryChatPageState();
@@ -25,28 +29,56 @@ class TourStopStoryChatPage extends StatefulWidget {
 
 class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   final uuid = const Uuid();
-
   String? _langCode;
-  List<ChocoTurStopStory>? _stopStories;
+
   final chat_types.User _bot = const chat_types.User(
     id: "Bot",
+    firstName: "ChocoTur",
   );
-  final chat_types.User _user = const chat_types.User(
-    id: "Myself",
-  );
+  late final chat_types.User? _user;
   final List<chat_types.Message> _messages = [];
   List<String> _inputOptions = [];
   List<chat_types.User> _typingUsers = [];
 
-  Future<List<ChocoTurStopStory>> _getStopStories(BuildContext context) async {
-    _stopStories ??= await WebappService.getTourStopStories(
-        context, widget.stopId, Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken);
+  // /// Collects the data useful for displaying in a seek bar, using a handy
+  // /// feature of rx_dart to combine the 3 streams of interest into one.
+  // Stream<PositionData> get _positionDataStream => Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+  //     _player.positionStream,
+  //     _player.bufferedPositionStream,
+  //     _player.durationStream,
+  //     (position, bufferedPosition, duration) => PositionData(position, bufferedPosition, duration ?? Duration.zero));
 
-    return _stopStories!;
+  bool _isChatEndMessage(String message) {
+    if ((message == AppLocalizations.of(context)!.chatOptionSkip) ||
+        (message == AppLocalizations.of(context)!.chatOptionEnd)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _isAudioMessage(String message) {
+    if ((message == AppLocalizations.of(context)!.chatOptionAudio)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  IconData _getIconForInputOption(String inputOption) {
+    if (_isChatEndMessage(inputOption)) {
+      return Icons.arrow_forward_outlined;
+    } else if (inputOption == AppLocalizations.of(context)!.chatOptionAudio) {
+      return Icons.audiotrack_outlined;
+    } else if (inputOption == AppLocalizations.of(context)!.chatOptionChat) {
+      return Icons.chat_bubble_outlined;
+    } else {
+      return Icons.circle_rounded;
+    }
   }
 
   void _chatEnd(BuildContext context) async {
-    ChocoTurUserTour? activeUserTour = Provider.of<ChocoTurUser>(context, listen: true).activeTour;
+    ChocoTurUserTour? activeUserTour = Provider.of<ChocoTurUser>(context, listen: false).activeTour;
     if (activeUserTour == null) {
       LoggerInstance.logger.e("No active user tour at chat end!");
       Navigator.pushReplacementNamed(context, RouteNames.home);
@@ -57,12 +89,8 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   }
 
   void _onInputOptionPressed(BuildContext context, int index, String message) async {
-    if (message == AppLocalizations.of(context)!.chatOptionSkip) {
-      return _chatEnd(context);
-    }
-
     final textMessage = chat_types.TextMessage(
-      author: _user,
+      author: _user!,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: uuid.v4(),
       text: message,
@@ -70,57 +98,88 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
     setState(() {
       _messages.insert(0, textMessage);
-      _typingUsers = [_bot];
       _inputOptions = [];
     });
 
-    // TODO: Sleep 1s.
+    if (_isChatEndMessage(message)) {
+      return _chatEnd(context);
+    } else if (_isAudioMessage(message)) {
+      setState(() {
+        _typingUsers = [_bot];
+      });
 
-    var botMessages;
-    while (true) {
-      bool exit = false;
-      if (_stopStories![0].type == ChocoTurStopStoryType.text) {
-        botMessages.add(chat_types.TextMessage(
-          author: _bot,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: uuid.v4(),
-          text: _stopStories![0].texts![_langCode]!,
-        ));
-      } else if (_stopStories![0].type == ChocoTurStopStoryType.image) {
-        // TODO: Add image message.
-      } else if (_stopStories![0].type == ChocoTurStopStoryType.answers) {
-        for (var answer in _stopStories![0].answers!) {
-          _inputOptions.add(answer[_langCode]!);
+      Uint8List audio = await FirebaseService.downloadAudio(_langCode!, widget.audioId);
+      Directory privateFileDir = await getApplicationDocumentsDirectory();
+      File file = File('${privateFileDir.path}/${widget.audioId}');
+      file.writeAsBytes(audio);
+
+      var audioMessage = chat_types.AudioMessage(
+        author: _bot,
+        duration: Duration(milliseconds: (audio.length * 8 / 190).round()),
+        id: uuid.v4(),
+        name: widget.audioId,
+        size: audio.length,
+        uri: file.path,
+        mimeType: "mp3",
+      );
+
+      setState(() {
+        _messages.insert(0, audioMessage);
+        _typingUsers = [];
+        _inputOptions.add(AppLocalizations.of(context)!.chatOptionChat);
+        _inputOptions.add(AppLocalizations.of(context)!.chatOptionSkip);
+      });
+    } else {
+      setState(() {
+        _typingUsers = [_bot];
+      });
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      var botMessages = [];
+      while (true) {
+        bool exit = false;
+        ChocoTurStopStory story = widget.stopStories[0];
+        if (story.type == ChocoTurStopStoryType.text) {
+          botMessages.add(chat_types.TextMessage(
+            author: _bot,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+            id: uuid.v4(),
+            text: story.texts![_langCode]!,
+          ));
+        } else if (story.type == ChocoTurStopStoryType.image) {
+          // TODO: Add image message.
+        } else if (story.type == ChocoTurStopStoryType.answers) {
+          for (var answer in story.answers!) {
+            _inputOptions.add(answer[_langCode]!);
+          }
+
+          exit = true;
+        } else if (story.type == ChocoTurStopStoryType.onAnswers) {
+          botMessages.add(chat_types.TextMessage(
+            author: _bot,
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+            id: uuid.v4(),
+            text: story.onAnswers![index][_langCode]!,
+          ));
         }
 
-        exit = true;
-      } else if (_stopStories![0].type == ChocoTurStopStoryType.onAnswers) {
-        botMessages.add(chat_types.TextMessage(
-          author: _bot,
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: uuid.v4(),
-          text: _stopStories![0].onAnswers![index][_langCode]!,
-        ));
+        widget.stopStories.removeAt(0);
+        if (widget.stopStories.isEmpty) {
+          _inputOptions = [AppLocalizations.of(context)!.chatOptionEnd];
+          break;
+        } else if (exit) {
+          break;
+        }
       }
 
-      _stopStories!.removeAt(0);
-      if (_stopStories!.isEmpty) {
-        _inputOptions = [AppLocalizations.of(context)!.chatOptionSkip];
-        break;
-      } else if (exit) {
-        break;
-      }
-    }
-
-    for (var botMessage in botMessages) {
       setState(() {
-        _messages.insert(0, botMessage);
+        for (var botMessage in botMessages) {
+          _messages.insert(0, botMessage);
+        }
+        _typingUsers = [];
       });
     }
-
-    setState(() {
-      _typingUsers = [];
-    });
   }
 
   @override
@@ -133,6 +192,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
     super.didChangeDependencies();
 
     _langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
+    _user = chat_types.User(
+      id: "Myself",
+      firstName: AppLocalizations.of(context)!.you,
+    );
 
     _messages.add(chat_types.TextMessage(
       author: _bot,
@@ -151,50 +214,65 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    ChatTheme theme = DefaultChatTheme(
+      backgroundColor: Colors.white,
+      inputBackgroundColor: Colors.white,
+      primaryColor: Styles.pinkShade,
+      secondaryColor: Styles.redShade,
+      receivedMessageBodyTextStyle: const TextStyle(color: Colors.white),
+      sentMessageBodyTextStyle: const TextStyle(color: Colors.white),
+    );
     return SafeArea(
-      child: Scaffold(
-        appBar: const ChocoTurAppBar(),
-        body: FutureBuilder(
-          future: _getStopStories(context),
-          builder: (context, toursSnapshot) {
-            if (toursSnapshot.hasData &&
-                toursSnapshot.connectionState == ConnectionState.done &&
-                toursSnapshot.data != null) {
-              return Chat(
-                messages: _messages,
-                onSendPressed: (text) {}, // Null on purpose
-                theme: const DefaultChatTheme(
-                  backgroundColor: Colors.white,
-                  inputBackgroundColor: Colors.white,
-                ),
-                customBottomWidget: Row(
-                  children: [
-                    for (var i = 0; i < _inputOptions.length; ++i) ...[
-                      TextButton(
-                        onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Styles.redShade,
-                          minimumSize: Size.zero,
-                        ),
-                        child: Text(
-                          _inputOptions[i],
-                          style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
-                user: _user,
-                typingIndicatorOptions: TypingIndicatorOptions(
-                  typingUsers: _typingUsers,
-                ),
-              );
-            } else {
-              return const LoadingAnimation();
-            }
+      child: Center(
+        child: Chat(
+          messages: _messages,
+          user: _user!,
+          typingIndicatorOptions: TypingIndicatorOptions(
+            typingUsers: _typingUsers,
+          ),
+          onSendPressed: (text) {}, // Null on purpose
+          theme: theme,
+          audioMessageBuilder: (chat_types.AudioMessage message, {required int messageWidth}) {
+            return AudioMessage(
+              message: message,
+              messageWidth: messageWidth,
+              theme: theme,
+            );
           },
+          customBottomWidget: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  width: 1.5,
+                  color: Styles.pinkShade,
+                ),
+              ),
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              direction: Axis.horizontal,
+              spacing: 10.0,
+              children: [
+                for (var i = 0; i < _inputOptions.length; ++i) ...[
+                  ElevatedButton.icon(
+                    onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Styles.pinkShade,
+                      minimumSize: Size.zero,
+                    ),
+                    label: Text(
+                      _inputOptions[i],
+                      style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
+                  ),
+                ]
+              ],
+            ),
+          ),
         ),
-        bottomNavigationBar: const ChocoTurNavigationBar(),
       ),
     );
   }

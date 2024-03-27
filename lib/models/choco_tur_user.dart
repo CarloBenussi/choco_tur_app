@@ -59,10 +59,7 @@ class ChocoTurUser extends ChangeNotifier {
       }
     }
 
-    List<ChocoTurUserTour>? userTours;
-    if (loggedIn) {
-      userTours = await WebappService.getUserTours(loginAccessToken);
-    }
+    bool showTutorial = (_prefs.getBool(_showTutorialKey) != null) ? _prefs.getBool(_showTutorialKey)! : true;
 
     CameraPosition? cameraPosition;
     if (_prefs.containsKey(_cameraLatituteKey) &&
@@ -77,12 +74,19 @@ class ChocoTurUser extends ChangeNotifier {
       );
     }
 
+    List<ChocoTurUserTour>? userTours;
+    if (loggedIn) {
+      userTours = await WebappService.getUserTours(loginAccessToken);
+    }
+
     return ChocoTurUser(
       loginEmail: loginEmail,
       loginAccessToken: loginAccessToken,
       loginRefreshToken: loginRefreshToken,
       loginType: loginType,
       loggedIn: loggedIn,
+      showTutorial: showTutorial,
+      quizScore: _prefs.getDouble(_quizScoreKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
       userTours: userTours,
@@ -95,6 +99,8 @@ class ChocoTurUser extends ChangeNotifier {
     this.loginRefreshToken,
     this.loginType,
     required this.loggedIn,
+    required this.showTutorial,
+    this.quizScore,
     this.language,
     this.cameraPosition,
     this.userTours,
@@ -105,6 +111,8 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _loginTypeIndexKey = "loginType";
   static const String _loginAccessTokenKey = "loginAccessToken";
   static const String _loginRefreshTokenKey = "loginRefreshToken";
+  static const String _showTutorialKey = "showTutorial";
+  static const String _quizScoreKey = "quizScoreKey";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
@@ -116,6 +124,8 @@ class ChocoTurUser extends ChangeNotifier {
   String? loginRefreshToken;
   LoginType? loginType;
   bool loggedIn;
+  bool showTutorial;
+  double? quizScore;
   String? language;
   CameraPosition? cameraPosition;
   List<ChocoTurUserTour>? userTours;
@@ -229,6 +239,7 @@ class ChocoTurUser extends ChangeNotifier {
     }
 
     userTours!.elementAt(userTourIndex).isActive = true;
+    userTours!.elementAt(userTourIndex).nextStopId = tour.stopIds[0];
     notifyListeners();
 
     return true;

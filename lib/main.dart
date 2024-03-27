@@ -7,7 +7,7 @@ import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/settings_page.dart';
 import 'package:choco_tur/tour_start_page.dart';
-import 'package:choco_tur/tour_stop_story_chat_page.dart';
+import 'package:choco_tur/tour_stop_story_chat_loading_page.dart';
 import 'package:choco_tur/tours_home_page.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
@@ -78,8 +78,8 @@ class ChocoTurApp extends StatelessWidget {
           RouteNames.tourPlay: (context) => TourStartPage(
                 tour: ModalRoute.of(context)!.settings.arguments as ChocoTurTour,
               ),
-          RouteNames.tourStopStoryChat: (context) => TourStopStoryChatPage(
-                stopId: ModalRoute.of(context)!.settings.arguments as String,
+          RouteNames.tourStopStoryChat: (context) => TourStopStoryChatLoadingPage(
+                stop: ModalRoute.of(context)!.settings.arguments as ChocoTurStop,
               ),
           RouteNames.settings: (context) => const SettingsPage(),
           RouteNames.registrationProcess: (context) => const RegistrationProcessPage(),

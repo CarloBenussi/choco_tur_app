@@ -4,6 +4,7 @@ import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
+import 'package:choco_tur/widgets/login_button.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class _MyTourPageState extends State<MyTourPage> {
       backgroundColor: Colors.white,
       body: Consumer<ChocoTurUser>(
         builder: (context, user, child) {
-          if (_userTours != null) {
+          if ((_userTours != null) && (_userTours!.isNotEmpty)) {
             return Column(
               children: [
                 Flexible(
@@ -71,7 +72,7 @@ class _MyTourPageState extends State<MyTourPage> {
                             children: [
                               LinearProgressIndicator(
                                 backgroundColor: Styles.onRedShade,
-                                valueColor: AlwaysStoppedAnimation<Color>(Styles.gold),
+                                valueColor: const AlwaysStoppedAnimation<Color>(Styles.gold),
                                 value: _userTours![index].progress,
                               ),
                               Text(
@@ -141,8 +142,10 @@ class _MyTourPageState extends State<MyTourPage> {
                   ),
               ],
             );
+          } else if (!Provider.of<ChocoTurUser>(context, listen: false).loggedIn) {
+            return const Center(child: LoginButton());
           } else {
-            return Center(child: Text(AppLocalizations.of(context)!.noActiveTourFound));
+            return Center(child: Text(AppLocalizations.of(context)!.noUserTourFound));
           }
         },
       ),

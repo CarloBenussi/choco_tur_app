@@ -10,12 +10,14 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class FirebaseService {
   static const String firebaseBucket = String.fromEnvironment('FIREBASE_BUCKET');
   static const String imagesPath = "images";
+  static const String audiosPath = "audio";
   static const String imageOnError = "assets/chocolateGobino.jpg";
 
   static FirebaseApp? _fbApp;
   static FirebaseStorage? _fbStorage;
   static Reference? _appRef;
   static Reference? _imagesRef;
+  static Reference? _audiosRef;
 
   static Future<void> init() async {
     _fbApp = await Firebase.initializeApp(
@@ -33,6 +35,7 @@ class FirebaseService {
     _fbStorage = FirebaseStorage.instanceFor(bucket: firebaseBucket);
     _appRef = _fbStorage!.ref();
     _imagesRef = _appRef!.child(imagesPath);
+    _audiosRef = _appRef!.child(audiosPath);
   }
 
   static Future<Uint8List> downloadImage(String imageId, {bool tryFromCache = true, bool saveToCache = true}) async {
@@ -63,6 +66,24 @@ class FirebaseService {
       return ret;
     } on FirebaseException catch (e) {
       LoggerInstance.logger.e('Failed to download image $imageId: ${e.message}');
+      return Uint8List(0);
+    }
+  }
+
+  static Future<Uint8List> downloadAudio(String langCode, String audioId) async {
+    try {
+      Uint8List? ret;
+      Reference audioLangRef = _audiosRef!.child(langCode);
+      Reference audioRef = audioLangRef.child(audioId);
+      const oneMegabyte = 1024 * 1024;
+      ret = await audioRef.getData(oneMegabyte);
+      if (ret == null) {
+        throw FirebaseException(plugin: "Storage", message: "Got null audio data");
+      }
+
+      return ret;
+    } on FirebaseException catch (e) {
+      LoggerInstance.logger.e('Failed to download audio $audioId: ${e.message}');
       return Uint8List(0);
     }
   }
