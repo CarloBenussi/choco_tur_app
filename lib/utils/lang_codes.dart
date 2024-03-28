@@ -8,7 +8,7 @@ class LanguageCodes {
     if (langCode == EN) {
       return "English";
     } else if (langCode == IT) {
-      return "Italian";
+      return "Italiano";
     } else {
       LoggerInstance.logger.e('Unknown language code $langCode.');
       return null;

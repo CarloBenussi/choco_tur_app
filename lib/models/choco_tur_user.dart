@@ -227,17 +227,21 @@ class ChocoTurUser extends ChangeNotifier {
       return false;
     }
 
-    int userTourIndex = -1;
-    if ((userTours == null) || (-1 == (userTourIndex = userTours!.indexWhere((element) => element.id == tour.id)))) {
-      LoggerInstance.logger.e('No user tour found for ID ${tour.id}');
-      return false;
-    }
-
     bool userTourActivationSuccess = await WebappService.activateUserTour(context, loginAccessToken, tour.id);
     if (!userTourActivationSuccess) {
       LoggerInstance.logger.e('Failed to activate tour ${tour.id} on webapp');
     }
 
+    int userTourIndex = -1;
+    if ((userTours == null) || (-1 == (userTourIndex = userTours!.indexWhere((element) => element.id == tour.id)))) {
+      LoggerInstance.logger.d('No user tour found for ID ${tour.id}: creating it...');
+      ChocoTurUserTour userTour = ChocoTurUserTour();
+      userTour.id = tour.id;
+      userTour.title = tour.title;
+      userTour.progress = 0;
+      userTours!.add(userTour);
+      userTourIndex = userTours!.length - 1;
+    }
     userTours!.elementAt(userTourIndex).isActive = true;
     userTours!.elementAt(userTourIndex).nextStopId = tour.stopIds[0];
     notifyListeners();

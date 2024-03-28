@@ -14,7 +14,7 @@ class UserTextInput extends StatelessWidget {
   final String hintText;
   final bool obscured;
   final String? Function(String?)? validator;
-  final Function? onTap;
+  final Function(BuildContext context)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class UserTextInput extends StatelessWidget {
           fontSize: 24,
           fontWeight: FontWeight.w300,
         ),
-        onTap: () => onTap,
+        onTap: () => {if (onTap != null) onTap!(context)},
       ),
     );
   }

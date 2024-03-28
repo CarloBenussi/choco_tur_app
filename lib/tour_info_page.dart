@@ -1,6 +1,12 @@
+import 'dart:ui';
+
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_button.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:choco_tur/widgets/purchase_tour_button.dart';
@@ -9,6 +15,7 @@ import 'package:choco_tur/widgets/tour_stop_infos.dart';
 import 'package:duration/duration.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class TourInfoPage extends StatefulWidget {
@@ -25,10 +32,29 @@ class _TourInfoPageState extends State<TourInfoPage> {
   bool _purchased = false;
   bool _active = false;
   String? _langCode;
+  bool _processing = false;
 
-  void onPurchasePressed() {
+  void _onPurchasePressed() {
     setState(() {
       _purchased = true;
+    });
+  }
+
+  void _onStartTourPressed(BuildContext context) async {
+    LoggerInstance.logger.d('Activating tour ${tour.id}');
+    setState(() {
+      _processing = true;
+    });
+    bool activateSuccess = await Provider.of<ChocoTurUser>(context, listen: false).activateTour(
+      context,
+      tour,
+    );
+    if (activateSuccess) {
+      // ignore: use_build_context_synchronously
+      Navigator.pushNamed(context, RouteNames.tourPlay, arguments: tour);
+    }
+    setState(() {
+      _processing = false;
     });
   }
 
@@ -170,21 +196,46 @@ class _TourInfoPageState extends State<TourInfoPage> {
                 alignment: WrapAlignment.spaceAround,
                 spacing: 10,
                 children: [
-                  StartTourButton(
-                    available: !_active &&
-                        (_purchased || tour.isFree()) &&
-                        (Provider.of<ChocoTurUser>(context, listen: false).loggedIn),
-                    tour: tour,
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Styles.redShade,
+                    ),
+                    onPressed: (!_active &&
+                            (_purchased || tour.isFree()) &&
+                            (Provider.of<ChocoTurUser>(context, listen: false).loggedIn))
+                        ? () => _onStartTourPressed(context)
+                        : null,
+                    icon: const FaIcon(
+                      FontAwesomeIcons.play,
+                      color: Styles.onRedShade,
+                    ),
+                    label: Text(
+                      AppLocalizations.of(context)!.startTourButton,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Styles.onRedShade),
+                    ),
                   ),
                   if (!Provider.of<ChocoTurUser>(context, listen: false).loggedIn) const LoginButton(),
                   if (!tour.isFree())
                     PurchaseTourButton(
-                      onPressedFunction: onPurchasePressed,
+                      onPressedFunction: _onPurchasePressed,
                       purchased: _purchased,
                     ),
                 ],
               ),
             ),
+            if (_processing)
+              Flexible(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 5,
+                    sigmaY: 5,
+                  ),
+                  child: const Center(
+                    child: LoadingAnimation(),
+                  ),
+                ),
+              ),
           ],
         ),
         bottomNavigationBar: const ChocoTurNavigationBar(),

@@ -1,4 +1,4 @@
-import 'package:choco_tur/email_confirmation_page.dart';
+import 'package:choco_tur/account_page.dart';
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/my_tours_page.dart';
@@ -83,8 +83,7 @@ class ChocoTurApp extends StatelessWidget {
               ),
           RouteNames.settings: (context) => const SettingsPage(),
           RouteNames.registrationProcess: (context) => const RegistrationProcessPage(),
-          RouteNames.emailConfirmation: (context) =>
-              EmailConfirmationPage(email: ModalRoute.of(context)!.settings.arguments as String),
+          RouteNames.account: (context) => const AccountPage(),
         },
       );
     });

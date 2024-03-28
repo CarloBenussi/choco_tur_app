@@ -1,3 +1,4 @@
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class ChocoTurAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -5,7 +6,10 @@ class ChocoTurAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar();
+    return AppBar(
+      backgroundColor: Styles.onRedShade,
+      foregroundColor: Styles.redShade,
+    );
   }
 
   @override

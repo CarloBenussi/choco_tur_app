@@ -19,28 +19,27 @@ class HomePageTour extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(clipRadius)),
       child: Container(
-        decoration: BoxDecoration(border: Border.all(color: Styles.darkRedShade, width: 3.0)),
+        decoration: BoxDecoration(border: Border.all(color: Styles.redShade, width: 3.0)),
         child: GestureDetector(
           onTap: () => onTapped(context),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Hero(
                 tag: chocoTurTour.id,
                 child: Image.memory(chocoTurTour.imageData!),
               ),
               Divider(
-                color: Styles.pinkShade,
-                thickness: 20,
+                color: Styles.redShade,
+                thickness: 15,
               ),
               Text(
                 chocoTurTour.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300, color: Styles.darkRedShade),
-                textAlign: TextAlign.start,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300, color: Styles.redShade),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

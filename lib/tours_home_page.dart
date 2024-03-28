@@ -76,12 +76,15 @@ class HomePageState extends State<ToursHomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 20),
-            child: Text("ChocoTur",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 30,
-                  color: Styles.darkRedShade,
-                )),
+            child: Text(
+              "CHOCO TUR",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 30,
+                color: Styles.darkRedShade,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),

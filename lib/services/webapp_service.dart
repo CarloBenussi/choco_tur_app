@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/widgets/generic_alert_dialog.dart';
@@ -61,6 +62,7 @@ class WebappService {
     String body = jsonEncode({
       'email': email,
       'password': password,
+      'matchingPassword': matchingPassword,
       'dateOfBirth': dateOfBirth,
       'nationality': nationality,
     });
@@ -337,7 +339,17 @@ class WebappService {
     }
   }
 
-  static Future<List<ChocoTurStop>?> getTourStops(BuildContext context, String tourId, String? accessToken) async {
+  static Future<List<ChocoTurStop>?> getTourStops(BuildContext context, String tourId, String? accessToken,
+      {bool tryFromCache = true, bool saveToCache = true}) async {
+    if (tryFromCache) {
+      // Try from cache first.
+      SqliteCache cache = await SqliteCache.getInstance();
+      List<ChocoTurStop>? tourStops = await cache.getTourStops(tourId);
+      if (tourStops != null) {
+        return tourStops;
+      }
+    }
+
     var params = {
       'tourId': tourId,
     };
@@ -363,6 +375,12 @@ class WebappService {
       for (var tourStopMap in tourStopMaps) {
         tourStops.add(ChocoTurStop.fromMap(tourStopMap));
       }
+
+      if (saveToCache) {
+        SqliteCache cache = await SqliteCache.getInstance();
+        await cache.saveTourStops(tourStops);
+      }
+
       return tourStops;
     } else {
       LoggerInstance.logger.e('Got error response for tour stops download: ${response.statusCode}, $body');

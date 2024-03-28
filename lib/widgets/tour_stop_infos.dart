@@ -54,6 +54,7 @@ class TourStopInfos extends StatelessWidget {
         polylineId: const PolylineId("Tour Line"),
         color: Styles.redShade,
         points: List.from(_markers!.map((e) => e.position)),
+        width: 5,
       );
     }
 

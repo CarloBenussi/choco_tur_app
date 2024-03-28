@@ -35,6 +35,7 @@ dependencies:
   animated_text_kit: ^4.2.2
   animations: ^2.0.8
   country_picker: ^2.0.24
+  country_icons: ^3.0.0
   dob_input_field: ^2.0.0
   duration: ^3.0.13
   dynamic_color: ^1.4.0
@@ -70,7 +71,6 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  settings_ui: ^2.0.2
 
 dev_dependencies:
   flutter_test:
@@ -101,9 +101,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/chocolateGobino.jpg
-    - assets/flags/it.png
-    - assets/flags/en.png
-    - assets/logo.png
+    - assets/logo_android.png
+    - assets/logo_ios.png
     - assets/markers/1.png
     - assets/markers/2.png
     - assets/markers/3.png
@@ -171,9 +170,13 @@ flutter_native_splash:
   fullscreen: true
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true # can specify file name here e.g. "ic_launcher"
   ios: true
-  image_path: "assets/logo.png"
+  image_path_android: "assets/logo_android.png"
+  image_path_ios: "assets/logo_ios.png"
+  remove_alpha_ios: true
+  background_color_android: "#9C4544"
+  background_color_ios: "#9C4544"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true

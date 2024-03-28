@@ -1,6 +1,5 @@
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/seek_bar.dart';
-import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as chat_types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';

@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/services/sqlite_cache.dart';
+import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/styles.dart';
@@ -42,6 +42,7 @@ class _MapPageState extends State<MapPage> {
 
   // ignore: prefer_final_fields
   Future<Set<Marker>>? _markers;
+  int? _nextStopIndex;
 
   CameraPosition? _cameraPosition;
 
@@ -87,8 +88,8 @@ class _MapPageState extends State<MapPage> {
 
     Set<Marker> markers = {};
     if (activeUserTour != null) {
-      SqliteCache cache = await SqliteCache.getInstance();
-      _activeTourStops = await cache.getTourStops(activeUserTour.id);
+      _activeTourStops = await WebappService.getTourStops(
+          context, activeUserTour.id, Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken);
       if (_activeTourStops != null) {
         for (var i = 0; i < _activeTourStops!.length; ++i) {
           final ChocoTurStop stop = _activeTourStops![i];
@@ -98,7 +99,8 @@ class _MapPageState extends State<MapPage> {
           Marker? tourStopMarker;
           if (stop.id == activeUserTour.nextStopId) {
             _nextStopCoordinates = stop.coordinates;
-            tourStopMarker = RippleMarker(
+            _nextStopIndex = i + 1;
+            tourStopMarker = Marker(
                 markerId: MarkerId(markerIdStr),
                 position: stop.coordinates,
                 icon: BitmapDescriptor.fromBytes(markerIcon),
@@ -143,7 +145,7 @@ class _MapPageState extends State<MapPage> {
               AppLocalizations.of(context)!.goToTheNextStop,
               style: const TextStyle(color: Styles.onRedShade),
             ),
-            content: Text(AppLocalizations.of(context)!.goToTheNextStopIndication,
+            content: Text(AppLocalizations.of(context)!.goToTheNextStopIndication + _nextStopIndex.toString(),
                 style: const TextStyle(color: Styles.onRedShade)),
             elevation: 24.0,
           ),
@@ -184,45 +186,39 @@ class _MapPageState extends State<MapPage> {
               if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
                 return Stack(
                   children: [
-                    Animarker(
-                      curve: Curves.ease,
-                      rippleRadius: 0.1,
-                      mapId: _controller.future.then<int>((value) => value.mapId), //Grab Google Map Id
-                      markers: snapshot.data!,
-                      child: GoogleMap(
-                        mapType: MapType.normal,
-                        initialCameraPosition: (_cameraPosition != null)
-                            ? _cameraPosition!
-                            : const CameraPosition(
-                                target: Coordinates.turinCenter,
-                                zoom: 14.4746,
-                              ),
-                        mapToolbarEnabled: false,
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: false,
-                        zoomControlsEnabled: false,
-                        compassEnabled: true,
-                        onMapCreated: (GoogleMapController controller) {
-                          if (!_controller.isCompleted) {
-                            _controller.complete(controller);
-                          }
-                        },
+                    GoogleMap(
+                      mapType: MapType.normal,
+                      initialCameraPosition: (_cameraPosition != null)
+                          ? _cameraPosition!
+                          : const CameraPosition(
+                              target: Coordinates.turinCenter,
+                              zoom: 14.4746,
+                            ),
+                      mapToolbarEnabled: false,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      compassEnabled: true,
+                      onMapCreated: (GoogleMapController controller) {
+                        if (!_controller.isCompleted) {
+                          _controller.complete(controller);
+                        }
+                      },
 
-                        /// If onCameraIdle does not work see https://github.com/flutter/flutter/issues/37682)
-                        onCameraIdle: () {
-                          if (_infoWidgetRoute != null) {
-                            Navigator.of(context, rootNavigator: true).push(_infoWidgetRoute!).then<void>(
-                              (newValue) {
-                                _infoWidgetRoute = null;
-                              },
-                            );
-                          }
-                        },
-                        onCameraMove: (CameraPosition position) {
-                          _cameraPosition = position;
-                        },
-                        markers: snapshot.data!,
-                      ),
+                      /// If onCameraIdle does not work see https://github.com/flutter/flutter/issues/37682)
+                      onCameraIdle: () {
+                        if (_infoWidgetRoute != null) {
+                          Navigator.of(context, rootNavigator: true).push(_infoWidgetRoute!).then<void>(
+                            (newValue) {
+                              _infoWidgetRoute = null;
+                            },
+                          );
+                        }
+                      },
+                      onCameraMove: (CameraPosition position) {
+                        _cameraPosition = position;
+                      },
+                      markers: snapshot.data!,
                     ),
                     // ),
                     Positioned(
