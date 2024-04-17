@@ -165,7 +165,7 @@ class SqliteCache {
       );
 
       if (stopMaps.isEmpty) {
-        LoggerInstance.logger.w('No stop found on cache for ID $stopId');
+        LoggerInstance.logger.i('No stop found on cache for tour with ID $stopId');
         return null;
       } else if (stopMaps.length > 1) {
         throw Exception('Multiple stops found on cache with ID $stopId');

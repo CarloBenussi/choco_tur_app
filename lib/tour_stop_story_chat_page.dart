@@ -84,7 +84,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       Navigator.pushReplacementNamed(context, RouteNames.home);
     } else {
       await Provider.of<ChocoTurUser>(listen: false, context).advanceTour(context, activeUserTour);
-      Navigator.pushReplacementNamed(context, RouteNames.map);
+      Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
     }
   }
 
@@ -134,9 +134,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         _typingUsers = [_bot];
       });
 
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(milliseconds: 200));
 
       var botMessages = [];
+      List<String> inputOptions = [];
       while (true) {
         bool exit = false;
         ChocoTurStopStory story = widget.stopStories[0];
@@ -151,7 +152,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
           // TODO: Add image message.
         } else if (story.type == ChocoTurStopStoryType.answers) {
           for (var answer in story.answers!) {
-            _inputOptions.add(answer[_langCode]!);
+            inputOptions.add(answer[_langCode]!);
           }
 
           exit = true;
@@ -166,17 +167,22 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
         widget.stopStories.removeAt(0);
         if (widget.stopStories.isEmpty) {
-          _inputOptions = [AppLocalizations.of(context)!.chatOptionEnd];
+          inputOptions = [AppLocalizations.of(context)!.chatOptionEnd];
           break;
         } else if (exit) {
           break;
         }
       }
 
-      setState(() {
-        for (var botMessage in botMessages) {
+      for (var botMessage in botMessages) {
+        await Future.delayed(const Duration(seconds: 1));
+        setState(() {
           _messages.insert(0, botMessage);
-        }
+        });
+      }
+
+      setState(() {
+        _inputOptions = inputOptions;
         _typingUsers = [];
       });
     }
@@ -264,7 +270,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
                     label: Text(
                       _inputOptions[i],
                       style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
+                      overflow: TextOverflow.visible,
                     ),
                     icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
                   ),

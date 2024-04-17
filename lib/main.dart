@@ -2,6 +2,8 @@ import 'package:choco_tur/account_page.dart';
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/my_tours_page.dart';
+import 'package:choco_tur/password_recovery_process_page.dart';
+import 'package:choco_tur/quiz_page.dart';
 import 'package:choco_tur/registration_process_page.dart';
 import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
@@ -73,7 +75,7 @@ class ChocoTurApp extends StatelessWidget {
           RouteNames.login: (context) => const LoginPage(),
           RouteNames.tourInfo: (context) => TourInfoPage(),
           RouteNames.home: (context) => const ToursHomePage(),
-          RouteNames.map: (context) => const MapPage(),
+          RouteNames.map: (context) => MapPage(),
           RouteNames.myTours: (context) => const MyTourPage(),
           RouteNames.tourPlay: (context) => TourStartPage(
                 tour: ModalRoute.of(context)!.settings.arguments as ChocoTurTour,
@@ -83,7 +85,11 @@ class ChocoTurApp extends StatelessWidget {
               ),
           RouteNames.settings: (context) => const SettingsPage(),
           RouteNames.registrationProcess: (context) => const RegistrationProcessPage(),
+          RouteNames.passwordRecoveryProcess: (context) => const PasswordRecoveryProcessPage(),
           RouteNames.account: (context) => const AccountPage(),
+          RouteNames.quiz: (context) => QuizPage(
+                quiz: ModalRoute.of(context)!.settings.arguments as ChocoTurQuiz,
+              ),
         },
       );
     });

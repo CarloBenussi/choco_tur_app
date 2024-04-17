@@ -1,82 +1,92 @@
+import 'dart:ui';
+
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
+import 'package:choco_tur/widgets/dialog.dart';
+import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ChocoTurDrawer extends StatelessWidget {
+class ChocoTurDrawer extends StatefulWidget {
   const ChocoTurDrawer({super.key});
 
+  @override
+  State<ChocoTurDrawer> createState() => _ChocoTurDrawerState();
+}
+
+class _ChocoTurDrawerState extends State<ChocoTurDrawer> {
+  bool _processing = false;
+
   void _onLogoutPressed(BuildContext context) async {
+    setState(() {
+      _processing = true;
+    });
     await Provider.of<ChocoTurUser>(context, listen: false).logout();
+    setState(() {
+      _processing = false;
+    });
     // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, RouteNames.login);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: Styles.redShade,
-      surfaceTintColor: Styles.onRedShade,
-      shadowColor: Styles.onRedShade,
-      child: ListView(
-        children: [
-          const DrawerHeader(
-            child: Text(
-              "CHOCO TUR",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: Styles.onRedShade),
+    return Stack(children: [
+      Drawer(
+        backgroundColor: Styles.redShade,
+        surfaceTintColor: Styles.onRedShade,
+        shadowColor: Styles.onRedShade,
+        child: ListView(
+          children: [
+            const DrawerHeader(
+              child: Text(
+                "CHOCO TUR",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: Styles.onRedShade),
+              ),
             ),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.settings_outlined,
-              color: Styles.onRedShade,
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.settingsButton,
-              style: const TextStyle(color: Styles.onRedShade),
-            ),
-            onTap: () {
-              Navigator.pushNamed(context, RouteNames.settings);
-            },
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.account_circle_outlined,
-              color: Styles.onRedShade,
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.accountButton,
-              style: const TextStyle(color: Styles.onRedShade),
-            ),
-            onTap: () {
-              Navigator.pushNamed(context, RouteNames.account);
-            },
-          ),
-          ListTile(
+            ListTile(
               leading: const Icon(
-                Icons.logout_outlined,
+                Icons.settings_outlined,
                 color: Styles.onRedShade,
               ),
               title: Text(
-                AppLocalizations.of(context)!.logoutButton,
+                AppLocalizations.of(context)!.settingsButton,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
-              onTap: Provider.of<ChocoTurUser>(context).loggedIn
-                  ? () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          backgroundColor: Styles.redShade,
-                          title: Text(
-                            AppLocalizations.of(context)!.areYouSureLogout,
-                            style: const TextStyle(color: Styles.onRedShade),
-                          ),
-                          content: Text(
-                            AppLocalizations.of(context)!.areYouSureLogoutIndication,
-                            style: const TextStyle(color: Styles.onRedShade),
-                          ),
+              onTap: () {
+                Navigator.pushNamed(context, RouteNames.settings);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.account_circle_outlined,
+                color: Styles.onRedShade,
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.accountButton,
+                style: const TextStyle(color: Styles.onRedShade),
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, RouteNames.account);
+              },
+            ),
+            ListTile(
+                leading: const Icon(
+                  Icons.logout_outlined,
+                  color: Styles.onRedShade,
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.logoutButton,
+                  style: const TextStyle(color: Styles.onRedShade),
+                ),
+                onTap: Provider.of<ChocoTurUser>(context).loggedIn
+                    ? () {
+                        showChocoTurDialog(
+                          context: context,
+                          title: AppLocalizations.of(context)!.areYouSureLogout,
+                          description: AppLocalizations.of(context)!.areYouSureLogoutIndication,
                           actions: [
                             TextButton(
                                 onPressed: () => {Navigator.pop(context)},
@@ -91,53 +101,64 @@ class ChocoTurDrawer extends StatelessWidget {
                                   style: const TextStyle(color: Styles.onRedShade),
                                 )),
                           ],
-                          elevation: 24.0,
-                        ),
-                        barrierDismissible: true,
-                      );
-                    }
-                  : null),
-          const Divider(
-            thickness: 0.5,
-            color: Styles.onRedShade,
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.question_mark_outlined,
+                          dismissable: true,
+                        );
+                      }
+                    : null),
+            const Divider(
+              thickness: 0.5,
               color: Styles.onRedShade,
             ),
-            title: Text(
-              AppLocalizations.of(context)!.guideAndFeedbackButton,
-              style: const TextStyle(color: Styles.onRedShade),
-            ),
-          ),
-          ListTile(
+            ListTile(
               leading: const Icon(
-                Icons.info_outline_rounded,
+                Icons.question_mark_outlined,
                 color: Styles.onRedShade,
               ),
               title: Text(
-                AppLocalizations.of(context)!.aboutButton,
+                AppLocalizations.of(context)!.guideAndFeedbackButton,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
-              onTap: () {
-                showAboutDialog(
-                  context: context,
-                  applicationName: "CHOCO TUR",
-                  applicationVersion: "1.0.0",
-                  applicationIcon: ClipRRect(
-                    borderRadius: BorderRadius.circular(30),
-                    child: Image.asset(
-                      "assets/logo.png",
-                      width: 40,
+            ),
+            ListTile(
+                leading: const Icon(
+                  Icons.info_outline_rounded,
+                  color: Styles.onRedShade,
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.aboutButton,
+                  style: const TextStyle(color: Styles.onRedShade),
+                ),
+                onTap: () {
+                  showAboutDialog(
+                    context: context,
+                    applicationName: "CHOCO TUR",
+                    applicationVersion: "1.0.0",
+                    applicationIcon: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        "assets/logo.png",
+                        width: 40,
+                      ),
                     ),
-                  ),
-                  applicationLegalese: "Legalese",
-                  barrierDismissible: true,
-                );
-              }),
-        ],
+                    applicationLegalese: "Legalese",
+                    barrierDismissible: true,
+                  );
+                }),
+          ],
+        ),
       ),
-    );
+      if (_processing)
+        Flexible(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: 5,
+              sigmaY: 5,
+            ),
+            child: const Center(
+              child: LoadingAnimation(),
+            ),
+          ),
+        ),
+    ]);
   }
 }

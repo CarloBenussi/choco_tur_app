@@ -51,7 +51,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
                 color: Styles.redShade,
               ),
               icon: const Icon(
-                Icons.person_2_outlined,
+                Icons.tour_outlined,
                 color: Styles.onRedShade,
               ),
               label: AppLocalizations.of(context)!.myToursButton,

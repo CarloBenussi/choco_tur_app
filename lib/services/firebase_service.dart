@@ -50,17 +50,17 @@ class FirebaseService {
         }
       }
 
-      if (ret == null) {
+      if ((ret == null) || ret.isEmpty) {
         Reference imageRef = _imagesRef!.child(imageId);
         const oneMegabyte = 1024 * 1024;
         ret = await imageRef.getData(oneMegabyte);
         if (ret == null) {
           throw FirebaseException(plugin: "Storage", message: "Got null image data");
         }
-      }
 
-      if (saveToCache) {
-        DefaultCacheManager().putFile(imageId, ret, maxAge: const Duration(days: 1));
+        if (saveToCache && ret.isNotEmpty) {
+          DefaultCacheManager().putFile(imageId, ret, maxAge: const Duration(days: 1));
+        }
       }
 
       return ret;

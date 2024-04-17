@@ -14,15 +14,32 @@ class AccountPage extends StatelessWidget {
       child: Scaffold(
         appBar: const ChocoTurAppBar(),
         backgroundColor: Colors.white,
-        body: Center(
-          child: Builder(builder: (context) {
-            if (Provider.of<ChocoTurUser>(context).loggedIn) {
-              return const LoginButton();
-            } else {
-              return const Placeholder();
-            }
-          }),
-        ),
+        body: Builder(builder: (context) {
+          if (!Provider.of<ChocoTurUser>(context).loggedIn) {
+            return const Center(child: LoginButton());
+          } else {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              child: ListView(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Text(
+                        "Email",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      Text(
+                        Provider.of<ChocoTurUser>(context).loginEmail!,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w300, color: Colors.black),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            );
+          }
+        }),
         bottomNavigationBar: const ChocoTurNavigationBar(),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 class _InfoWidgetRouteLayout<T> extends SingleChildLayoutDelegate {
@@ -5,10 +6,7 @@ class _InfoWidgetRouteLayout<T> extends SingleChildLayoutDelegate {
   final double width;
   final double height;
 
-  _InfoWidgetRouteLayout(
-      {required this.mapsWidgetSize,
-      required this.height,
-      required this.width});
+  _InfoWidgetRouteLayout({required this.mapsWidgetSize, required this.height, required this.width});
 
   /// Depending of the size of the marker or the widget, the offset in y direction has to be adjusted;
   /// If the appear to be of different size, the commented code can be uncommented and
@@ -73,8 +71,7 @@ class InfoWidgetRoute extends PopupRoute {
   final String barrierLabel;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     return MediaQuery.removePadding(
       context: context,
       removeBottom: true,
@@ -83,8 +80,7 @@ class InfoWidgetRoute extends PopupRoute {
       removeTop: true,
       child: Builder(builder: (BuildContext context) {
         return CustomSingleChildLayout(
-          delegate: _InfoWidgetRouteLayout(
-              mapsWidgetSize: mapsWidgetSize, width: width, height: height),
+          delegate: _InfoWidgetRouteLayout(mapsWidgetSize: mapsWidgetSize, width: width, height: height),
           child: InfoWidgetPopUp(
             infoWidgetRoute: this,
           ),
@@ -130,7 +126,7 @@ class _InfoWidgetPopUpState extends State<InfoWidgetPopUp> {
         child: ClipPath(
           clipper: _InfoWidgetClipper(),
           child: Container(
-            color: Colors.white,
+            color: Styles.redShade,
             padding: const EdgeInsets.only(bottom: 10),
             child: Center(child: widget.infoWidgetRoute.child),
           ),
@@ -150,8 +146,7 @@ class _InfoWidgetClipper extends CustomClipper<Path> {
     path.lineTo(size.width / 2, size.height);
     path.lineTo(size.width / 2 + 10, size.height - 10);
     path.lineTo(size.width - 10, size.height - 10);
-    path.quadraticBezierTo(
-        size.width, size.height - 10, size.width, size.height - 20);
+    path.quadraticBezierTo(size.width, size.height - 10, size.width, size.height - 20);
     path.lineTo(size.width, 10.0);
     path.quadraticBezierTo(size.width, 0.0, size.width - 10.0, 0.0);
     path.lineTo(10, 0.0);

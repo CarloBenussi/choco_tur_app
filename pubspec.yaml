@@ -49,6 +49,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_login_facebook: ^1.9.0
   flutter_native_splash: ^2.3.5
+  flutter_polyline_points: ^2.0.0
   focus_detector_v2: ^3.1.0+1
   font_awesome_flutter: ^10.6.0
   geolocator: ^8.2.1
@@ -65,6 +66,7 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   sqflite: ^2.3.0
+  spring: ^2.0.2
   uuid: ^4.3.3
 
 
@@ -101,21 +103,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/chocolateGobino.jpg
+    - assets/chocolateIcon.png
     - assets/logo_android.png
     - assets/logo_ios.png
-    - assets/markers/1.png
-    - assets/markers/2.png
-    - assets/markers/3.png
-    - assets/markers/4.png
-    - assets/markers/5.png
-    - assets/markers/6.png
-    - assets/markers/7.png
-    - assets/markers/8.png
-    - assets/markers/9.png
-    - assets/markers/10.png
-    - assets/markers/11.png
-    - assets/markers/12.png
-    - assets/keystore/chocotur.p12
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -175,14 +165,8 @@ flutter_launcher_icons:
   image_path_android: "assets/logo_android.png"
   image_path_ios: "assets/logo_ios.png"
   remove_alpha_ios: true
-  background_color_android: "#9C4544"
-  background_color_ios: "#9C4544"
+  adaptive_icon_background: "#9C4544"
   min_sdk_android: 21 # android min sdk min:16, default 21
-  web:
-    generate: true
-    image_path: "assets/logo.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
 
 dart_define:
 
@@ -210,8 +194,12 @@ dart_define:
     variables: 
         - name: WEBAPP_URL
           description: The Spring Boot Web Application URL
-          default: 192.168.1.234:8080
+          default: choco-tur-webapp-q3bl6vrz5q-og.a.run.app
           required: true
+        - name: SSL_ENABLED
+          description: Whether SSL is enabled for communicating with webapp
+          default: true
+          required: false
         - name: FIREBASE_APP_ID
           description: The Firebase app ID
           default: "Default App ID"
@@ -228,12 +216,13 @@ dart_define:
           description: The Firebase archive bucket
           default: gs://chocotur.appspot.com
           required: true
-        - name: HTTPS_KEYSTORE_PASSWORD
-          description: The password to the HTTPS keystore
-          required: true
         - name: GOOGLE_CLIENT_ID
           description: The Google OAuth Client ID
           required: false
+        - name: GOOGLE_MAPS_API_KEY
+          description: The Google Maps API KEY
+          default: "Default API KEY"
+          required: true
 
     flavors:
         - name: production 

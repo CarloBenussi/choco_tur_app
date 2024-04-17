@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/dashed_line.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // ignore: must_be_immutable
@@ -25,9 +27,9 @@ class TourStopInfos extends StatelessWidget {
   Polyline? _polyline;
   Set<Marker>? _markers;
 
-  Future<Uint8List> _getBytesFromAsset(String path, int width) async {
-    ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+  Future<Uint8List> _getMarkerBytes(String path, int width) async {
+    Uint8List markerBytes = await FirebaseService.downloadImage(path);
+    ui.Codec codec = await ui.instantiateImageCodec(markerBytes, targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
@@ -37,7 +39,7 @@ class TourStopInfos extends StatelessWidget {
       _markers = {};
       int markerId = 0;
       for (var tourStopInfo in tourStopInfos) {
-        final Uint8List markerIcon = await _getBytesFromAsset('assets/markers/${markerId + 1}.png', 70);
+        final Uint8List markerIcon = await _getMarkerBytes('markers/${markerId + 1}.png', 70);
         Marker marker = Marker(
           markerId: MarkerId(markerId.toString()),
           position: tourStopInfo.coordinates,
@@ -50,11 +52,23 @@ class TourStopInfos extends StatelessWidget {
         markerId++;
       }
 
+      PolylinePoints polylinePoints = PolylinePoints();
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        const String.fromEnvironment('GOOGLE_MAPS_API_KEY'),
+        PointLatLng(_markers!.first.position.latitude, _markers!.first.position.longitude),
+        PointLatLng(_markers!.last.position.latitude, _markers!.last.position.longitude),
+        travelMode: TravelMode.walking,
+        wayPoints: List.from(
+          _markers!.skip(1).take(_markers!.length - 1).map((e) =>
+              PolylineWayPoint(location: '${e.position.latitude.toString()},${e.position.longitude.toString()}')),
+        ),
+      );
       _polyline = Polyline(
         polylineId: const PolylineId("Tour Line"),
         color: Styles.redShade,
-        points: List.from(_markers!.map((e) => e.position)),
-        width: 5,
+        patterns: const [PatternItem.dot],
+        points: List.from(result.points.map((e) => LatLng(e.latitude, e.longitude))),
+        width: 3,
       );
     }
 
@@ -130,7 +144,7 @@ class TourStopInfos extends StatelessWidget {
                   ),
                 );
               } else {
-                return const Center(child: LoadingAnimation());
+                return const LoadingAnimation();
               }
             },
           ),

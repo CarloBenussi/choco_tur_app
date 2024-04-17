@@ -312,3 +312,64 @@ class ChocoTurStopStory {
     }
   }
 }
+
+class ChocoTurQuiz {
+  ChocoTurQuiz();
+
+  late final String id;
+  late final Map<String, String> intro;
+  late final List<ChocoTurQuizQuestion> questions;
+
+  ChocoTurQuiz.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    intro = Map.from(map['intro']);
+    List<dynamic> questionMaps = List.from(map['questions']);
+    questions = [];
+    for (var i = 0; i < questionMaps.length; ++i) {
+      questions.add(ChocoTurQuizQuestion.fromMap(questionMaps[i]));
+    }
+    questions.sort((a, b) => a.index.compareTo(b.index));
+  }
+}
+
+class ChocoTurQuizQuestion {
+  ChocoTurQuizQuestion();
+
+  late final int index;
+  late final Map<String, String> question;
+  late final List<Map<String, String>> answers;
+  late final int correctAnswerIndex;
+  late final List<Map<String, String>> onAnswers;
+
+  ChocoTurQuizQuestion.fromMap(Map<String, dynamic> map) {
+    index = map['index'];
+    question = Map.from(map['question']);
+    var answersList = List.from(map['answers']);
+    answers = [];
+    for (var answer in answersList) {
+      answers.add(Map.from(answer));
+    }
+    correctAnswerIndex = map['correctAnswerIndex'];
+    var onAnswersList = List.from(map['onAnswers']);
+    onAnswers = [];
+    for (var onAnswer in onAnswersList) {
+      onAnswers.add(Map.from(onAnswer));
+    }
+  }
+
+  ChocoTurQuizQuestion.fromCacheMap(Map<String, dynamic> map) {
+    index = map['index'];
+    question = Map.from(jsonDecode(map['question']));
+    var answersList = List.from(jsonDecode(map['answers']));
+    answers = [];
+    for (var answer in answersList) {
+      answers.add(Map.from(answer));
+    }
+    correctAnswerIndex = map['correctAnswerIndex'];
+    var onAnswersList = List.from(jsonDecode(map['onAnswers']));
+    onAnswers = [];
+    for (var onAnswer in onAnswersList) {
+      onAnswers.add(Map.from(onAnswer));
+    }
+  }
+}

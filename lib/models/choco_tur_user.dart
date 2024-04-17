@@ -5,7 +5,7 @@ import 'package:choco_tur/services/google_login_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/lang_codes.dart';
 import 'package:choco_tur/utils/logger.dart';
-import 'package:choco_tur/widgets/generic_alert_dialog.dart';
+import 'package:choco_tur/widgets/dialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
@@ -35,13 +35,17 @@ class ChocoTurUser extends ChangeNotifier {
       loginType = LoginType.values[loginTypeIndex];
 
       if (loginType == LoginType.manual) {
-        String? loginWithTokenResponse =
+        var loginWithTokenResponse =
             await WebappService.loginUserWithToken(loginEmail, loginAccessToken, loginRefreshToken);
         if (loginWithTokenResponse != null) {
           loggedIn = true;
-          // Copy eventually refreshed access token.
-          loginAccessToken = loginWithTokenResponse;
-          _prefs.setString(_loginAccessTokenKey, loginWithTokenResponse);
+          // Copy eventually refreshed access token and refresh token.
+          loginAccessToken = loginWithTokenResponse["accessToken"];
+          _prefs.setString(_loginAccessTokenKey, loginAccessToken!);
+          loginRefreshToken = loginWithTokenResponse["refreshToken"];
+          _prefs.setString(_loginRefreshTokenKey, loginRefreshToken!);
+        } else {
+          LoggerInstance.logger.e("Failed to login with token.");
         }
       } else if (loginType == LoginType.withGoogle) {
         try {
@@ -75,8 +79,10 @@ class ChocoTurUser extends ChangeNotifier {
     }
 
     List<ChocoTurUserTour>? userTours;
+    List<ChocoTurUserQuiz>? userQuizs;
     if (loggedIn) {
       userTours = await WebappService.getUserTours(loginAccessToken);
+      userQuizs = await WebappService.getUserQuizs(loginAccessToken);
     }
 
     return ChocoTurUser(
@@ -86,10 +92,10 @@ class ChocoTurUser extends ChangeNotifier {
       loginType: loginType,
       loggedIn: loggedIn,
       showTutorial: showTutorial,
-      quizScore: _prefs.getDouble(_quizScoreKey),
       language: _prefs.getString(_languageKey),
       cameraPosition: cameraPosition,
       userTours: userTours,
+      userQuizs: userQuizs,
     );
   }
 
@@ -100,10 +106,10 @@ class ChocoTurUser extends ChangeNotifier {
     this.loginType,
     required this.loggedIn,
     required this.showTutorial,
-    this.quizScore,
     this.language,
     this.cameraPosition,
     this.userTours,
+    this.userQuizs,
   });
 
   // SharedPreferences keys.
@@ -112,7 +118,6 @@ class ChocoTurUser extends ChangeNotifier {
   static const String _loginAccessTokenKey = "loginAccessToken";
   static const String _loginRefreshTokenKey = "loginRefreshToken";
   static const String _showTutorialKey = "showTutorial";
-  static const String _quizScoreKey = "quizScoreKey";
   static const String _languageKey = "lang";
   static const String _cameraLatituteKey = "cameraLatitute";
   static const String _cameraLongitudeKey = "cameraLongitude";
@@ -125,10 +130,10 @@ class ChocoTurUser extends ChangeNotifier {
   LoginType? loginType;
   bool loggedIn;
   bool showTutorial;
-  double? quizScore;
   String? language;
   CameraPosition? cameraPosition;
   List<ChocoTurUserTour>? userTours;
+  List<ChocoTurUserQuiz>? userQuizs;
   static late final SharedPreferences _prefs;
 
   Locale _locale = const Locale(LanguageCodes.EN);
@@ -193,8 +198,9 @@ class ChocoTurUser extends ChangeNotifier {
       }
     }
 
-    // We logged in, hence we can download user tours.
+    // We logged in, hence we can download user tours and quizs.
     userTours = await WebappService.getUserTours(loginAccessToken);
+    userQuizs = await WebappService.getUserQuizs(loginAccessToken);
     notifyListeners();
   }
 
@@ -215,13 +221,11 @@ class ChocoTurUser extends ChangeNotifier {
 
       LoggerInstance.logger.w("Activating a tour while there is a different one already active!");
 
-      showDialog(
+      showChocoTurDialog(
         context: context,
-        builder: (_) => GenericAlertDialog(
-          title: AppLocalizations.of(context)!.alreadyActive,
-          content: AppLocalizations.of(context)!.alreadyActiveIndication,
-        ),
-        barrierDismissible: true,
+        title: AppLocalizations.of(context)!.alreadyActive,
+        description: AppLocalizations.of(context)!.alreadyActiveIndication,
+        dismissable: true,
       );
 
       return false;
@@ -322,13 +326,11 @@ class ChocoTurUser extends ChangeNotifier {
       LoggerInstance.logger.i('Tour ${userTour.id} is already at the first stop, cannot go back further.');
 
       // ignore: use_build_context_synchronously
-      showDialog(
+      showChocoTurDialog(
         context: context,
-        builder: (_) => GenericAlertDialog(
-          title: AppLocalizations.of(context)!.cannotRevert,
-          content: AppLocalizations.of(context)!.cannotRevertIndication,
-        ),
-        barrierDismissible: true,
+        title: AppLocalizations.of(context)!.cannotRevert,
+        description: AppLocalizations.of(context)!.cannotRevertIndication,
+        dismissable: true,
       );
     }
 
@@ -342,17 +344,28 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    loginEmail = null;
-    _prefs.remove(_loginEmailKey);
-    _prefs.remove(_loginAccessTokenKey);
-
-    // Logout from Google if used.
+    // Logout from ext provider if used.
     if (loginType == LoginType.withGoogle) {
       await GoogleLoginService.googleSignIn.signOut();
     } else if (loginType == LoginType.withFacebook) {
       await FacebookLoginService.facebookLogin.logOut();
     }
+
+    loginEmail = null;
+    loginAccessToken = null;
+    loginRefreshToken = null;
+    loggedIn = false;
+    loginType = null;
+    cameraPosition = null;
+    userTours = null;
+    userQuizs = null;
+    _prefs.remove(_loginEmailKey);
+    _prefs.remove(_loginAccessTokenKey);
+    _prefs.remove(_loginRefreshTokenKey);
     _prefs.remove(_loginTypeIndexKey);
+    _prefs.remove(_cameraLatituteKey);
+    _prefs.remove(_cameraLongitudeKey);
+    _prefs.remove(_cameraZoomKey);
   }
 }
 
@@ -381,5 +394,27 @@ class ChocoTurUserTour {
     nextStopId = map['nextStopId'];
     isActive = map['active'];
     progress = map['progress'];
+  }
+}
+
+class ChocoTurUserQuiz {
+  ChocoTurUserQuiz();
+
+  late final String id;
+  late double progress;
+  late double score;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'progress': progress,
+      'score': score,
+    };
+  }
+
+  ChocoTurUserQuiz.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    progress = map['progress'];
+    score = map['score'];
   }
 }

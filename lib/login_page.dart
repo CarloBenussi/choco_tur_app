@@ -6,8 +6,9 @@ import 'package:choco_tur/services/google_login_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/utils/validation.dart';
-import 'package:choco_tur/widgets/generic_alert_dialog.dart';
+import 'package:choco_tur/widgets/dialog.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
@@ -66,6 +67,9 @@ class _LoginPageState extends State<LoginPage> {
 
       GoogleSignInAuthentication authentication = await account.authentication;
 
+      // TODO: send token to spring app for validation and user registration, and save
+      // JWT token into Bearer header.
+
       // ignore: use_build_context_synchronously
       Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
         account.email,
@@ -75,9 +79,6 @@ class _LoginPageState extends State<LoginPage> {
         true,
       );
 
-      // TODO: send token to spring app for validation and user registration, and save
-      // JWT token into Bearer header.
-
       LoggerInstance.logger.i("Successfully logged in with Google.");
 
       if (mounted) {
@@ -86,13 +87,11 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       LoggerInstance.logger.e(e.toString());
       // ignore: use_build_context_synchronously
-      return showDialog(
+      return showChocoTurDialog(
         context: context,
-        builder: (_) => GenericAlertDialog(
-          title: AppLocalizations.of(context)!.loginFailedTitle,
-          content: '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
-        ),
-        barrierDismissible: true,
+        title: AppLocalizations.of(context)!.loginFailedTitle,
+        description: '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
+        dismissable: true,
       );
     }
   }
@@ -113,6 +112,9 @@ class _LoginPageState extends State<LoginPage> {
 
       FacebookAccessToken? accessToken = res.accessToken;
 
+      // TODO: send token to spring app for validation and user registration, and save
+      // JWT token into Bearer header.
+
       // ignore: use_build_context_synchronously
       Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
         email,
@@ -122,9 +124,6 @@ class _LoginPageState extends State<LoginPage> {
         true,
       );
 
-      // TODO: send token to spring app for validation and user registration, and save
-      // JWT token into Bearer header.
-
       LoggerInstance.logger.i("Successfully logged in with Facebook.");
 
       if (mounted) {
@@ -133,18 +132,14 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       LoggerInstance.logger.e(e.toString());
       // ignore: use_build_context_synchronously
-      return showDialog(
+      return showChocoTurDialog(
         context: context,
-        builder: (_) => GenericAlertDialog(
-          title: AppLocalizations.of(context)!.loginFailedTitle,
-          content: '${AppLocalizations.of(context)!.loginWithFacebookFailed}\n\n${e.toString()}',
-        ),
-        barrierDismissible: true,
+        title: AppLocalizations.of(context)!.loginFailedTitle,
+        description: '${AppLocalizations.of(context)!.loginWithFacebookFailed}\n\n${e.toString()}',
+        dismissable: true,
       );
     }
   }
-
-  void forgotPassword() {} // TODO: Implement.
 
   @override
   void initState() {
@@ -166,11 +161,12 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               ListView(
                 children: [
-                  const Center(
-                    child: Text("ChocoTur",
+                  Center(
+                    child: Text("CHOCO TUR",
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w600,
+                          color: Styles.redShade,
                         )),
                   ),
                   Container(
@@ -216,6 +212,7 @@ class _LoginPageState extends State<LoginPage> {
                           controlAffinity: ListTileControlAffinity.leading,
                           checkColor: Colors.black,
                           activeColor: Colors.white,
+                          visualDensity: const VisualDensity(horizontal: -4),
                           value: _isRememberMeChecked,
                           onChanged: (bool? value) {
                             setState(() {
@@ -224,15 +221,14 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                            onPressed: forgotPassword,
-                            child: Text(
-                              AppLocalizations.of(context)!.forgotPassword,
-                              style: const TextStyle(fontSize: 15, color: Colors.blue),
-                            )),
-                      )
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, RouteNames.passwordRecoveryProcess);
+                          },
+                          child: Text(
+                            AppLocalizations.of(context)!.forgotPassword,
+                            style: const TextStyle(fontSize: 15, color: Colors.blue),
+                          ))
                     ],
                   ),
                   Container(
@@ -316,6 +312,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.only(left: 5),
+                          ),
                           onPressed: () => {Navigator.pushNamed(context, RouteNames.registrationProcess)},
                           child: Text(
                             AppLocalizations.of(context)!.createAnAccount,

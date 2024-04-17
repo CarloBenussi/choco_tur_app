@@ -1,5 +1,4 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
-import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/styles.dart';
@@ -22,6 +21,7 @@ class HomePageState extends State<ToursHomePage> {
   List<ChocoTurTour>? _tours;
 
   Future<void> _onRefresh(BuildContext context) async {
+    // TODO: Clear cache.
     _tours = null;
     await _getOrReturnTours(context, fromCache: false);
     for (var i = 0; i < _tours!.length; ++i) {
@@ -32,19 +32,7 @@ class HomePageState extends State<ToursHomePage> {
   }
 
   Future<List<ChocoTurTour>> _getOrReturnTours(BuildContext context, {bool fromCache = true}) async {
-    if (_tours == null) {
-      if (fromCache) {
-        SqliteCache cache = await SqliteCache.getInstance();
-        _tours = await cache.getTours();
-      }
-
-      if (mounted && ((_tours == null) || _tours!.isEmpty)) {
-        _tours = await WebappService.getTours(context);
-
-        SqliteCache cache = await SqliteCache.getInstance();
-        cache.saveTours(_tours!);
-      }
-    }
+    _tours ??= await WebappService.getTours(context, tryFromCache: fromCache);
 
     return _tours!;
   }

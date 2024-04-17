@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:animations/animations.dart';
 import 'package:choco_tur/services/webapp_service.dart';
+import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/utils/validation.dart';
-import 'package:choco_tur/widgets/email_confirmation.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:country_picker/country_picker.dart';
@@ -33,6 +35,9 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
   late String _collectedMatchingPassword;
   DateTime? _collectedBirthday;
   String? _collectedNationality;
+  String? _collectedEmailVerificationNumber;
+
+  bool _resendCodeAvailable = false;
 
   String? _validateMatchingPassword(BuildContext context, String? matchingPassword) {
     if (matchingPassword != _collectedPassword) {
@@ -47,11 +52,11 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
     setState(() {});
   }
 
-  Future<bool> _register(BuildContext context) async {
+  Future<String?> _register(BuildContext context) async {
     setState(() {
       _registering = true;
     });
-    bool registrationSuccess = await WebappService.registerUser(
+    String? responseBody = await WebappService.registerUser(
       context,
       _collectedEmail,
       _collectedPassword,
@@ -63,7 +68,38 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
       _registering = false;
     });
 
-    return registrationSuccess;
+    return responseBody;
+  }
+
+  void _checkCodeCompletion(String text, BuildContext context) async {
+    LoggerInstance.logger.d(text);
+    if (text.length == 6) {
+      bool confirmSuccess = await WebappService.confirmEmail(context, _collectedEmail, text);
+      if (confirmSuccess && mounted) {
+        Navigator.pushReplacementNamed(context, RouteNames.home);
+      }
+    }
+  }
+
+  void _resendCode() async {
+    setState(() {
+      _resendCodeAvailable = false;
+    });
+    String? responseBody =
+        await WebappService.resendEmailVerificationCode(context, _collectedEmail, _collectedEmailVerificationNumber!);
+    if (responseBody == null) {
+      setState(() {
+        _resendCodeAvailable = true;
+      });
+      return;
+    }
+
+    _collectedEmailVerificationNumber = responseBody;
+    Timer(const Duration(seconds: 60), () {
+      setState(() {
+        _resendCodeAvailable = true;
+      });
+    });
   }
 
   void _onNextPressed(BuildContext context) async {
@@ -82,9 +118,12 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
     if (_currentPageIndex < 4) {
       _backPressed = false;
     } else if (_currentPageIndex == 4) {
-      bool registrationSuccess = await _register(context);
-      if (!registrationSuccess) {
+      String? responseBody = await _register(context);
+      if (responseBody == null) {
         return;
+      } else {
+        _collectedEmailVerificationNumber = responseBody;
+        _resendCodeAvailable = true;
       }
     }
 
@@ -197,7 +236,35 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                               ),
                             );
                           } else {
-                            return EmailConfirmation(email: _collectedEmail);
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextField(
+                                  decoration:
+                                      InputDecoration(labelText: AppLocalizations.of(context)!.confirmEmailCode),
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                  maxLength: 6,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (text) => _checkCodeCompletion(text, context),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 20),
+                                  child: TextButton(
+                                    onPressed: (_resendCodeAvailable) ? _resendCode : null,
+                                    child: Text(
+                                      AppLocalizations.of(context)!.resendEmailCode +
+                                          ((_resendCodeAvailable)
+                                              ? ""
+                                              : (" (${AppLocalizations.of(context)!.availableIn}60s)")),
+                                      style: TextStyle(color: (_resendCodeAvailable) ? Colors.blue : Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
                           }
                         }),
                       ),
