@@ -152,26 +152,22 @@ class ChocoTurTourTastingInfo {
   ChocoTurTourTastingInfo();
 
   late final Map<String, String> titles;
-  late final Map<String, String> descriptions;
   late final String imageId;
   Uint8List? imageData;
 
   ChocoTurTourTastingInfo.fromMap(Map<String, dynamic> map) {
     titles = Map.from(map['titles']);
-    descriptions = Map.from(map['descriptions']);
     imageId = map['imageId'];
   }
 
   ChocoTurTourTastingInfo.fromCacheMap(Map<String, dynamic> map) {
     titles = Map.from(jsonDecode(map['titles']));
-    descriptions = Map.from(jsonDecode(map['descriptions']));
     imageId = map['imageId'];
   }
 
   Map<String, dynamic> toMap() {
     return {
       'titles': titles,
-      'descriptions': descriptions,
       'imageId': imageId,
     };
   }
@@ -179,7 +175,6 @@ class ChocoTurTourTastingInfo {
   Map<String, dynamic> toCacheMap() {
     return {
       'titles': jsonEncode(titles),
-      'descriptions': jsonEncode(descriptions),
       'imageId': imageId,
     };
   }
@@ -194,6 +189,7 @@ class ChocoTurStop {
   late final LatLng coordinates;
   late final String imageId;
   late final String audioId;
+  late final String? tastingId;
   late final Uint8List? imageData;
 
   Map<String, dynamic> toMap() {
@@ -205,6 +201,7 @@ class ChocoTurStop {
       'longitude': coordinates.longitude,
       'imageId': imageId,
       'audioId': audioId,
+      'tastingId': (tastingId != null) ? tastingId : '',
     };
   }
 
@@ -217,6 +214,7 @@ class ChocoTurStop {
       'longitude': coordinates.longitude,
       'imageId': imageId,
       'audioId': audioId,
+      'tastingId': (tastingId != null) ? tastingId : '',
     };
   }
 
@@ -227,6 +225,11 @@ class ChocoTurStop {
     coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
     audioId = map['audioId'];
+    if (map.containsKey('tastingId') && (map['tastingId'] != '')) {
+      tastingId = map['tastingId'];
+    } else {
+      tastingId = null;
+    }
   }
 
   ChocoTurStop.fromCacheMap(Map<String, dynamic> map) {
@@ -236,45 +239,11 @@ class ChocoTurStop {
     coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
     audioId = map['audioId'];
-  }
-}
-
-class ChocoTurTasting {
-  ChocoTurTasting();
-
-  late final String id;
-  late final Map<String, String> titles;
-  late final Map<String, String> descriptions;
-  late final Map<String, String> ingredients;
-  late final String imageId;
-  late final Uint8List? imagesData;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'titles': titles,
-      'descriptions': descriptions,
-      'ingredients': ingredients,
-      'imageId': imageId,
-    };
-  }
-
-  Map<String, dynamic> toCacheMap() {
-    return {
-      'id': id,
-      'titles': jsonEncode(titles),
-      'descriptions': jsonEncode(descriptions),
-      'ingredients': jsonEncode(ingredients),
-      'imageId': imageId,
-    };
-  }
-
-  ChocoTurTasting.fromMap(Map<String, dynamic> map) {
-    id = map['id'];
-    titles = Map.from(map['titles']);
-    descriptions = Map.from(map['description']);
-    ingredients = Map.from(map['ingredients']);
-    imageId = map['imageId'];
+    if (map.containsKey('tastingId') && (map['tastingId'] != '')) {
+      tastingId = map['tastingId'];
+    } else {
+      tastingId = null;
+    }
   }
 }
 
@@ -371,5 +340,48 @@ class ChocoTurQuizQuestion {
     for (var onAnswer in onAnswersList) {
       onAnswers.add(Map.from(onAnswer));
     }
+  }
+}
+
+class ChocoTurTasting {
+  ChocoTurTasting();
+
+  late final String id;
+  late final Map<String, String> titles;
+  late final Map<String, String> descriptions;
+  late final Map<String, String> ingredients;
+  late final List<double> reviews;
+  late final String imageId;
+  late final Uint8List? imagesData;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'titles': titles,
+      'descriptions': descriptions,
+      'ingredients': ingredients,
+      'reviews': reviews,
+      'imageId': imageId,
+    };
+  }
+
+  Map<String, dynamic> toCacheMap() {
+    return {
+      'id': id,
+      'titles': jsonEncode(titles),
+      'descriptions': jsonEncode(descriptions),
+      'ingredients': jsonEncode(ingredients),
+      'reviews': jsonEncode(reviews),
+      'imageId': imageId,
+    };
+  }
+
+  ChocoTurTasting.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    titles = Map.from(map['titles']);
+    descriptions = Map.from(map['descriptions']);
+    ingredients = Map.from(map['ingredients']);
+    reviews = List.from(map['reviews']);
+    imageId = map['imageId'];
   }
 }

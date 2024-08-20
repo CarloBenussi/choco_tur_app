@@ -7,6 +7,7 @@ import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/utils/validation.dart';
+import 'package:choco_tur/widgets/home_page_background_painter.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:country_picker/country_picker.dart';
@@ -155,35 +156,36 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 15, right: 15),
-          child: PageTransitionSwitcher(
-            duration: const Duration(milliseconds: 800),
-            reverse: _backPressed,
-            transitionBuilder: (
-              Widget child,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-            ) {
-              return SharedAxisTransition(
-                animation: animation,
-                secondaryAnimation: secondaryAnimation,
-                transitionType: SharedAxisTransitionType.horizontal,
-                fillColor: Colors.white,
-                child: child,
-              );
-            },
-            child: Container(
-              key: ValueKey<int>(_currentPageIndex),
-              child: Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Form(
-                        key: _formKey,
+      backgroundColor: Colors.transparent,
+      body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 800),
+        reverse: _backPressed,
+        transitionBuilder: (
+          Widget child,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            fillColor: Styles.onRedShade,
+            child: child,
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(_currentPageIndex),
+          child: CustomPaint(
+            painter: HomePageBackgroundPainter(),
+            child: Stack(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Form(
+                      key: _formKey,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         child: Builder(builder: (context) {
                           if (_currentPageIndex == 0) {
                             return UserTextInput(
@@ -259,7 +261,7 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                                           ((_resendCodeAvailable)
                                               ? ""
                                               : (" (${AppLocalizations.of(context)!.availableIn}60s)")),
-                                      style: TextStyle(color: (_resendCodeAvailable) ? Colors.blue : Colors.grey),
+                                      style: TextStyle(color: (_resendCodeAvailable) ? Styles.redShade : Colors.grey),
                                     ),
                                   ),
                                 ),
@@ -268,13 +270,26 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                           }
                         }),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        TextButton(
+                          onPressed: _currentPageIndex > 0 ? () => _onBackPressed(context) : null,
+                          child: Text(
+                            AppLocalizations.of(context)!.backButton,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: (_currentPageIndex > 0) ? Styles.redShade : null,
+                            ),
+                          ),
+                        ),
+                        if (_currentPageIndex == 3)
                           TextButton(
-                            onPressed: _currentPageIndex > 0 ? () => _onBackPressed(context) : null,
+                            onPressed: () => _onSkipPressed(context),
                             child: Text(
-                              AppLocalizations.of(context)!.backButton,
+                              AppLocalizations.of(context)!.skipButton,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -282,48 +297,35 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                               ),
                             ),
                           ),
-                          if (_currentPageIndex == 3)
-                            TextButton(
-                              onPressed: () => _onSkipPressed(context),
-                              child: Text(
-                                AppLocalizations.of(context)!.skipButton,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: (_currentPageIndex > 0) ? Styles.redShade : null,
-                                ),
+                        if (_currentPageIndex < 5)
+                          TextButton(
+                            onPressed: () => _onNextPressed(context),
+                            child: Text(
+                              (_currentPageIndex < 4)
+                                  ? AppLocalizations.of(context)!.nextButton
+                                  : AppLocalizations.of(context)!.registerButton,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Styles.redShade,
                               ),
                             ),
-                          if (_currentPageIndex < 5)
-                            TextButton(
-                              onPressed: () => _onNextPressed(context),
-                              child: Text(
-                                (_currentPageIndex < 4)
-                                    ? AppLocalizations.of(context)!.nextButton
-                                    : AppLocalizations.of(context)!.registerButton,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Styles.redShade,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  if (_registering)
-                    BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 5,
-                        sigmaY: 5,
-                      ),
-                      child: const Center(
-                        child: LoadingAnimation(),
-                      ),
+                          ),
+                      ],
                     ),
-                ],
-              ),
+                  ],
+                ),
+                if (_registering)
+                  BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: 5,
+                      sigmaY: 5,
+                    ),
+                    child: const Center(
+                      child: LoadingAnimation(),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

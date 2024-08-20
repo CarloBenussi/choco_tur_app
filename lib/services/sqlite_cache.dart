@@ -11,9 +11,9 @@ class SqliteCache {
   static const String _toursTableSchema =
       "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
   static const String _stopsTableSchema =
-      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT";
+      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT, tastingId TEXT";
   static const String _tastingsTableSchema =
-      "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, mainImageUrl TEXT";
+      "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, ingredients TEXT, reviews TEXT, imageId TEXT";
 
   static Future<Database>? _db;
   static SqliteCache? _cache;
@@ -159,6 +159,7 @@ class SqliteCache {
           'longitude',
           'imageId',
           'audioId',
+          'tastingId',
         ],
         where: "id = ?",
         whereArgs: [stopId],

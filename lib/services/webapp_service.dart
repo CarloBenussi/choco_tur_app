@@ -14,6 +14,11 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+enum HttpRequestMethod {
+  get,
+  post,
+}
+
 class WebappService {
   static const String webAppUrl = String.fromEnvironment('WEBAPP_URL');
   static const String registrationEndpoint = "/users/registration";
@@ -22,6 +27,9 @@ class WebappService {
   static const String loginEndpoint = "/users/login";
   static const String loginWithTokenEndpoint = "/users/loginWithToken";
   static const String refreshTokenEndpoint = "/users/refreshToken";
+  static const String resetPasswordEndpoint = "/users/resetPassword";
+  static const String resetPasswordTestEndpoint = "/users/resetPasswordTest";
+  static const String changePasswordEndpoint = "/users/changePassword";
 
   static const String userToursEndpoint = "/tours/userTours";
   static const String activateUserTourEndpoint = "/tours/activateUserTour";
@@ -35,6 +43,9 @@ class WebappService {
   static const String welcomeQuizEndpoint = "/quiz/welcome";
   static const String userQuizsEndpoint = "/quiz/userQuizs";
   static const String updateQuizScoreEndpoint = "/quiz/updateQuizScore";
+
+  static const String tastingEndpoint = "/tastings/tasting";
+  static const String tastingReviewEndpoint = "/tastings/review";
 
   static List<int> tokenExpiredStatusCodes = [401, 403];
 
@@ -213,13 +224,101 @@ class WebappService {
     }
   }
 
+  static Future<bool> resetPassword(
+    BuildContext context,
+    String email,
+  ) async {
+    Uri uri = _buildUri(resetPasswordEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Content-Type', 'application/json');
+    request.add(utf8.encode(email));
+    HttpClientResponse response = await request.close();
+
+    String responseBody = await response.transform(utf8.decoder).join();
+    if (response.statusCode != 200) {
+      LoggerInstance.logger.e('Got error response for password reset: ${response.statusCode}, $responseBody');
+
+      showChocoTurDialog(
+        context: context,
+        title: AppLocalizations.of(context)!.passwordResetFailed,
+        description: responseBody,
+        dismissable: true,
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
+  static Future<bool> resetPasswordTest(BuildContext context, String email, String numberSequence) async {
+    var params = {
+      'email': email,
+      'number': numberSequence,
+    };
+    Uri uri = _buildUri(resetPasswordTestEndpoint, params);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    HttpClientResponse response = await request.close();
+    if (response.statusCode != 200) {
+      String reason = await response.transform(utf8.decoder).join();
+      LoggerInstance.logger.e('Got error response for password reset test: ${response.statusCode}, $reason');
+
+      showChocoTurDialog(
+        context: context,
+        title: AppLocalizations.of(context)!.passwordResetTestFailed,
+        description: reason,
+        dismissable: true,
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
+  static Future<bool> changePassword(
+    BuildContext context,
+    String email,
+    String number,
+    String password,
+    String matchingPassword,
+  ) async {
+    Uri uri = _buildUri(changePasswordEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Content-Type', 'application/json');
+    String body = jsonEncode({
+      'email': email,
+      'passwordRecoveryNumber': number,
+      'password': password,
+      'matchingPassword': matchingPassword,
+    });
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    String responseBody = await response.transform(utf8.decoder).join();
+    if (response.statusCode != 200) {
+      LoggerInstance.logger.e('Got error response for password change: ${response.statusCode}, $responseBody');
+
+      showChocoTurDialog(
+        context: context,
+        title: AppLocalizations.of(context)!.passwordChangeFailed,
+        description: responseBody,
+        dismissable: true,
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
   static Future<List<ChocoTurTour>?> getTours(BuildContext context,
       {bool tryFromCache = true, bool saveToCache = true}) async {
     if (tryFromCache) {
       // Try from cache first.
       SqliteCache cache = await SqliteCache.getInstance();
       List<ChocoTurTour>? tours = await cache.getTours();
-      if (tours != null) {
+      if ((tours != null) && (tours.isNotEmpty)) {
         return tours;
       }
     }
@@ -285,7 +384,8 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, tourId);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend user tour activation request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -311,7 +411,8 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, tourId);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend user tour deactivation request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -337,7 +438,8 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, tourId);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend user tour advance request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -363,7 +465,8 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, tourId);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend user tour revert request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -401,7 +504,7 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.get);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend tours info download request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -449,7 +552,7 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.get);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend tour stop stories download request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -488,7 +591,7 @@ class WebappService {
     String body = await response.transform(utf8.decoder).join();
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.get);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend welcome quiz download request, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -539,13 +642,15 @@ class WebappService {
     Uri uri = _buildUri(updateQuizScoreEndpoint);
     HttpClientRequest request = await _client!.postUrl(uri);
     request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
     String body = jsonEncode({'quizId': quizId, 'questionIndex': questionIndex, 'correct': correct});
     request.add(utf8.encode(body));
     HttpClientResponse response = await request.close();
 
     if (tokenExpiredStatusCodes.contains(response.statusCode)) {
       LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
-      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, request);
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
       if (newResponse == null) {
         LoggerInstance.logger.e("Failed to resend quiz score upload, redirecting user to login.");
         Navigator.pushReplacementNamed(context, RouteNames.login);
@@ -563,6 +668,74 @@ class WebappService {
     }
   }
 
+  static Future<ChocoTurTasting?> getTasting(BuildContext context, String? accessToken, String tastingId) async {
+    var params = {
+      'tastingId': tastingId,
+    };
+    Uri uri = _buildUri(tastingEndpoint, params);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse = await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.get);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend tasting download request, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      dynamic tastingMap = jsonDecode(body);
+      return ChocoTurTasting.fromMap(tastingMap);
+    } else {
+      LoggerInstance.logger.e('Got error response for tasting download: ${response.statusCode}, $body');
+
+      showChocoTurDialog(
+        context: context,
+        title: AppLocalizations.of(context)!.tastingDownloadFailed,
+        description: body,
+        dismissable: true,
+      );
+
+      return null;
+    }
+  }
+
+  static Future<bool> reviewTasting(
+      BuildContext context, String? accessToken, String email, String tastingId, double score) async {
+    Uri uri = _buildUri(tastingReviewEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
+    String body = jsonEncode({'email': email, 'tastingId': tastingId, 'score': score});
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to resend tasting review, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      LoggerInstance.logger.d("Review tasting $tastingId score successful");
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for tasting review: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
   /*---------------------------------------------------------------------------*/
 
   static Uri _buildUri(String endpoint, [dynamic params]) {
@@ -575,7 +748,8 @@ class WebappService {
   }
 
   static Future<HttpClientResponse?> _redoRequestWithRefreshedToken(
-      BuildContext context, HttpClientRequest request) async {
+      BuildContext context, Uri uri, HttpRequestMethod method,
+      [String? body]) async {
     String? email = Provider.of<ChocoTurUser>(context, listen: false).loginEmail;
     String? refreshToken = Provider.of<ChocoTurUser>(context, listen: false).loginRefreshToken;
     if ((email == null) || (refreshToken == null)) {
@@ -594,9 +768,12 @@ class WebappService {
     Provider.of<ChocoTurUser>(context, listen: false).loginRefreshToken = refreshResponse["refreshToken"];
 
     // Redo request.
-    request.headers
-        .add('Authorization', "Bearer ${Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken}");
-    return await request.close();
+    HttpClientRequest newRequest =
+        (method == HttpRequestMethod.get) ? await _client!.getUrl(uri) : await _client!.postUrl(uri);
+    if (method == HttpRequestMethod.post) newRequest.add(utf8.encode(body!));
+    newRequest.headers
+        .set('Authorization', "Bearer ${Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken}");
+    return await newRequest.close();
   }
 
   static Future<dynamic> _refreshToken(String email, String refreshToken) async {

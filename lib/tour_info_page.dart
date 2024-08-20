@@ -189,7 +189,6 @@ class _TourInfoPageState extends State<TourInfoPage> {
                       dense: true,
                       leading: const Icon(Icons.cake),
                       title: Text(tour.tastingInfos[i].titles[_langCode]!),
-                      subtitle: Text(tour.tastingInfos[i].descriptions[_langCode]!),
                     ),
                   Padding(
                     padding: const EdgeInsets.only(top: 20),

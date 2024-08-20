@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -18,10 +20,24 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:focus_detector_v2/focus_detector_v2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+
+enum IntroDialogType {
+  goToNextStop,
+  askForTastingReview,
+}
+
+class IntroDialog {
+  IntroDialogType type;
+  String? tastingId;
+  double? tastingScore;
+
+  IntroDialog(this.type, [this.tastingId]);
+}
 
 // ignore: must_be_immutable
 class MapPage extends StatefulWidget {
@@ -38,7 +54,7 @@ class _MapPageState extends State<MapPage> {
 
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
-  bool _showGoToNextStopDialog = false;
+  IntroDialog? _introDialog;
 
   List<ChocoTurStop>? _activeTourStops;
   int? _nextStopIndex;
@@ -112,7 +128,6 @@ class _MapPageState extends State<MapPage> {
                 markerId: MarkerId(markerIdStr),
                 position: stop.coordinates,
                 icon: BitmapDescriptor.fromBytes(markerIcon),
-                // ignore: use_build_context_synchronously
                 onTap: () => _onTap(context, stop));
           } else {
             final Uint8List markerIcon = await _getMarkerBytes('markers/${i + 1}.png', 100);
@@ -164,14 +179,88 @@ class _MapPageState extends State<MapPage> {
     _cameraPosition ??= Provider.of<ChocoTurUser>(context, listen: false).cameraPosition;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (_showGoToNextStopDialog) {
-        showChocoTurDialog(
-          context: context,
-          icon: const Icon(Icons.arrow_forward_rounded),
-          title: AppLocalizations.of(context)!.goToTheNextStop,
-          description: AppLocalizations.of(context)!.goToTheNextStopIndication,
-          dismissable: true,
-        );
+      if (_introDialog != null) {
+        switch (_introDialog!.type) {
+          case IntroDialogType.goToNextStop:
+            showChocoTurDialog(
+              context: context,
+              icon: const Icon(Icons.arrow_forward_rounded),
+              title: AppLocalizations.of(context)!.goToTheNextStop,
+              description: AppLocalizations.of(context)!.goToTheNextStopIndication,
+              dismissable: true,
+            );
+
+          case IntroDialogType.askForTastingReview:
+            ChocoTurTasting? tasting = await WebappService.getTasting(
+                context, Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken, _introDialog!.tastingId!);
+            if (tasting != null) {
+              showChocoTurDialog(
+                context: context,
+                icon: const Icon(Icons.cake),
+                title: AppLocalizations.of(context)!.askIfTastingDoneTitle,
+                description:
+                    '${AppLocalizations.of(context)!.askIfTastingDonePart1}${tasting.titles[_langCode]}${AppLocalizations.of(context)!.askIfTastingDonePart2}${_activeTourStops![_nextStopIndex! - 1].titles[_langCode]}?',
+                actions: [
+                  TextButton(
+                      onPressed: () => {Navigator.pop(context)},
+                      child: Text(
+                        AppLocalizations.of(context)!.noButton,
+                        style: const TextStyle(color: Styles.onRedShade),
+                      )),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showChocoTurDialog(
+                          context: context,
+                          icon: const Icon(Icons.cake),
+                          title: AppLocalizations.of(context)!.askIfTastingDoneTitle,
+                          description: AppLocalizations.of(context)!.askForTastingScore,
+                          actions: [
+                            RatingBar.builder(
+                              initialRating: 3,
+                              minRating: 1,
+                              direction: Axis.horizontal,
+                              allowHalfRating: true,
+                              itemCount: 5,
+                              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              itemBuilder: (context, _) => Image.asset(
+                                "assets/chocolateIcon.png",
+                                width: 25,
+                              ),
+                              onRatingUpdate: (rating) {
+                                _introDialog!.tastingScore = rating;
+                              },
+                            ),
+                            TextButton(
+                                onPressed: () {
+                                  WebappService.reviewTasting(
+                                      context,
+                                      Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken,
+                                      Provider.of<ChocoTurUser>(context, listen: false).loginEmail!,
+                                      _introDialog!.tastingId!,
+                                      _introDialog!.tastingScore! / 5);
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  AppLocalizations.of(context)!.sendButton,
+                                  style: const TextStyle(color: Styles.onRedShade),
+                                )),
+                          ],
+                          dismissable: true,
+                        );
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.yesButton,
+                        style: const TextStyle(color: Styles.onRedShade),
+                      )),
+                ],
+                dismissable: true,
+              );
+            }
+
+          default:
+            return;
+        }
       }
     });
   }
@@ -183,9 +272,9 @@ class _MapPageState extends State<MapPage> {
     _langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
     _markers = _getActiveToursMarkers(context);
 
-    var showGoToNextStopDialogObj = ModalRoute.of(context)!.settings.arguments;
-    if (showGoToNextStopDialogObj != null) {
-      _showGoToNextStopDialog = showGoToNextStopDialogObj as bool;
+    var introDialogObj = ModalRoute.of(context)!.settings.arguments;
+    if (introDialogObj != null) {
+      _introDialog = introDialogObj as IntroDialog;
     }
   }
 

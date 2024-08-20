@@ -34,6 +34,7 @@ class TourStopStoryChatLoadingPage extends StatelessWidget {
             return TourStopStoryChatPage(
               stopStories: snapshot.data!,
               audioId: stop.audioId,
+              tastingId: stop.tastingId,
             );
           } else {
             return const Center(

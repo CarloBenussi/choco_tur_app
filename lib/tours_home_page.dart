@@ -4,6 +4,7 @@ import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
+import 'package:choco_tur/widgets/home_page_background_painter.dart';
 import 'package:choco_tur/widgets/home_page_tour.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
@@ -56,84 +57,87 @@ class HomePageState extends State<ToursHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const ChocoTurAppBar(),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       drawer: const ChocoTurDrawer(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Text(
-              "CHOCO TUR",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 30,
-                color: Styles.darkRedShade,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              AppLocalizations.of(context)!.welcomeToChocoTurHomeSubTitle,
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Styles.darkRedShade),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 100, left: 10, right: 10),
-            child: Align(
-              alignment: Alignment.topLeft,
+      body: CustomPaint(
+        painter: HomePageBackgroundPainter(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
               child: Text(
-                AppLocalizations.of(context)!.toursTitle,
+                "CHOCO TUR",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 24,
+                  fontSize: 30,
                   color: Styles.darkRedShade,
-                  decoration: TextDecoration.underline,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                AppLocalizations.of(context)!.welcomeToChocoTurHomeSubTitle,
+                style: TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Styles.darkRedShade),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 100, left: 10, right: 10),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  AppLocalizations.of(context)!.toursTitle,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    color: Styles.darkRedShade,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: FutureBuilder(
-              future: _getOrReturnTours(context),
-              builder: (context, toursSnapshot) {
-                if (toursSnapshot.hasData &&
-                    toursSnapshot.connectionState == ConnectionState.done &&
-                    toursSnapshot.data != null) {
-                  return RefreshIndicator(
-                    onRefresh: () => _onRefresh(context),
-                    child: ListView.builder(
-                      itemCount: toursSnapshot.data!.length,
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: FutureBuilder(
-                            future: _getOrReturnTourImages(toursSnapshot.data![index]),
-                            builder: (context, voidSnapshot) {
-                              if (voidSnapshot.hasData &&
-                                  voidSnapshot.connectionState == ConnectionState.done &&
-                                  voidSnapshot.data != null) {
-                                return HomePageTour(chocoTurTour: toursSnapshot.data![index]);
-                              } else {
-                                return const Center(child: LoadingAnimation());
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                } else {
-                  return const Center(child: LoadingAnimation());
-                }
-              },
+            Expanded(
+              child: FutureBuilder(
+                future: _getOrReturnTours(context),
+                builder: (context, toursSnapshot) {
+                  if (toursSnapshot.hasData &&
+                      toursSnapshot.connectionState == ConnectionState.done &&
+                      toursSnapshot.data != null) {
+                    return RefreshIndicator(
+                      onRefresh: () => _onRefresh(context),
+                      child: ListView.builder(
+                        itemCount: toursSnapshot.data!.length,
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: FutureBuilder(
+                              future: _getOrReturnTourImages(toursSnapshot.data![index]),
+                              builder: (context, voidSnapshot) {
+                                if (voidSnapshot.hasData &&
+                                    voidSnapshot.connectionState == ConnectionState.done &&
+                                    voidSnapshot.data != null) {
+                                  return HomePageTour(chocoTurTour: toursSnapshot.data![index]);
+                                } else {
+                                  return const Center(child: LoadingAnimation());
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  } else {
+                    return const Center(child: LoadingAnimation());
+                  }
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: const ChocoTurNavigationBar(
         selectedIndex: 0,

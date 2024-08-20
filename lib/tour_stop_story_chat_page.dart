@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/firebase_service.dart';
@@ -18,10 +19,16 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class TourStopStoryChatPage extends StatefulWidget {
-  const TourStopStoryChatPage({super.key, required this.stopStories, required this.audioId});
+  const TourStopStoryChatPage({
+    super.key,
+    required this.stopStories,
+    required this.audioId,
+    required this.tastingId,
+  });
 
   final List<ChocoTurStopStory> stopStories;
   final String audioId;
+  final String? tastingId;
 
   @override
   State<TourStopStoryChatPage> createState() => _TourStopStoryChatPageState();
@@ -39,14 +46,6 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   final List<chat_types.Message> _messages = [];
   List<String> _inputOptions = [];
   List<chat_types.User> _typingUsers = [];
-
-  // /// Collects the data useful for displaying in a seek bar, using a handy
-  // /// feature of rx_dart to combine the 3 streams of interest into one.
-  // Stream<PositionData> get _positionDataStream => Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-  //     _player.positionStream,
-  //     _player.bufferedPositionStream,
-  //     _player.durationStream,
-  //     (position, bufferedPosition, duration) => PositionData(position, bufferedPosition, duration ?? Duration.zero));
 
   bool _isChatEndMessage(String message) {
     if ((message == AppLocalizations.of(context)!.chatOptionSkip) ||
@@ -84,7 +83,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       Navigator.pushReplacementNamed(context, RouteNames.home);
     } else {
       await Provider.of<ChocoTurUser>(listen: false, context).advanceTour(context, activeUserTour);
-      Navigator.pushReplacementNamed(context, RouteNames.map, arguments: true);
+      IntroDialogType introDialogType =
+          (widget.tastingId != null) ? IntroDialogType.askForTastingReview : IntroDialogType.goToNextStop;
+      IntroDialog introDialog = IntroDialog(introDialogType, widget.tastingId);
+      Navigator.pushReplacementNamed(context, RouteNames.map, arguments: introDialog);
     }
   }
 
