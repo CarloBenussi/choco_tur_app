@@ -68,7 +68,7 @@ class TourStopInfos extends StatelessWidget {
         color: Styles.redShade,
         patterns: const [PatternItem.dot],
         points: List.from(result.points.map((e) => LatLng(e.latitude, e.longitude))),
-        width: 3,
+        width: 2,
       );
     }
 

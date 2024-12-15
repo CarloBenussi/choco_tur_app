@@ -18,6 +18,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+class UserInputOption {
+  final String option;
+  final ChocoTurStoryAnswerAction action;
+
+  UserInputOption(this.option, [this.action = ChocoTurStoryAnswerAction.none]);
+}
+
 class TourStopStoryChatPage extends StatefulWidget {
   const TourStopStoryChatPage({
     super.key,
@@ -44,45 +51,51 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   );
   late final chat_types.User? _user;
   final List<chat_types.Message> _messages = [];
-  List<String> _inputOptions = [];
+  List<UserInputOption> _inputOptions = [];
   List<chat_types.User> _typingUsers = [];
 
-  bool _isChatEndMessage(String message) {
-    if ((message == AppLocalizations.of(context)!.chatOptionSkip) ||
-        (message == AppLocalizations.of(context)!.chatOptionEnd)) {
-      return true;
+  ChocoTurStoryAnswerAction _actionFromAnswer(Map<String, String> answer) {
+    ChocoTurStoryAnswerAction ret = ChocoTurStoryAnswerAction.none;
+    if (answer.containsKey("action")) {
+      if (ChocoTurStoryAnswerAction.skip.name == answer["action"]) {
+        ret = ChocoTurStoryAnswerAction.skip;
+      } else if (ChocoTurStoryAnswerAction.skipOptions.name == answer["action"]) {
+        ret = ChocoTurStoryAnswerAction.skipOptions;
+      } else if (ChocoTurStoryAnswerAction.audio.name == answer["action"]) {
+        ret = ChocoTurStoryAnswerAction.audio;
+      } else if (ChocoTurStoryAnswerAction.audio.name == answer["finishWithPause"]) {
+        ret = ChocoTurStoryAnswerAction.finishWithPause;
+      }
     }
 
-    return false;
+    return ret;
   }
 
-  bool _isAudioMessage(String message) {
-    if ((message == AppLocalizations.of(context)!.chatOptionAudio)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  IconData _getIconForInputOption(String inputOption) {
-    if (_isChatEndMessage(inputOption)) {
+  IconData _getIconForInputOption(UserInputOption inputOption) {
+    if (inputOption.action == ChocoTurStoryAnswerAction.skip) {
       return Icons.arrow_forward_outlined;
-    } else if (inputOption == AppLocalizations.of(context)!.chatOptionAudio) {
+    } else if (inputOption.action == ChocoTurStoryAnswerAction.skipOptions) {
+      return Icons.arrow_circle_right_outlined;
+    } else if (inputOption.action == ChocoTurStoryAnswerAction.audio) {
       return Icons.audiotrack_outlined;
-    } else if (inputOption == AppLocalizations.of(context)!.chatOptionChat) {
+    } else if (inputOption.action == ChocoTurStoryAnswerAction.finishWithPause) {
+      return Icons.emoji_food_beverage_outlined;
+    } else if (inputOption.option == AppLocalizations.of(context)!.chatOptionChat) {
       return Icons.chat_bubble_outlined;
     } else {
       return Icons.circle_rounded;
     }
   }
 
-  void _chatEnd(BuildContext context) async {
+  void _chatEnd(BuildContext context, ChocoTurStoryAnswerAction action) async {
+    bool skipOptions =
+        ((action == ChocoTurStoryAnswerAction.skipOptions) || (action == ChocoTurStoryAnswerAction.finishWithPause));
     ChocoTurUserTour? activeUserTour = Provider.of<ChocoTurUser>(context, listen: false).activeTour;
     if (activeUserTour == null) {
       LoggerInstance.logger.e("No active user tour at chat end!");
       Navigator.pushReplacementNamed(context, RouteNames.home);
     } else {
-      await Provider.of<ChocoTurUser>(listen: false, context).advanceTour(context, activeUserTour);
+      await Provider.of<ChocoTurUser>(listen: false, context).advanceTour(context, activeUserTour, skipOptions);
       IntroDialogType introDialogType =
           (widget.tastingId != null) ? IntroDialogType.askForTastingReview : IntroDialogType.goToNextStop;
       IntroDialog introDialog = IntroDialog(introDialogType, widget.tastingId);
@@ -90,12 +103,12 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
     }
   }
 
-  void _onInputOptionPressed(BuildContext context, int index, String message) async {
+  void _onInputOptionPressed(BuildContext context, int index, UserInputOption inputOption) async {
     final textMessage = chat_types.TextMessage(
       author: _user!,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: uuid.v4(),
-      text: message,
+      text: inputOption.option,
     );
 
     setState(() {
@@ -103,9 +116,13 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       _inputOptions = [];
     });
 
-    if (_isChatEndMessage(message)) {
-      return _chatEnd(context);
-    } else if (_isAudioMessage(message)) {
+    if ([
+      ChocoTurStoryAnswerAction.skip,
+      ChocoTurStoryAnswerAction.skipOptions,
+      ChocoTurStoryAnswerAction.finishWithPause
+    ].contains(inputOption.action)) {
+      return _chatEnd(context, inputOption.action);
+    } else if (inputOption.action == ChocoTurStoryAnswerAction.audio) {
       setState(() {
         _typingUsers = [_bot];
       });
@@ -128,8 +145,9 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       setState(() {
         _messages.insert(0, audioMessage);
         _typingUsers = [];
-        _inputOptions.add(AppLocalizations.of(context)!.chatOptionChat);
-        _inputOptions.add(AppLocalizations.of(context)!.chatOptionSkip);
+        _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
+        _inputOptions
+            .add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
       });
     } else {
       setState(() {
@@ -139,7 +157,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       await Future.delayed(const Duration(milliseconds: 200));
 
       var botMessages = [];
-      List<String> inputOptions = [];
+      List<UserInputOption> inputOptions = [];
       while (true) {
         bool exit = false;
         ChocoTurStopStory story = widget.stopStories[0];
@@ -154,7 +172,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
           // TODO: Add image message.
         } else if (story.type == ChocoTurStopStoryType.answers) {
           for (var answer in story.answers!) {
-            inputOptions.add(answer[_langCode]!);
+            inputOptions.add(UserInputOption(answer[_langCode]!, _actionFromAnswer(answer)));
           }
 
           exit = true;
@@ -168,8 +186,8 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         }
 
         widget.stopStories.removeAt(0);
-        if (widget.stopStories.isEmpty) {
-          inputOptions = [AppLocalizations.of(context)!.chatOptionEnd];
+        if (widget.stopStories.isEmpty && inputOptions.isEmpty) {
+          inputOptions = [UserInputOption(AppLocalizations.of(context)!.chatOptionEnd, ChocoTurStoryAnswerAction.skip)];
           break;
         } else if (exit) {
           break;
@@ -213,9 +231,9 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
     ));
 
     _inputOptions = [];
-    _inputOptions.add(AppLocalizations.of(context)!.chatOptionChat);
-    _inputOptions.add(AppLocalizations.of(context)!.chatOptionAudio);
-    _inputOptions.add(AppLocalizations.of(context)!.chatOptionSkip);
+    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
+    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionAudio, ChocoTurStoryAnswerAction.audio));
+    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
 
     setState(() {});
   }
@@ -270,7 +288,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
                       minimumSize: Size.zero,
                     ),
                     label: Text(
-                      _inputOptions[i],
+                      _inputOptions[i].option,
                       style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
                       overflow: TextOverflow.visible,
                     ),

@@ -11,7 +11,7 @@ class SqliteCache {
   static const String _toursTableSchema =
       "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
   static const String _stopsTableSchema =
-      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT, tastingId TEXT";
+      "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT, tastingId TEXT, optionalGroup INTEGER";
   static const String _tastingsTableSchema =
       "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, ingredients TEXT, reviews TEXT, imageId TEXT";
 
@@ -160,6 +160,7 @@ class SqliteCache {
           'imageId',
           'audioId',
           'tastingId',
+          'optionalGroup'
         ],
         where: "id = ?",
         whereArgs: [stopId],
@@ -176,6 +177,45 @@ class SqliteCache {
     }
 
     return stops;
+  }
+
+  Future<ChocoTurStop?> getTourStop(String tourId, String stopId) async {
+    final database = await _db!;
+
+    ChocoTurTour? tour = await getTourFromId(tourId);
+    if (tour == null) {
+      LoggerInstance.logger.e('Got no data for tour $tourId');
+      return null;
+    }
+
+    List<Map<String, dynamic>> stopMaps = await database.query(
+      _stopsTableName,
+      columns: [
+        'id',
+        'titles',
+        'descriptions',
+        'latitude',
+        'longitude',
+        'imageId',
+        'audioId',
+        'tastingId',
+        'optionalGroup'
+      ],
+      where: "id = ?",
+      whereArgs: [stopId],
+    );
+
+    if (stopMaps.isEmpty) {
+      LoggerInstance.logger.e('Got no data for tour $tourId and stop $stopId');
+      return null;
+    }
+
+    if (stopMaps.length > 1) {
+      LoggerInstance.logger.e('Got multiple stops with id $stopId');
+      return null;
+    }
+
+    return ChocoTurStop.fromCacheMap(stopMaps[0]);
   }
 
   Future<void> saveTourStops(List<ChocoTurStop> tourStops) async {

@@ -274,7 +274,7 @@ class ChocoTurUser extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> advanceTour(BuildContext context, ChocoTurUserTour userTour) async {
+  Future<void> advanceTour(BuildContext context, ChocoTurUserTour userTour, [bool skipOptions = false]) async {
     if (activeTour == null) {
       throw Exception('No active tour present!');
     }
@@ -289,20 +289,37 @@ class ChocoTurUser extends ChangeNotifier {
       throw Exception('No tour on cache for ID ${userTour.id}');
     }
 
-    var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
-    if (++tourStopIndex == tour.stopIds.length) {
-      LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
-
-      // ignore: use_build_context_synchronously
-      return deactivateTour(context, activeTour!);
+    // Retrieve the current stop optional group if we want to skip the nexts.
+    int? optionalGroupToSkip;
+    if (skipOptions) {
+      int currentStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
+      ChocoTurStop? currentStop = await cache.getTourStop(tour.id, tour.stopIds[currentStopIndex]);
+      optionalGroupToSkip = currentStop!.optionalGroup;
     }
 
-    bool userTourAdvanceSuccess = await WebappService.advanceUserTour(context, loginAccessToken, tour.id);
-    if (!userTourAdvanceSuccess) {
-      LoggerInstance.logger.e('Failed to advance tour ${tour.id} on webapp');
-    }
-    activeTour!.nextStopId = tour.stopIds[tourStopIndex];
-    activeTour!.progress = tourStopIndex / tour.stopIds.length;
+    int? nextStopOptionalGroup;
+    do {
+      var tourStopIndex = tour.stopIds.indexOf(userTour.nextStopId);
+      if (++tourStopIndex == tour.stopIds.length) {
+        LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
+
+        // ignore: use_build_context_synchronously
+        return deactivateTour(context, activeTour!);
+      }
+
+      bool userTourAdvanceSuccess = await WebappService.advanceUserTour(context, loginAccessToken, tour.id);
+      if (!userTourAdvanceSuccess) {
+        LoggerInstance.logger.e('Failed to advance tour ${tour.id} on webapp');
+      }
+
+      ChocoTurStop? nextStop = await cache.getTourStop(tour.id, tour.stopIds[tourStopIndex]);
+      activeTour!.nextStopId = nextStop!.id;
+      activeTour!.progress = tourStopIndex / tour.stopIds.length;
+      nextStopOptionalGroup = nextStop.optionalGroup;
+    } while ((optionalGroupToSkip != null) &&
+        (nextStopOptionalGroup != null) &&
+        (optionalGroupToSkip == nextStopOptionalGroup));
+
     notifyListeners();
   }
 

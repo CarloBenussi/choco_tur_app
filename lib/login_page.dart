@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: Image.asset("assets/chocolateGobino.jpg", fit: BoxFit.cover)),
+                          child: Image.asset("assets/login.png", fit: BoxFit.cover)),
                     ),
                     Center(
                       child: Text(AppLocalizations.of(context)!.loginWithCredentialsTitle,

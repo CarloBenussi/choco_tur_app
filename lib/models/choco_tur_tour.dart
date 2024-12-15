@@ -191,6 +191,7 @@ class ChocoTurStop {
   late final String audioId;
   late final String? tastingId;
   late final Uint8List? imageData;
+  late final int? optionalGroup;
 
   Map<String, dynamic> toMap() {
     return {
@@ -202,6 +203,7 @@ class ChocoTurStop {
       'imageId': imageId,
       'audioId': audioId,
       'tastingId': (tastingId != null) ? tastingId : '',
+      'optionalGroup': (optionalGroup != null) ? optionalGroup : -1,
     };
   }
 
@@ -215,6 +217,7 @@ class ChocoTurStop {
       'imageId': imageId,
       'audioId': audioId,
       'tastingId': (tastingId != null) ? tastingId : '',
+      'optionalGroup': (optionalGroup != null) ? optionalGroup : -1,
     };
   }
 
@@ -230,6 +233,11 @@ class ChocoTurStop {
     } else {
       tastingId = null;
     }
+    if (map.containsKey('optionalGroup') && (map['optionalGroup'] != -1)) {
+      optionalGroup = map['optionalGroup'];
+    } else {
+      optionalGroup = -1;
+    }
   }
 
   ChocoTurStop.fromCacheMap(Map<String, dynamic> map) {
@@ -244,10 +252,17 @@ class ChocoTurStop {
     } else {
       tastingId = null;
     }
+    if (map.containsKey('optionalGroup') && (map['optionalGroup'] != -1)) {
+      optionalGroup = map['optionalGroup'];
+    } else {
+      optionalGroup = -1;
+    }
   }
 }
 
 enum ChocoTurStopStoryType { text, image, answers, onAnswers }
+
+enum ChocoTurStoryAnswerAction { none, skip, skipOptions, audio, finishWithPause }
 
 class ChocoTurStopStory {
   late final int index;

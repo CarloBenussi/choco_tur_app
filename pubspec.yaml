@@ -105,6 +105,8 @@ flutter:
   assets:
     - assets/chocolateGobino.jpg
     - assets/chocolateIcon.png
+    - assets/login.png
+    - assets/logo.png
     - assets/logo_android.png
     - assets/logo_ios.png
 
@@ -195,7 +197,7 @@ dart_define:
     variables: 
         - name: WEBAPP_URL
           description: The Spring Boot Web Application URL
-          default: choco-tur-webapp-q3bl6vrz5q-og.a.run.app
+          default: choco-tur-webapp-823850501986.europe-west1.run.app
           required: true
         - name: SSL_ENABLED
           description: Whether SSL is enabled for communicating with webapp

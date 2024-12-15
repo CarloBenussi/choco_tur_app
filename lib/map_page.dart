@@ -9,6 +9,7 @@ import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/coordinates.dart';
 import 'package:choco_tur/utils/logger.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/drawer.dart';
 import 'package:choco_tur/widgets/dialog.dart';
@@ -28,6 +29,7 @@ import 'package:provider/provider.dart';
 
 enum IntroDialogType {
   goToNextStop,
+  goToNextStopAfterPause,
   askForTastingReview,
 }
 
@@ -190,6 +192,15 @@ class _MapPageState extends State<MapPage> {
               dismissable: true,
             );
 
+          case IntroDialogType.goToNextStopAfterPause:
+            showChocoTurDialog(
+              context: context,
+              icon: const Icon(Icons.arrow_forward_rounded),
+              title: AppLocalizations.of(context)!.goToTheNextStopAfterPause,
+              description: AppLocalizations.of(context)!.goToTheNextStopIndication,
+              dismissable: true,
+            );
+
           case IntroDialogType.askForTastingReview:
             ChocoTurTasting? tasting = await WebappService.getTasting(
                 context, Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken, _introDialog!.tastingId!);
@@ -348,7 +359,12 @@ class _MapPageState extends State<MapPage> {
                       child: FloatingActionButton(
                         onPressed: () async {
                           if ((_activeTourStops != null) && (_nextStopIndex != null)) {
-                            _onTap(context, _activeTourStops![_nextStopIndex!], widget.closeZoom);
+                            ChocoTurUserTour? activeUserTour =
+                                Provider.of<ChocoTurUser>(context, listen: false).activeTour;
+                            ChocoTurStop stop = _activeTourStops!.elementAt(
+                                _activeTourStops!.indexWhere((element) => (element.id == activeUserTour!.nextStopId)));
+                            Navigator.popAndPushNamed(context, RouteNames.tourStopStoryChat, arguments: stop);
+                            //_onTap(context, _activeTourStops![_nextStopIndex!], widget.closeZoom);
                           } else {
                             showChocoTurDialog(
                               context: context,

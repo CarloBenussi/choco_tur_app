@@ -30,10 +30,6 @@ class TourStartPage extends StatelessWidget {
       await _tourStops;
       Navigator.pushReplacementNamed(context, RouteNames.map, arguments: IntroDialog(IntroDialogType.goToNextStop));
     }
-    // var tourStop = (await WebappService.getTourStops(
-    //         context, tour.id, Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken))!
-    //     .firstWhere((element) => element.id == "BSaX03wbqXyHcDC1e6gw");
-    // Navigator.pushReplacementNamed(context, RouteNames.tourStopStoryChat, arguments: tourStop);
   }
 
   void _init(BuildContext context) {
