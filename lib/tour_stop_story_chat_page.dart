@@ -9,6 +9,7 @@ import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
+import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/audio_message.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as chat_types;
@@ -21,8 +22,9 @@ import 'package:uuid/uuid.dart';
 class UserInputOption {
   final String option;
   final ChocoTurStoryAnswerAction action;
+  final bool correct;
 
-  UserInputOption(this.option, [this.action = ChocoTurStoryAnswerAction.none]);
+  UserInputOption(this.option, [this.action = ChocoTurStoryAnswerAction.none, this.correct = false]);
 }
 
 class TourStopStoryChatPage extends StatefulWidget {
@@ -54,7 +56,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   List<UserInputOption> _inputOptions = [];
   List<chat_types.User> _typingUsers = [];
 
-  ChocoTurStoryAnswerAction _actionFromAnswer(Map<String, String> answer) {
+  ChocoTurStoryAnswerAction _actionFromAnswer(Map<String, dynamic> answer) {
     ChocoTurStoryAnswerAction ret = ChocoTurStoryAnswerAction.none;
     if (answer.containsKey("action")) {
       if (ChocoTurStoryAnswerAction.skip.name == answer["action"]) {
@@ -63,9 +65,18 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         ret = ChocoTurStoryAnswerAction.skipOptions;
       } else if (ChocoTurStoryAnswerAction.audio.name == answer["action"]) {
         ret = ChocoTurStoryAnswerAction.audio;
-      } else if (ChocoTurStoryAnswerAction.audio.name == answer["finishWithPause"]) {
+      } else if (ChocoTurStoryAnswerAction.finishWithPause.name == answer["action"]) {
         ret = ChocoTurStoryAnswerAction.finishWithPause;
       }
+    }
+
+    return ret;
+  }
+
+  bool _isAnswerCorrect(Map<String, dynamic> answer) {
+    bool ret = false;
+    if (answer.containsKey("correct")) {
+      ret = answer["correct"];
     }
 
     return ret;
@@ -156,6 +167,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
       await Future.delayed(const Duration(milliseconds: 200));
 
+      if (inputOption.correct) {
+        await Provider.of<ChocoTurUser>(listen: false, context).addCollectedCoins(context, 1);
+      }
+
       var botMessages = [];
       List<UserInputOption> inputOptions = [];
       while (true) {
@@ -172,9 +187,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
           // TODO: Add image message.
         } else if (story.type == ChocoTurStopStoryType.answers) {
           for (var answer in story.answers!) {
-            inputOptions.add(UserInputOption(answer[_langCode]!, _actionFromAnswer(answer)));
+            inputOptions.add(UserInputOption(answer[_langCode]!, _actionFromAnswer(answer), _isAnswerCorrect(answer)));
           }
 
+          // We have some options for the user, exit the loop.
           exit = true;
         } else if (story.type == ChocoTurStopStoryType.onAnswers) {
           botMessages.add(chat_types.TextMessage(
@@ -249,53 +265,56 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       sentMessageBodyTextStyle: const TextStyle(color: Colors.white),
     );
     return SafeArea(
-      child: Center(
-        child: Chat(
-          messages: _messages,
-          user: _user!,
-          typingIndicatorOptions: TypingIndicatorOptions(
-            typingUsers: _typingUsers,
-          ),
-          onSendPressed: (text) {}, // Null on purpose
-          theme: theme,
-          audioMessageBuilder: (chat_types.AudioMessage message, {required int messageWidth}) {
-            return AudioMessage(
-              message: message,
-              messageWidth: messageWidth,
-              theme: theme,
-            );
-          },
-          customBottomWidget: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  width: 1.5,
-                  color: Styles.pinkShade,
+      child: Scaffold(
+        appBar: const ChocoTurAppBar(),
+        body: Center(
+          child: Chat(
+            messages: _messages,
+            user: _user!,
+            typingIndicatorOptions: TypingIndicatorOptions(
+              typingUsers: _typingUsers,
+            ),
+            onSendPressed: (text) {}, // Null on purpose
+            theme: theme,
+            audioMessageBuilder: (chat_types.AudioMessage message, {required int messageWidth}) {
+              return AudioMessage(
+                message: message,
+                messageWidth: messageWidth,
+                theme: theme,
+              );
+            },
+            customBottomWidget: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    width: 1.5,
+                    color: Styles.pinkShade,
+                  ),
                 ),
               ),
-            ),
-            child: Wrap(
-              alignment: WrapAlignment.spaceAround,
-              direction: Axis.horizontal,
-              spacing: 10.0,
-              children: [
-                for (var i = 0; i < _inputOptions.length; ++i) ...[
-                  ElevatedButton.icon(
-                    onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Styles.pinkShade,
-                      minimumSize: Size.zero,
+              child: Wrap(
+                alignment: WrapAlignment.spaceAround,
+                direction: Axis.horizontal,
+                spacing: 10.0,
+                children: [
+                  for (var i = 0; i < _inputOptions.length; ++i) ...[
+                    ElevatedButton.icon(
+                      onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Styles.pinkShade,
+                        minimumSize: Size.zero,
+                      ),
+                      label: Text(
+                        _inputOptions[i].option,
+                        style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
+                        overflow: TextOverflow.visible,
+                      ),
+                      icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
                     ),
-                    label: Text(
-                      _inputOptions[i].option,
-                      style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
-                      overflow: TextOverflow.visible,
-                    ),
-                    icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
-                  ),
-                ]
-              ],
+                  ]
+                ],
+              ),
             ),
           ),
         ),

@@ -48,6 +48,28 @@ class LanguageSelectionDropdownMenu extends StatelessWidget {
                     height: 30,
                   )),
               label: LanguageCodes.langCodeToLabel(LanguageCodes.IT)!),
+          DropdownMenuEntry(
+              value: LanguageCodes.DE,
+              leadingIcon: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.asset(
+                    'icons/flags/png100px/de.png',
+                    package: 'country_icons',
+                    width: 30,
+                    height: 30,
+                  )),
+              label: LanguageCodes.langCodeToLabel(LanguageCodes.DE)!),
+          DropdownMenuEntry(
+              value: LanguageCodes.FR,
+              leadingIcon: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.asset(
+                    'icons/flags/png100px/fr.png',
+                    package: 'country_icons',
+                    width: 30,
+                    height: 30,
+                  )),
+              label: LanguageCodes.langCodeToLabel(LanguageCodes.FR)!),
         ],
       ),
     );

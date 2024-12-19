@@ -1,4 +1,5 @@
 import 'package:choco_tur/utils/styles.dart';
+import 'package:choco_tur/widgets/gianduiotto_collector.dart';
 import 'package:flutter/material.dart';
 
 class ChocoTurAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -9,6 +10,7 @@ class ChocoTurAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: Styles.onRedShade,
       foregroundColor: Styles.redShade,
+      actions: const [GianduiottoCollector()],
     );
   }
 

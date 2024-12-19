@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:ui';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -9,6 +11,7 @@ import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
+import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/dialog.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/quiz_background_painter.dart';
@@ -49,6 +52,9 @@ class _QuizPageState extends State<QuizPage> {
         correct);
     if (!updateQuizScoreSuccess) {
       LoggerInstance.logger.e('Failed to update quiz score for question at index ${_currentPageIndex - 1}');
+    }
+    if (correct) {
+      await Provider.of<ChocoTurUser>(listen: false, context).addCollectedCoins(context, 1);
     }
     setState(() {
       _processing = false;
@@ -135,6 +141,7 @@ class _QuizPageState extends State<QuizPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: const ChocoTurAppBar(),
         backgroundColor: Colors.transparent,
         body: PageTransitionSwitcher(
           duration: const Duration(milliseconds: 800),

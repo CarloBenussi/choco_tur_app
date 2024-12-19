@@ -269,7 +269,7 @@ class ChocoTurStopStory {
   late final ChocoTurStopStoryType type;
 
   Map<String, String>? texts;
-  List<Map<String, String>>? answers;
+  List<Map<String, dynamic>>? answers;
   List<Map<String, String>>? onAnswers;
   String? imageId;
 

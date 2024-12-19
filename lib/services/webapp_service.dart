@@ -47,6 +47,10 @@ class WebappService {
   static const String tastingEndpoint = "/tastings/tasting";
   static const String tastingReviewEndpoint = "/tastings/review";
 
+  static const String getCollectedCoinsEndpoint = "/users/info/getCoins";
+  static const String addCollectedCoinsEndpoint = "/users/info/addCoins";
+  static const String removeCollectedCoinsEndpoint = "/users/info/removeCoins";
+
   static List<int> tokenExpiredStatusCodes = [401, 403];
 
   static HttpClient? _client;
@@ -732,6 +736,81 @@ class WebappService {
       return true;
     } else {
       LoggerInstance.logger.e('Got error response for tasting review: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<int?> getUserCollectedCoins(String? accessToken) async {
+    Uri uri = _buildUri(getCollectedCoinsEndpoint);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+
+    if (response.statusCode == 200) {
+      return int.parse(body);
+    } else {
+      LoggerInstance.logger.e('Got error response for getting user coins: ${response.statusCode}, $body');
+      return null;
+    }
+  }
+
+  static Future<bool> addUserCollectedCoins(BuildContext context, String? accessToken, int coins) async {
+    Uri uri = _buildUri(addCollectedCoinsEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
+    String body = coins.toString();
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to send coins addition, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      LoggerInstance.logger.d("Update coins collection successful");
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for coins collection update: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<bool> removeUserCollectedCoins(BuildContext context, String? accessToken, int coins) async {
+    Uri uri = _buildUri(removeCollectedCoinsEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
+    String body = coins.toString();
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to send coins removal, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      LoggerInstance.logger.d("Update coins collection successful");
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for coins collection update: ${response.statusCode}, $body');
       return false;
     }
   }

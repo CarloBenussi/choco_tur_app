@@ -34,6 +34,7 @@ dependencies:
     sdk: flutter
   animated_text_kit: ^4.2.2
   animations: ^2.0.8
+  badges: ^3.1.2
   country_picker: ^2.0.24
   country_icons: ^3.0.0
   dob_input_field: ^2.0.0

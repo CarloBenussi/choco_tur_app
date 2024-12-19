@@ -80,9 +80,11 @@ class ChocoTurUser extends ChangeNotifier {
 
     List<ChocoTurUserTour>? userTours;
     List<ChocoTurUserQuiz>? userQuizs;
+    int? collectedCoins;
     if (loggedIn) {
       userTours = await WebappService.getUserTours(loginAccessToken);
       userQuizs = await WebappService.getUserQuizs(loginAccessToken);
+      collectedCoins = await WebappService.getUserCollectedCoins(loginAccessToken);
     }
 
     return ChocoTurUser(
@@ -96,6 +98,7 @@ class ChocoTurUser extends ChangeNotifier {
       cameraPosition: cameraPosition,
       userTours: userTours,
       userQuizs: userQuizs,
+      collectedCoins: collectedCoins,
     );
   }
 
@@ -110,6 +113,7 @@ class ChocoTurUser extends ChangeNotifier {
     this.cameraPosition,
     this.userTours,
     this.userQuizs,
+    this.collectedCoins,
   });
 
   // SharedPreferences keys.
@@ -134,6 +138,7 @@ class ChocoTurUser extends ChangeNotifier {
   CameraPosition? cameraPosition;
   List<ChocoTurUserTour>? userTours;
   List<ChocoTurUserQuiz>? userQuizs;
+  int? collectedCoins;
   static late final SharedPreferences _prefs;
 
   Locale _locale = const Locale(LanguageCodes.EN);
@@ -198,9 +203,10 @@ class ChocoTurUser extends ChangeNotifier {
       }
     }
 
-    // We logged in, hence we can download user tours and quizs.
+    // We logged in, hence we can download user tours, quizzes and coins.
     userTours = await WebappService.getUserTours(loginAccessToken);
     userQuizs = await WebappService.getUserQuizs(loginAccessToken);
+    collectedCoins = await WebappService.getUserCollectedCoins(loginAccessToken);
     notifyListeners();
   }
 
@@ -357,6 +363,34 @@ class ChocoTurUser extends ChangeNotifier {
     }
     activeTour!.nextStopId = tour.stopIds[tourStopIndex];
     activeTour!.progress = tourStopIndex / tour.stopIds.length;
+    notifyListeners();
+  }
+
+  Future<void> addCollectedCoins(BuildContext context, int coins) async {
+    bool addCollectedCoinsSuccess = await WebappService.addUserCollectedCoins(context, loginAccessToken, coins);
+    if (!addCollectedCoinsSuccess) {
+      LoggerInstance.logger.e('Failed to add $coins coins on webapp');
+    }
+
+    if (collectedCoins == null) {
+      collectedCoins = coins;
+    } else {
+      collectedCoins = collectedCoins! + coins;
+    }
+    notifyListeners();
+  }
+
+  Future<void> removeCollectedCoins(BuildContext context, int coins) async {
+    bool removeCollectedCoinsSuccess = await WebappService.removeUserCollectedCoins(context, loginAccessToken, coins);
+    if (!removeCollectedCoinsSuccess) {
+      LoggerInstance.logger.e('Failed to remove $coins coins on webapp');
+    }
+
+    if (collectedCoins == null) {
+      LoggerInstance.logger.e('Coins collected is null');
+    } else {
+      collectedCoins = collectedCoins! - coins;
+    }
     notifyListeners();
   }
 
