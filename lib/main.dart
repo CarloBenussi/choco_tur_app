@@ -1,6 +1,7 @@
 import 'package:choco_tur/account_page.dart';
 import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/my_tours_page.dart';
 import 'package:choco_tur/password_recovery_process_page.dart';
 import 'package:choco_tur/quiz_page.dart';
@@ -32,12 +33,16 @@ void main() async {
   await WebappService.init();
   await FirebaseService.init();
   var chocoUser = await ChocoTurUser.init();
+  var chocoUserCoins = await ChocoTurUserCoins.init(chocoUser);
   FlutterNativeSplash.remove();
 
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
         create: (_) => chocoUser,
+      ),
+      ChangeNotifierProvider(
+        create: (_) => chocoUserCoins,
       ),
     ],
     child: ChocoTurApp(user: chocoUser),

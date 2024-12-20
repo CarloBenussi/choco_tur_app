@@ -7,6 +7,7 @@ import 'package:animations/animations.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
@@ -54,7 +55,7 @@ class _QuizPageState extends State<QuizPage> {
       LoggerInstance.logger.e('Failed to update quiz score for question at index ${_currentPageIndex - 1}');
     }
     if (correct) {
-      await Provider.of<ChocoTurUser>(listen: false, context).addCollectedCoins(context, 1);
+      await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
     }
     setState(() {
       _processing = false;

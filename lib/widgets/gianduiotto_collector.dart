@@ -1,5 +1,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +20,11 @@ class _GianduiottoCollectorState extends State<GianduiottoCollector> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _collectedCoins = Provider.of<ChocoTurUser>(context, listen: true).collectedCoins;
+    _collectedCoins = Provider.of<ChocoTurUserCoins>(context, listen: true).collectedCoins;
+  }
+
+  void onPressed(BuildContext context) {
+    Navigator.pushNamed(context, RouteNames.myTours);
   }
 
   @override
@@ -41,8 +47,12 @@ class _GianduiottoCollectorState extends State<GianduiottoCollector> {
         shape: badges.BadgeShape.circle,
         badgeColor: Styles.redShade,
       ),
-      child: Image.asset(
-        "assets/chocolateIcon.png",
+      child: IconButton(
+        onPressed: () => onPressed(context),
+        icon: Image.asset(
+          "assets/chocolateIcon.png",
+          width: 30,
+        ),
       ),
     );
     // TODO: Get user collected coins and show them (with question mark if not logged in)

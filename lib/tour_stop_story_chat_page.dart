@@ -5,11 +5,11 @@ import 'dart:ui';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
-import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/audio_message.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as chat_types;
@@ -36,7 +36,7 @@ class TourStopStoryChatPage extends StatefulWidget {
   });
 
   final List<ChocoTurStopStory> stopStories;
-  final String audioId;
+  final String? audioId;
   final String? tastingId;
 
   @override
@@ -138,16 +138,16 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         _typingUsers = [_bot];
       });
 
-      Uint8List audio = await FirebaseService.downloadAudio(_langCode!, widget.audioId);
+      Uint8List audio = await FirebaseService.downloadAudio(_langCode!, widget.audioId!);
       Directory privateFileDir = await getApplicationDocumentsDirectory();
-      File file = File('${privateFileDir.path}/${widget.audioId}');
+      File file = File('${privateFileDir.path}/${widget.audioId!}');
       file.writeAsBytes(audio);
 
       var audioMessage = chat_types.AudioMessage(
         author: _bot,
         duration: Duration(milliseconds: (audio.length * 8 / 190).round()),
         id: uuid.v4(),
-        name: widget.audioId,
+        name: widget.audioId!,
         size: audio.length,
         uri: file.path,
         mimeType: "mp3",
@@ -168,7 +168,8 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       await Future.delayed(const Duration(milliseconds: 200));
 
       if (inputOption.correct) {
-        await Provider.of<ChocoTurUser>(listen: false, context).addCollectedCoins(context, 1);
+        // TODO: Fix bug: refreshed didChangeDependencies and restarts chat.
+        await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
       }
 
       var botMessages = [];
@@ -233,23 +234,37 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _langCode = Provider.of<ChocoTurUser>(context, listen: true).language;
+    _langCode = Provider.of<ChocoTurUser>(context, listen: false).language;
     _user = chat_types.User(
       id: "Myself",
       firstName: AppLocalizations.of(context)!.you,
     );
 
-    _messages.add(chat_types.TextMessage(
-      author: _bot,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: uuid.v4(),
-      text: AppLocalizations.of(context)!.chatWelcomeMessage,
-    ));
+    if (widget.audioId != null) {
+      _messages.add(chat_types.TextMessage(
+        author: _bot,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        id: uuid.v4(),
+        text: AppLocalizations.of(context)!.chatWelcomeMessageOptions,
+      ));
 
-    _inputOptions = [];
-    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
-    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionAudio, ChocoTurStoryAnswerAction.audio));
-    _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
+      _inputOptions = [];
+      _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
+      _inputOptions
+          .add(UserInputOption(AppLocalizations.of(context)!.chatOptionAudio, ChocoTurStoryAnswerAction.audio));
+      _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
+    } else {
+      _messages.add(chat_types.TextMessage(
+        author: _bot,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+        id: uuid.v4(),
+        text: AppLocalizations.of(context)!.chatWelcomeMessageChat,
+      ));
+
+      _inputOptions = [];
+      _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
+      _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
+    }
 
     setState(() {});
   }
@@ -265,56 +280,53 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       sentMessageBodyTextStyle: const TextStyle(color: Colors.white),
     );
     return SafeArea(
-      child: Scaffold(
-        appBar: const ChocoTurAppBar(),
-        body: Center(
-          child: Chat(
-            messages: _messages,
-            user: _user!,
-            typingIndicatorOptions: TypingIndicatorOptions(
-              typingUsers: _typingUsers,
-            ),
-            onSendPressed: (text) {}, // Null on purpose
-            theme: theme,
-            audioMessageBuilder: (chat_types.AudioMessage message, {required int messageWidth}) {
-              return AudioMessage(
-                message: message,
-                messageWidth: messageWidth,
-                theme: theme,
-              );
-            },
-            customBottomWidget: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    width: 1.5,
-                    color: Styles.pinkShade,
-                  ),
+      child: Center(
+        child: Chat(
+          messages: _messages,
+          user: _user!,
+          typingIndicatorOptions: TypingIndicatorOptions(
+            typingUsers: _typingUsers,
+          ),
+          onSendPressed: (text) {}, // Null on purpose
+          theme: theme,
+          audioMessageBuilder: (chat_types.AudioMessage message, {required int messageWidth}) {
+            return AudioMessage(
+              message: message,
+              messageWidth: messageWidth,
+              theme: theme,
+            );
+          },
+          customBottomWidget: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  width: 1.5,
+                  color: Styles.pinkShade,
                 ),
               ),
-              child: Wrap(
-                alignment: WrapAlignment.spaceAround,
-                direction: Axis.horizontal,
-                spacing: 10.0,
-                children: [
-                  for (var i = 0; i < _inputOptions.length; ++i) ...[
-                    ElevatedButton.icon(
-                      onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Styles.pinkShade,
-                        minimumSize: Size.zero,
-                      ),
-                      label: Text(
-                        _inputOptions[i].option,
-                        style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
-                        overflow: TextOverflow.visible,
-                      ),
-                      icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              direction: Axis.horizontal,
+              spacing: 10.0,
+              children: [
+                for (var i = 0; i < _inputOptions.length; ++i) ...[
+                  ElevatedButton.icon(
+                    onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Styles.pinkShade,
+                      minimumSize: Size.zero,
                     ),
-                  ]
-                ],
-              ),
+                    label: Text(
+                      _inputOptions[i].option,
+                      style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
+                      overflow: TextOverflow.visible,
+                    ),
+                    icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
+                  ),
+                ]
+              ],
             ),
           ),
         ),

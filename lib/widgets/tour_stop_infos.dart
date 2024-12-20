@@ -123,7 +123,7 @@ class TourStopInfos extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
                 return LimitedBox(
-                  maxHeight: MediaQuery.of(context).size.width / 2,
+                  maxHeight: MediaQuery.of(context).size.width / (20 / tourStopInfos.length),
                   maxWidth: MediaQuery.of(context).size.width / 2,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),

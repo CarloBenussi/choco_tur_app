@@ -14,7 +14,7 @@ class LanguageCodes {
       return "Italiano";
     } else if (langCode == DE) {
       return "Deutsch";
-    } else if (langCode == FractionalOffset.bottomLeft) {
+    } else if (langCode == FR) {
       return "Française";
     } else {
       LoggerInstance.logger.e('Unknown language code $langCode.');

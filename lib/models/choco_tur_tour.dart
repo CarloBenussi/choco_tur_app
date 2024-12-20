@@ -188,7 +188,7 @@ class ChocoTurStop {
   late final Map<String, String> descriptions;
   late final LatLng coordinates;
   late final String imageId;
-  late final String audioId;
+  late final String? audioId;
   late final String? tastingId;
   late final Uint8List? imageData;
   late final int? optionalGroup;
@@ -202,7 +202,7 @@ class ChocoTurStop {
       'longitude': coordinates.longitude,
       'imageId': imageId,
       'audioId': audioId,
-      'tastingId': (tastingId != null) ? tastingId : '',
+      'tastingId': tastingId,
       'optionalGroup': (optionalGroup != null) ? optionalGroup : -1,
     };
   }
@@ -216,7 +216,7 @@ class ChocoTurStop {
       'longitude': coordinates.longitude,
       'imageId': imageId,
       'audioId': audioId,
-      'tastingId': (tastingId != null) ? tastingId : '',
+      'tastingId': tastingId,
       'optionalGroup': (optionalGroup != null) ? optionalGroup : -1,
     };
   }
@@ -227,7 +227,11 @@ class ChocoTurStop {
     descriptions = Map.from(map['descriptions']);
     coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
-    audioId = map['audioId'];
+    if (map.containsKey('audioId') && (map['audioId'] != '')) {
+      audioId = map['audioId'];
+    } else {
+      audioId = null;
+    }
     if (map.containsKey('tastingId') && (map['tastingId'] != '')) {
       tastingId = map['tastingId'];
     } else {
@@ -246,7 +250,11 @@ class ChocoTurStop {
     descriptions = Map.from(jsonDecode(map['descriptions']));
     coordinates = LatLng(map['latitude'], map['longitude']);
     imageId = map['imageId'];
-    audioId = map['audioId'];
+    if (map.containsKey('audioId') && (map['audioId'] != '')) {
+      audioId = map['audioId'];
+    } else {
+      audioId = null;
+    }
     if (map.containsKey('tastingId') && (map['tastingId'] != '')) {
       tastingId = map['tastingId'];
     } else {
