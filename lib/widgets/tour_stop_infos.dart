@@ -52,24 +52,24 @@ class TourStopInfos extends StatelessWidget {
         markerId++;
       }
 
-      PolylinePoints polylinePoints = PolylinePoints();
-      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        const String.fromEnvironment('GOOGLE_MAPS_API_KEY'),
-        PointLatLng(_markers!.first.position.latitude, _markers!.first.position.longitude),
-        PointLatLng(_markers!.last.position.latitude, _markers!.last.position.longitude),
-        travelMode: TravelMode.walking,
-        wayPoints: List.from(
-          _markers!.skip(1).take(_markers!.length - 1).map((e) =>
-              PolylineWayPoint(location: '${e.position.latitude.toString()},${e.position.longitude.toString()}')),
-        ),
-      );
-      _polyline = Polyline(
-        polylineId: const PolylineId("Tour Line"),
-        color: Styles.redShade,
-        patterns: const [PatternItem.dot],
-        points: List.from(result.points.map((e) => LatLng(e.latitude, e.longitude))),
-        width: 2,
-      );
+      // PolylinePoints polylinePoints = PolylinePoints();
+      // PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      //   const String.fromEnvironment('GOOGLE_MAPS_API_KEY'),
+      //   PointLatLng(_markers!.first.position.latitude, _markers!.first.position.longitude),
+      //   PointLatLng(_markers!.last.position.latitude, _markers!.last.position.longitude),
+      //   travelMode: TravelMode.walking,
+      //   wayPoints: List.from(
+      //     _markers!.skip(1).take(_markers!.length - 1).map((e) =>
+      //         PolylineWayPoint(location: '${e.position.latitude.toString()},${e.position.longitude.toString()}')),
+      //   ),
+      // );
+      // _polyline = Polyline(
+      //   polylineId: const PolylineId("Tour Line"),
+      //   color: Styles.redShade,
+      //   patterns: const [PatternItem.dot],
+      //   points: List.from(result.points.map((e) => LatLng(e.latitude, e.longitude))),
+      //   width: 2,
+      // );
     }
 
     return _markers!;
@@ -138,7 +138,6 @@ class TourStopInfos extends StatelessWidget {
                       zoomControlsEnabled: false,
                       compassEnabled: false,
                       markers: snapshot.data!,
-                      polylines: {_polyline!},
                       gestureRecognizers: {}..add(Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer())),
                     ),
                   ),

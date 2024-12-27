@@ -275,6 +275,7 @@ enum ChocoTurStoryAnswerAction { none, skip, skipOptions, audio, finishWithPause
 class ChocoTurStopStory {
   late final int index;
   late final ChocoTurStopStoryType type;
+  late final String id;
 
   Map<String, String>? texts;
   List<Map<String, dynamic>>? answers;
@@ -284,6 +285,7 @@ class ChocoTurStopStory {
   ChocoTurStopStory.fromMap(Map<String, dynamic> map) {
     index = map['index'];
     type = ChocoTurStopStoryType.values[map['type']];
+    id = map['id'];
     var pageContent = Map.from(jsonDecode(map['contentJson']));
 
     imageId = pageContent['imageId'];
@@ -328,6 +330,7 @@ class ChocoTurQuizQuestion {
   ChocoTurQuizQuestion();
 
   late final int index;
+  late final String id;
   late final Map<String, String> question;
   late final List<Map<String, String>> answers;
   late final int correctAnswerIndex;
@@ -335,6 +338,7 @@ class ChocoTurQuizQuestion {
 
   ChocoTurQuizQuestion.fromMap(Map<String, dynamic> map) {
     index = map['index'];
+    id = map['id'];
     question = Map.from(map['question']);
     var answersList = List.from(map['answers']);
     answers = [];
@@ -351,6 +355,7 @@ class ChocoTurQuizQuestion {
 
   ChocoTurQuizQuestion.fromCacheMap(Map<String, dynamic> map) {
     index = map['index'];
+    id = map['id'];
     question = Map.from(jsonDecode(map['question']));
     var answersList = List.from(jsonDecode(map['answers']));
     answers = [];

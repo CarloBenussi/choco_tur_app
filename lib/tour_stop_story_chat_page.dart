@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/models/choco_tur_user_answers.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/logger.dart';
@@ -22,9 +23,10 @@ import 'package:uuid/uuid.dart';
 class UserInputOption {
   final String option;
   final ChocoTurStoryAnswerAction action;
-  final bool correct;
+  final bool? correct;
+  final String? uuid;
 
-  UserInputOption(this.option, [this.action = ChocoTurStoryAnswerAction.none, this.correct = false]);
+  UserInputOption(this.option, [this.action = ChocoTurStoryAnswerAction.none, this.correct, this.uuid]);
 }
 
 class TourStopStoryChatPage extends StatefulWidget {
@@ -114,6 +116,18 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
     }
   }
 
+  Future<void> _recordUserAnswer(String answerId, bool correct) async {
+    if (Provider.of<ChocoTurUserAnswers>(listen: false, context).containsAnswer(answerId)) {
+      LoggerInstance.logger.i('Answer with ID $answerId is already registered for user');
+      return;
+    }
+
+    await Provider.of<ChocoTurUserAnswers>(listen: false, context).recordAnswer(context, answerId);
+    if (correct) {
+      await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
+    }
+  }
+
   void _onInputOptionPressed(BuildContext context, int index, UserInputOption inputOption) async {
     final textMessage = chat_types.TextMessage(
       author: _user!,
@@ -167,9 +181,11 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
       await Future.delayed(const Duration(milliseconds: 200));
 
-      if (inputOption.correct) {
-        // TODO: Fix bug: refreshed didChangeDependencies and restarts chat.
-        await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
+      // TRICKY: We identify answers that need to be recorded for the user only the ones
+      // that are marked with the 'correct' flag, as they are the only ones that might lead to
+      // coins gain.
+      if ((inputOption.correct != null) && (inputOption.uuid != null)) {
+        await _recordUserAnswer(inputOption.uuid!, inputOption.correct!);
       }
 
       var botMessages = [];
@@ -188,7 +204,12 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
           // TODO: Add image message.
         } else if (story.type == ChocoTurStopStoryType.answers) {
           for (var answer in story.answers!) {
-            inputOptions.add(UserInputOption(answer[_langCode]!, _actionFromAnswer(answer), _isAnswerCorrect(answer)));
+            inputOptions.add(UserInputOption(
+              answer[_langCode]!,
+              _actionFromAnswer(answer),
+              _isAnswerCorrect(answer),
+              story.id,
+            ));
           }
 
           // We have some options for the user, exit the loop.

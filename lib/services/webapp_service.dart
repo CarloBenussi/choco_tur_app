@@ -31,18 +31,18 @@ class WebappService {
   static const String resetPasswordTestEndpoint = "/users/resetPasswordTest";
   static const String changePasswordEndpoint = "/users/changePassword";
 
-  static const String userToursEndpoint = "/tours/userTours";
-  static const String activateUserTourEndpoint = "/tours/activateUserTour";
-  static const String deactivateUserTourEndpoint = "/tours/deactivateUserTour";
-  static const String advanceUserTourEndpoint = "/tours/advanceUserTour";
-  static const String revertUserTourEndpoint = "/tours/revertUserTour";
+  static const String userToursEndpoint = "/tours/user/tours";
+  static const String activateUserTourEndpoint = "/tours/user/activateTour";
+  static const String deactivateUserTourEndpoint = "/tours/user/deactivateTour";
+  static const String advanceUserTourEndpoint = "/tours/user/advanceTour";
+  static const String revertUserTourEndpoint = "/tours/user/revertTour";
   static const String toursEndpoint = "/tours/tours";
   static const String tourStopsEndpoint = "/tours/tourStops";
   static const String tourStopStoriesEndpoint = "/tours/tourStopStories";
 
   static const String welcomeQuizEndpoint = "/quiz/welcome";
-  static const String userQuizsEndpoint = "/quiz/userQuizs";
-  static const String updateQuizScoreEndpoint = "/quiz/updateQuizScore";
+  static const String userQuizsEndpoint = "/quiz/user/quizs";
+  static const String updateQuizScoreEndpoint = "/quiz/user/updateQuizScore";
 
   static const String tastingEndpoint = "/tastings/tasting";
   static const String tastingReviewEndpoint = "/tastings/review";
@@ -50,6 +50,9 @@ class WebappService {
   static const String getCollectedCoinsEndpoint = "/users/info/getCoins";
   static const String addCollectedCoinsEndpoint = "/users/info/addCoins";
   static const String removeCollectedCoinsEndpoint = "/users/info/removeCoins";
+
+  static const String getUserAnswersEndpoint = "/users/info/getAnswers";
+  static const String recordUserAnswerEndpoint = "/users/info/recordAnswer";
 
   static List<int> tokenExpiredStatusCodes = [401, 403];
 
@@ -402,6 +405,7 @@ class WebappService {
       return true;
     } else {
       LoggerInstance.logger.e('Got error response for user tour activation: ${response.statusCode}, $body');
+
       return false;
     }
   }
@@ -811,6 +815,56 @@ class WebappService {
       return true;
     } else {
       LoggerInstance.logger.e('Got error response for coins collection update: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
+  static Future<List<ChocoTurUserAnswer>?> getUserAnswers(String? accessToken) async {
+    Uri uri = _buildUri(getUserAnswersEndpoint);
+    HttpClientRequest request = await _client!.getUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    HttpClientResponse response = await request.close();
+    String body = await response.transform(utf8.decoder).join();
+
+    if (response.statusCode == 200) {
+      List<dynamic> userAnswerMaps = jsonDecode(body);
+      List<ChocoTurUserAnswer> userAnswers = [];
+      for (var userAnswerMap in userAnswerMaps) {
+        userAnswers.add(ChocoTurUserAnswer.fromMap(userAnswerMap));
+      }
+      return userAnswers;
+    } else {
+      LoggerInstance.logger.e('Got error response for getting user answers: ${response.statusCode}, $body');
+      return null;
+    }
+  }
+
+  static Future<bool> recordUserAnswer(BuildContext context, String? accessToken, String answerId) async {
+    Uri uri = _buildUri(recordUserAnswerEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
+    String body = answerId;
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to record user answer, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      LoggerInstance.logger.d("Record user answer successful");
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user answer update: ${response.statusCode}, $body');
       return false;
     }
   }

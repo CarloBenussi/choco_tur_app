@@ -359,12 +359,12 @@ class _MapPageState extends State<MapPage> {
                       child: FloatingActionButton(
                         onPressed: () async {
                           if ((_activeTourStops != null) && (_nextStopIndex != null)) {
-                            ChocoTurUserTour? activeUserTour =
-                                Provider.of<ChocoTurUser>(context, listen: false).activeTour;
-                            ChocoTurStop stop = _activeTourStops!.elementAt(
-                                _activeTourStops!.indexWhere((element) => (element.id == activeUserTour!.nextStopId)));
-                            Navigator.popAndPushNamed(context, RouteNames.tourStopStoryChat, arguments: stop);
-                            //_onTap(context, _activeTourStops![_nextStopIndex!], widget.closeZoom);
+                            // ChocoTurUserTour? activeUserTour =
+                            //     Provider.of<ChocoTurUser>(context, listen: false).activeTour;
+                            // ChocoTurStop stop = _activeTourStops!.elementAt(
+                            //     _activeTourStops!.indexWhere((element) => (element.id == activeUserTour!.nextStopId)));
+                            // Navigator.popAndPushNamed(context, RouteNames.tourStopStoryChat, arguments: stop);
+                            _onTap(context, _activeTourStops![_nextStopIndex!], widget.closeZoom);
                           } else {
                             showChocoTurDialog(
                               context: context,

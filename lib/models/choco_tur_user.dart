@@ -198,7 +198,7 @@ class ChocoTurUser extends ChangeNotifier {
       }
     }
 
-    // We logged in, hence we can download user tours, quizzes and coins.
+    // We logged in, hence we can download user tours and quizzes.
     userTours = await WebappService.getUserTours(loginAccessToken);
     userQuizs = await WebappService.getUserQuizs(loginAccessToken);
     notifyListeners();
@@ -433,5 +433,21 @@ class ChocoTurUserQuiz {
     id = map['id'];
     progress = map['progress'];
     score = map['score'];
+  }
+}
+
+class ChocoTurUserAnswer {
+  ChocoTurUserAnswer();
+
+  late final String id;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+    };
+  }
+
+  ChocoTurUserAnswer.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
   }
 }

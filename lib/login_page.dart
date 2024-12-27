@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (loginSuccess && mounted) {
         LoggerInstance.logger.i('Successfully logged in');
-        Navigator.pop(context);
+        Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, RouteNames.home);
       }
     }
   }
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
       LoggerInstance.logger.i("Successfully logged in with Google.");
 
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, RouteNames.home);
       }
     } catch (e) {
       LoggerInstance.logger.e(e.toString());
@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
       LoggerInstance.logger.i("Successfully logged in with Facebook.");
 
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, RouteNames.home);
       }
     } catch (e) {
       LoggerInstance.logger.e(e.toString());

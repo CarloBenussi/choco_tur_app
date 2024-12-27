@@ -146,6 +146,7 @@ class _PasswordRecoveryProcessPageState extends State<PasswordRecoveryProcessPag
                             );
                           } else if (_currentPageIndex == 1) {
                             return TextField(
+                              controller: _controller,
                               decoration:
                                   InputDecoration(labelText: AppLocalizations.of(context)!.confirmPasswordChangeCode),
                               style: const TextStyle(
@@ -184,7 +185,7 @@ class _PasswordRecoveryProcessPageState extends State<PasswordRecoveryProcessPag
                                 ),
                                 const Padding(
                                   padding: EdgeInsets.only(top: 30),
-                                  child: LoginButton(),
+                                  child: LoginButton(clearNavigator: true),
                                 )
                               ],
                             );

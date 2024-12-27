@@ -7,6 +7,7 @@ import 'package:animations/animations.dart';
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/models/choco_tur_user_answers.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
@@ -37,14 +38,7 @@ class _QuizPageState extends State<QuizPage> {
 
   String? _langCode;
 
-  void _giveAnswer(BuildContext context, int answerIndex) async {
-    if (_givenAnswerIndex != null) return;
-
-    bool correct = (answerIndex == widget.quiz.questions[_currentPageIndex - 1].correctAnswerIndex);
-
-    setState(() {
-      _processing = true;
-    });
+  Future<void> _recordQuizAnswer(BuildContext context, String questionId, bool correct) async {
     bool updateQuizScoreSuccess = await WebappService.updateQuizScore(
         context,
         Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken,
@@ -54,9 +48,30 @@ class _QuizPageState extends State<QuizPage> {
     if (!updateQuizScoreSuccess) {
       LoggerInstance.logger.e('Failed to update quiz score for question at index ${_currentPageIndex - 1}');
     }
+
+    if (Provider.of<ChocoTurUserAnswers>(listen: false, context).containsAnswer(questionId)) {
+      LoggerInstance.logger.i('Answer with ID $questionId is already registered for user');
+      return;
+    }
+
+    await Provider.of<ChocoTurUserAnswers>(listen: false, context).recordAnswer(context, questionId);
     if (correct) {
       await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
     }
+  }
+
+  void _giveAnswer(BuildContext context, int answerIndex) async {
+    if (_givenAnswerIndex != null) return;
+
+    String questionId = widget.quiz.questions[_currentPageIndex - 1].id;
+    bool correct = (answerIndex == widget.quiz.questions[_currentPageIndex - 1].correctAnswerIndex);
+
+    setState(() {
+      _processing = true;
+    });
+
+    await _recordQuizAnswer(context, questionId, correct);
+
     setState(() {
       _processing = false;
     });
@@ -289,7 +304,15 @@ class _QuizPageState extends State<QuizPage> {
                           );
                         } else if (_currentPageIndex == widget.quiz.questions.length + 1) {
                           return Center(
-                              child: Text("TODO: Page showing the score and giving discount or additional tasting."));
+                            child: Text(
+                              AppLocalizations.of(context)!.quizScoreNotEnough,
+                              style: TextStyle(
+                                color: Styles.redShade,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 25,
+                              ),
+                            ),
+                          );
                           // TODO: Page showing the score and giving discount or additional tasting.
                         } else {
                           LoggerInstance.logger.e("Unsupported page index $_currentPageIndex");
@@ -312,11 +335,7 @@ class _QuizPageState extends State<QuizPage> {
                           color: Styles.onRedShade,
                         ),
                         label: Text(
-                          (_currentPageIndex == 0)
-                              ? AppLocalizations.of(context)!.nextButton
-                              : (_givenAnswerIndex == null)
-                                  ? AppLocalizations.of(context)!.skipButton
-                                  : AppLocalizations.of(context)!.nextButton,
+                          AppLocalizations.of(context)!.nextButton,
                           style: const TextStyle(color: Styles.onRedShade),
                           overflow: TextOverflow.ellipsis,
                         ),

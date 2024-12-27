@@ -24,7 +24,7 @@ class _GianduiottoCollectorState extends State<GianduiottoCollector> {
   }
 
   void onPressed(BuildContext context) {
-    Navigator.pushNamed(context, RouteNames.myTours);
+    Navigator.pushNamed(context, RouteNames.myTours, arguments: 1);
   }
 
   @override

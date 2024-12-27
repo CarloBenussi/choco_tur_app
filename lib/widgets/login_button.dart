@@ -4,7 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginButton extends StatelessWidget {
-  const LoginButton({super.key});
+  const LoginButton({super.key, this.clearNavigator = false});
+
+  final bool clearNavigator;
+
+  void _onPressed(BuildContext context) {
+    if (clearNavigator) {
+      Navigator.pushNamedAndRemoveUntil(context, RouteNames.login, (Route<dynamic> route) => false);
+    } else {
+      Navigator.pushNamed(context, RouteNames.login);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +22,7 @@ class LoginButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Styles.redShade,
       ),
-      onPressed: () => {Navigator.pushNamed(context, RouteNames.login)},
+      onPressed: () => _onPressed(context),
       icon: const Icon(
         Icons.login_rounded,
         color: Styles.onRedShade,
