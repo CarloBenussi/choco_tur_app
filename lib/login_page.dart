@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:ui';
 
 import 'package:choco_tur/models/choco_tur_user.dart';
@@ -63,26 +65,28 @@ class _LoginPageState extends State<LoginPage> {
     try {
       GoogleSignInAccount? account = await GoogleLoginService.signInWithGoogle();
       if (account == null) {
-        throw Exception("Failed to log in with Google.");
+        LoggerInstance.logger.e("Failed to log in with Google.");
+        return;
       }
 
       GoogleSignInAuthentication authentication = await account.authentication;
 
-      // TODO: send token to spring app for validation and user registration, and save
-      // JWT token into Bearer header.
-
-      // ignore: use_build_context_synchronously
-      Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
+      setState(() {
+        _loggingIn = true;
+      });
+      bool loginSuccess = await WebappService.signInWithExternalProvider(
+        context,
         account.email,
-        authentication.accessToken,
-        null,
-        LoginType.withGoogle,
-        true,
+        authentication.idToken!,
+        1,
+        _isRememberMeChecked,
       );
+      setState(() {
+        _loggingIn = false;
+      });
 
-      LoggerInstance.logger.i("Successfully logged in with Google.");
-
-      if (mounted) {
+      if (loginSuccess && mounted) {
+        LoggerInstance.logger.i("Successfully logged in with Google.");
         Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, RouteNames.home);
       }
     } catch (e) {

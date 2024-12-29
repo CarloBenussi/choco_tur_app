@@ -187,7 +187,7 @@ class _MyTourPageState extends State<MyTourPage> {
               painter: MyToursBackgroundPainter(),
               child: Consumer<ChocoTurUser>(
                 builder: (context, user, child) {
-                  if ((_userTours != null) && (_userTours!.isNotEmpty)) {
+                  if (Provider.of<ChocoTurUser>(context, listen: false).loggedIn) {
                     return Column(
                       children: [
                         Flexible(
@@ -269,10 +269,8 @@ class _MyTourPageState extends State<MyTourPage> {
                           ),
                       ],
                     );
-                  } else if (!Provider.of<ChocoTurUser>(context, listen: false).loggedIn) {
-                    return const Center(child: LoginButton());
                   } else {
-                    return Center(child: Text(AppLocalizations.of(context)!.noUserTourFound));
+                    return const Center(child: LoginButton());
                   }
                 },
               ),

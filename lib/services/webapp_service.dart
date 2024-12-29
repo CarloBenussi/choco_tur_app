@@ -25,6 +25,7 @@ class WebappService {
   static const String confirmEmailEndpoint = "/users/registrationConfirmation";
   static const String resendEmailVerificationNumberEndpoint = "/users/resendEmailVerificationNumber";
   static const String loginEndpoint = "/users/login";
+  static const String signInWithExternalProviderEndpoint = "/users/signInWithExtProvider";
   static const String loginWithTokenEndpoint = "/users/loginWithToken";
   static const String refreshTokenEndpoint = "/users/refreshToken";
   static const String resetPasswordEndpoint = "/users/resetPassword";
@@ -198,6 +199,41 @@ class WebappService {
       returnBody["accessToken"],
       returnBody["refreshToken"],
       LoginType.manual,
+      rememberUser,
+    );
+
+    return true;
+  }
+
+  static Future<bool> signInWithExternalProvider(
+      BuildContext context, String email, String idToken, int providerId, bool rememberUser) async {
+    Uri uri = _buildUri(signInWithExternalProviderEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Content-Type', 'application/json');
+    String body = jsonEncode({'email': email, 'token': idToken, "providerId": providerId});
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (response.statusCode != 200) {
+      String reason = await response.transform(utf8.decoder).join();
+      LoggerInstance.logger.e('Got error response for sign in with external provider: ${response.statusCode}, $reason');
+
+      showChocoTurDialog(
+        context: context,
+        title: AppLocalizations.of(context)!.loginFailed,
+        description: reason,
+        dismissable: true,
+      );
+
+      return false;
+    }
+
+    Map<String, dynamic> returnBody = jsonDecode(await response.transform(utf8.decoder).join());
+    Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
+      email,
+      returnBody["accessToken"],
+      returnBody["refreshToken"],
+      LoginType.withGoogle,
       rememberUser,
     );
 

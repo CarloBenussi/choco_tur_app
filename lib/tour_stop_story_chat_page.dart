@@ -333,18 +333,21 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
               spacing: 10.0,
               children: [
                 for (var i = 0; i < _inputOptions.length; ++i) ...[
-                  ElevatedButton.icon(
-                    onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Styles.pinkShade,
-                      minimumSize: Size.zero,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 5.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _onInputOptionPressed(context, i, _inputOptions[i]),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Styles.pinkShade,
+                        minimumSize: Size.zero,
+                      ),
+                      label: Text(
+                        _inputOptions[i].option,
+                        style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 15, color: Colors.white),
+                        overflow: TextOverflow.visible,
+                      ),
+                      icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
                     ),
-                    label: Text(
-                      _inputOptions[i].option,
-                      style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 18, color: Colors.white),
-                      overflow: TextOverflow.visible,
-                    ),
-                    icon: Icon(_getIconForInputOption(_inputOptions[i]), color: Colors.white),
                   ),
                 ]
               ],
