@@ -109,8 +109,12 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       Navigator.pushReplacementNamed(context, RouteNames.home);
     } else {
       await Provider.of<ChocoTurUser>(listen: false, context).advanceTour(context, activeUserTour, skipOptions);
-      IntroDialogType introDialogType =
-          (widget.tastingId != null) ? IntroDialogType.askForTastingReview : IntroDialogType.goToNextStop;
+      // Select the intro window depending on tasting present or pause.
+      IntroDialogType introDialogType = (widget.tastingId != null)
+          ? IntroDialogType.askForTastingReview
+          : (action == ChocoTurStoryAnswerAction.finishWithPause)
+              ? IntroDialogType.goToNextStopAfterPause
+              : IntroDialogType.goToNextStop;
       IntroDialog introDialog = IntroDialog(introDialogType, widget.tastingId);
       Navigator.pushReplacementNamed(context, RouteNames.map, arguments: introDialog);
     }
@@ -261,6 +265,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
       firstName: AppLocalizations.of(context)!.you,
     );
 
+    _inputOptions = [];
     if (widget.audioId != null) {
       _messages.add(chat_types.TextMessage(
         author: _bot,
@@ -269,7 +274,6 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         text: AppLocalizations.of(context)!.chatWelcomeMessageOptions,
       ));
 
-      _inputOptions = [];
       _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
       _inputOptions
           .add(UserInputOption(AppLocalizations.of(context)!.chatOptionAudio, ChocoTurStoryAnswerAction.audio));
@@ -282,10 +286,10 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
         text: AppLocalizations.of(context)!.chatWelcomeMessageChat,
       ));
 
-      _inputOptions = [];
       _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionChat));
       _inputOptions.add(UserInputOption(AppLocalizations.of(context)!.chatOptionSkip, ChocoTurStoryAnswerAction.skip));
     }
+    // Add skip all input options
 
     setState(() {});
   }

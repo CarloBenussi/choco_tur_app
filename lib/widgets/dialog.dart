@@ -1,8 +1,9 @@
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChocoTurAlertDialog extends StatelessWidget {
-  const ChocoTurAlertDialog({
+  ChocoTurAlertDialog({
     super.key,
     required this.title,
     required this.content,
@@ -13,10 +14,18 @@ class ChocoTurAlertDialog extends StatelessWidget {
   final String title;
   final String content;
   final Icon? icon;
-  final List<Widget>? actions;
+  List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
+    actions ??= [
+      TextButton(
+          onPressed: () => {Navigator.pop(context)},
+          child: Text(
+            AppLocalizations.of(context)!.dismiss,
+            style: const TextStyle(color: Styles.onRedShade),
+          ))
+    ];
     return AlertDialog(
       backgroundColor: Styles.redShade,
       icon: (icon != null) ? icon : const Icon(Icons.warning_rounded),

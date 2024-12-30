@@ -1,4 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/services/app_review_service.dart';
 import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/services/google_login_service.dart';
@@ -304,6 +305,7 @@ class ChocoTurUser extends ChangeNotifier {
         LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
 
         // ignore: use_build_context_synchronously
+        await AppReviewService.review();
         return deactivateTour(context, activeTour!);
       }
 

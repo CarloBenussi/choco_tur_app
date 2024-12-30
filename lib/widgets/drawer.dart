@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:choco_tur/models/choco_tur_user.dart';
+import 'package:choco_tur/services/app_review_service.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/dialog.dart';
@@ -115,9 +116,20 @@ class _ChocoTurDrawerState extends State<ChocoTurDrawer> {
                 color: Styles.onRedShade,
               ),
               title: Text(
-                AppLocalizations.of(context)!.guideAndFeedbackButton,
+                AppLocalizations.of(context)!.guideButton,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.feedback_outlined,
+                color: Styles.onRedShade,
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.feedbackButton,
+                style: const TextStyle(color: Styles.onRedShade),
+              ),
+              onTap: () => {AppReviewService.review()},
             ),
             ListTile(
                 leading: const Icon(

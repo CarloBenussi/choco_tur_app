@@ -59,6 +59,7 @@ dependencies:
   google_sign_in: ^6.2.1
   google_sign_in_ios: ^5.7.3
   http: ^1.2.0
+  in_app_review: ^2.0.10
   intl: any
   just_audio: ^0.9.36
   loading_animation_widget: ^1.2.0+4

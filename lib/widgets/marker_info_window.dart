@@ -15,7 +15,7 @@ class MarkerInfoWindow extends StatelessWidget {
   });
 
   final ChocoTurStop stop;
-  final Function(LatLng destination) getDirectionsToStop;
+  final Function(LatLng destination, bool popDialog) getDirectionsToStop;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class MarkerInfoWindow extends StatelessWidget {
             padding: const EdgeInsets.only(top: 10.0),
             child: ElevatedButton.icon(
               onPressed: () {
-                getDirectionsToStop(stop.coordinates);
+                getDirectionsToStop(stop.coordinates, true);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Styles.redShade,

@@ -16,6 +16,7 @@ import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_with_button.dart';
 import 'package:choco_tur/widgets/user_text_input.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -63,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void loginWithGoogle(BuildContext context) async {
     try {
-      GoogleSignInAccount? account = await GoogleLoginService.signInWithGoogle();
+      GoogleSignInAccount? account = await GoogleLoginService.signInWithGoogle(context);
       if (account == null) {
         LoggerInstance.logger.e("Failed to log in with Google.");
         return;
@@ -89,13 +90,13 @@ class _LoginPageState extends State<LoginPage> {
         LoggerInstance.logger.i("Successfully logged in with Google.");
         Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, RouteNames.home);
       }
-    } catch (e) {
+    } on PlatformException catch (e) {
       LoggerInstance.logger.e(e.toString());
-      // ignore: use_build_context_synchronously
       return showChocoTurDialog(
         context: context,
         title: AppLocalizations.of(context)!.loginFailedTitle,
-        description: '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}',
+        description:
+            '${AppLocalizations.of(context)!.loginWithGoogleFailed}\n\n${e.toString()}\nMessage: ${e.message}\nDetails: ${e.details}',
         dismissable: true,
       );
     }

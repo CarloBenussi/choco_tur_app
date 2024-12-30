@@ -102,6 +102,15 @@ class _MapPageState extends State<MapPage> {
     controller.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
 
+  void _moveCameraToUserLocation() async {
+    Coordinates.getUserPosition().then((value) async {
+      LatLng latLngValue = LatLng(value.latitude, value.longitude);
+      _moveCameraToCoordinates(latLngValue, widget.closeZoom);
+    }).onError((error, stackTrace) async {
+      LoggerInstance.logger.e("Error getting user position.");
+    });
+  }
+
   Future<Uint8List> _getMarkerBytes(String path, int width) async {
     Uint8List markerBytes = await FirebaseService.downloadImage(path);
     ui.Codec codec = await ui.instantiateImageCodec(markerBytes, targetWidth: width);
@@ -153,7 +162,11 @@ class _MapPageState extends State<MapPage> {
     return markers;
   }
 
-  Future<void> _drawPolyline(LatLng destination) async {
+  Future<void> _drawPolyline(LatLng destination, bool popDialog) async {
+    if (popDialog) {
+      Navigator.pop(context);
+    }
+
     Position userPosition = await Coordinates.getUserPosition();
 
     PolylinePoints polylinePoints = PolylinePoints();
@@ -172,6 +185,8 @@ class _MapPageState extends State<MapPage> {
       width: 3,
     ));
     setState(() {});
+
+    _moveCameraToUserLocation();
   }
 
   @override
@@ -390,14 +405,7 @@ class _MapPageState extends State<MapPage> {
             },
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              Coordinates.getUserPosition().then((value) async {
-                LatLng latLngValue = LatLng(value.latitude, value.longitude);
-                _moveCameraToCoordinates(latLngValue, widget.closeZoom);
-              }).onError((error, stackTrace) async {
-                LoggerInstance.logger.e("Error getting user position.");
-              });
-            },
+            onPressed: _moveCameraToUserLocation,
             heroTag: "UserPositionButton",
             backgroundColor: Styles.redShade,
             child: const Icon(
