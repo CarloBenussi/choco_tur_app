@@ -10,12 +10,16 @@ class ChocoTurNavigationBar extends StatelessWidget {
   static final Map<int, String> indexToRouteNames = {
     0: RouteNames.home,
     1: RouteNames.map,
-    2: RouteNames.myTours,
+    2: RouteNames.myChocoTur,
   };
   final int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
+    // Reassign global keys on every rebuild: they need to be unique.
+    GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_HOME_BUTTON_KEY] = GlobalKey();
+    GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_MAP_BUTTON_KEY] = GlobalKey();
+    GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_MYCHOCOTUR_BUTTON_KEY] = GlobalKey();
     return NavigationBarTheme(
       data: const NavigationBarThemeData(
         labelTextStyle: MaterialStatePropertyAll(TextStyle(color: Styles.onRedShade)),
@@ -25,7 +29,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
           indicatorColor: Styles.onRedShade,
           destinations: <Widget>[
             NavigationDestination(
-              key: GlobalKeys.navigatorHomeButtonKey,
+              key: GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_HOME_BUTTON_KEY],
               selectedIcon: Icon(
                 Icons.home_rounded,
                 color: Styles.redShade,
@@ -37,7 +41,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               label: AppLocalizations.of(context)!.homeButton,
             ),
             NavigationDestination(
-              key: GlobalKeys.navigatorMapButtonKey,
+              key: GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_MAP_BUTTON_KEY],
               selectedIcon: Icon(
                 Icons.map_rounded,
                 color: Styles.redShade,
@@ -49,7 +53,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               label: AppLocalizations.of(context)!.mapButton,
             ),
             NavigationDestination(
-              key: GlobalKeys.navigatorMyChocoTurButtonKey,
+              key: GlobalKeys.globalKeysMap[GlobalKeys.NAVIGATOR_MYCHOCOTUR_BUTTON_KEY],
               selectedIcon: Icon(
                 Icons.person_2_rounded,
                 color: Styles.redShade,

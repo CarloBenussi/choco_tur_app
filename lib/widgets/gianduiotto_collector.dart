@@ -1,5 +1,6 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/utils/global_keys.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter/material.dart';
@@ -23,12 +24,14 @@ class _GianduiottoCollectorState extends State<GianduiottoCollector> {
   }
 
   void onPressed(BuildContext context) {
-    Navigator.pushNamed(context, RouteNames.myTours, arguments: 1);
+    Navigator.pushNamed(context, RouteNames.myChocoTur, arguments: 1);
   }
 
   @override
   Widget build(BuildContext context) {
+    GlobalKeys.globalKeysMap[GlobalKeys.APP_BAR_TOKENS_KEY] = GlobalKey();
     return badges.Badge(
+      key: GlobalKeys.globalKeysMap[GlobalKeys.APP_BAR_TOKENS_KEY],
       position: badges.BadgePosition.bottomEnd(bottom: -8, end: 10),
       badgeContent: Text(
         (_collectedCoins != null) ? _collectedCoins.toString() : "?",

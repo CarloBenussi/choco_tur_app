@@ -3,7 +3,7 @@ class RouteNames {
   static const String login = "/login";
   static const String tourInfo = "/tour_info";
   static const String home = "/home";
-  static const String myTours = "/my_tours";
+  static const String myChocoTur = "/my_choco_tur";
   static const String tourPlay = "/tour_play";
   static const String tourStopStoryChat = "/tour_stop_story_chat";
   static const String map = "/map";

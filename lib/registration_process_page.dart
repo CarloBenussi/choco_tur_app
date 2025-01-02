@@ -77,7 +77,7 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
     if (text.length == 6) {
       bool confirmSuccess = await WebappService.confirmEmail(context, _collectedEmail, text);
       if (confirmSuccess && mounted) {
-        Navigator.pushReplacementNamed(context, RouteNames.home);
+        Navigator.pushReplacementNamed(context, RouteNames.home, arguments: true);
       }
     }
   }

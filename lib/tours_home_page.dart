@@ -1,6 +1,8 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/services/tutorial_coach_mark_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/coordinates.dart';
+import 'package:choco_tur/utils/global_keys.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/app_bar.dart';
 import 'package:choco_tur/widgets/drawer.dart';
@@ -54,11 +56,23 @@ class HomePageState extends State<ToursHomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    bool? showTutorial = ModalRoute.of(context)!.settings.arguments as bool?;
+    if ((showTutorial != null) && showTutorial) {
+      TutorialCoachMarkService.show(context);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    GlobalKeys.globalKeysMap[GlobalKeys.HOME_TOURS_TITLE_KEY] = GlobalKey();
+    GlobalKeys.globalKeysMap[GlobalKeys.APP_BAR_DRAWER_KEY] = GlobalKey();
     return Scaffold(
       appBar: const ChocoTurAppBar(),
       backgroundColor: Colors.transparent,
-      drawer: const ChocoTurDrawer(),
+      drawer: Container(key: GlobalKeys.globalKeysMap[GlobalKeys.APP_BAR_DRAWER_KEY], child: const ChocoTurDrawer()),
       body: CustomPaint(
         painter: HomePageBackgroundPainter(),
         child: Column(
@@ -90,6 +104,7 @@ class HomePageState extends State<ToursHomePage> {
                 alignment: Alignment.topLeft,
                 child: Text(
                   AppLocalizations.of(context)!.toursTitle,
+                  key: GlobalKeys.globalKeysMap[GlobalKeys.HOME_TOURS_TITLE_KEY],
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 24,

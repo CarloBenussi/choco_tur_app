@@ -89,7 +89,7 @@ class ChocoTurApp extends StatelessWidget {
           RouteNames.tourInfo: (context) => TourInfoPage(),
           RouteNames.home: (context) => const ToursHomePage(),
           RouteNames.map: (context) => MapPage(),
-          RouteNames.myTours: (context) => MyChocoTurPage(
+          RouteNames.myChocoTur: (context) => MyChocoTurPage(
                 initialIndex: ModalRoute.of(context)!.settings.arguments as int?,
               ),
           RouteNames.tourPlay: (context) => TourStartPage(
