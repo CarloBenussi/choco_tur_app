@@ -305,7 +305,7 @@ class ChocoTurUser extends ChangeNotifier {
         LoggerInstance.logger.i('Tour ${userTour.id} is finished, removing from active tours for user.');
 
         // ignore: use_build_context_synchronously
-        await AppReviewService.review();
+        await AppReviewService.review(context);
         return deactivateTour(context, activeTour!);
       }
 

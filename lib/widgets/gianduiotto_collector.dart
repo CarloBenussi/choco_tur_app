@@ -1,5 +1,4 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';

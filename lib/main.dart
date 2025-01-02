@@ -3,7 +3,7 @@ import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user_answers.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
-import 'package:choco_tur/my_tours_page.dart';
+import 'package:choco_tur/my_chocotur_page.dart';
 import 'package:choco_tur/password_recovery_process_page.dart';
 import 'package:choco_tur/quiz_page.dart';
 import 'package:choco_tur/registration_process_page.dart';
@@ -18,9 +18,9 @@ import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/tour_info_page.dart';
 import 'package:choco_tur/utils/route_names.dart';
+import 'package:choco_tur/utils/timer.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +31,14 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  Future<void> splashTimer = startTimer(3);
   await SqliteCache.init();
   await WebappService.init();
   await FirebaseService.init();
   var chocoUser = await ChocoTurUser.init();
   var chocoUserCoins = await ChocoTurUserCoins.init(chocoUser);
   var chocoUserAnswers = await ChocoTurUserAnswers.init(chocoUser);
+  await splashTimer;
   FlutterNativeSplash.remove();
 
   runApp(MultiProvider(
@@ -87,7 +89,7 @@ class ChocoTurApp extends StatelessWidget {
           RouteNames.tourInfo: (context) => TourInfoPage(),
           RouteNames.home: (context) => const ToursHomePage(),
           RouteNames.map: (context) => MapPage(),
-          RouteNames.myTours: (context) => MyTourPage(
+          RouteNames.myTours: (context) => MyChocoTurPage(
                 initialIndex: ModalRoute.of(context)!.settings.arguments as int?,
               ),
           RouteNames.tourPlay: (context) => TourStartPage(

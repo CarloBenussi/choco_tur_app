@@ -1,3 +1,4 @@
+import 'package:choco_tur/utils/global_keys.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -24,6 +25,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
           indicatorColor: Styles.onRedShade,
           destinations: <Widget>[
             NavigationDestination(
+              key: GlobalKeys.navigatorHomeButtonKey,
               selectedIcon: Icon(
                 Icons.home_rounded,
                 color: Styles.redShade,
@@ -35,6 +37,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               label: AppLocalizations.of(context)!.homeButton,
             ),
             NavigationDestination(
+              key: GlobalKeys.navigatorMapButtonKey,
               selectedIcon: Icon(
                 Icons.map_rounded,
                 color: Styles.redShade,
@@ -46,6 +49,7 @@ class ChocoTurNavigationBar extends StatelessWidget {
               label: AppLocalizations.of(context)!.mapButton,
             ),
             NavigationDestination(
+              key: GlobalKeys.navigatorMyChocoTurButtonKey,
               selectedIcon: Icon(
                 Icons.person_2_rounded,
                 color: Styles.redShade,

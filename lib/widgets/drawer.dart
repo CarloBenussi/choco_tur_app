@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/app_review_service.dart';
+import 'package:choco_tur/services/tutorial_coach_mark_service.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/dialog.dart';
@@ -119,6 +120,7 @@ class _ChocoTurDrawerState extends State<ChocoTurDrawer> {
                 AppLocalizations.of(context)!.guideButton,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
+              onTap: () => {TutorialCoachMarkService.show(context)},
             ),
             ListTile(
               leading: const Icon(
@@ -129,7 +131,7 @@ class _ChocoTurDrawerState extends State<ChocoTurDrawer> {
                 AppLocalizations.of(context)!.feedbackButton,
                 style: const TextStyle(color: Styles.onRedShade),
               ),
-              onTap: () => {AppReviewService.review()},
+              onTap: () => {AppReviewService.review(context)},
             ),
             ListTile(
                 leading: const Icon(

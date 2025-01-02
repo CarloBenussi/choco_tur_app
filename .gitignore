@@ -2,6 +2,7 @@
 *.class
 *.log
 *.pyc
+*.python-version
 *.swp
 .DS_Store
 .atom/
@@ -46,9 +47,11 @@ app.*.map.json
 # Dart defines
 
 # Secrets
+/android/app.keystore
 /android/app/google-services.json
 /android/app/src/main/res/values/secrets.xml
 /android/app/src/main/res/values/strings.xml
 /ios/runner/Secret.swift
 /web/index.html
 flutterBuildApk.bat
+flutterBuildBundle.bat

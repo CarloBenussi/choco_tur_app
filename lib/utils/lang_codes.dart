@@ -1,5 +1,4 @@
 import 'package:choco_tur/utils/logger.dart';
-import 'package:flutter/cupertino.dart';
 
 class LanguageCodes {
   static const String EN = "en";

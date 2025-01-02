@@ -1,5 +1,4 @@
 import 'package:choco_tur/utils/logger.dart';
-import 'package:choco_tur/widgets/dialog.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
