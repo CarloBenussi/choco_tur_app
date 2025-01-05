@@ -1,3 +1,4 @@
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
@@ -49,17 +50,17 @@ class ChocoTurUserCoins extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeCollectedCoins(BuildContext context, int coins) async {
-    bool removeCollectedCoinsSuccess =
-        await WebappService.removeUserCollectedCoins(context, user.loginAccessToken, coins);
-    if (!removeCollectedCoinsSuccess) {
-      LoggerInstance.logger.e('Failed to remove $coins coins on webapp');
+  Future<void> purchaseOffer(BuildContext context, ChocoTurOffer offer) async {
+    bool purchaseOfferSuccess = await WebappService.purchaseOffer(context, user.loginAccessToken, offer.id);
+    if (!purchaseOfferSuccess) {
+      LoggerInstance.logger.e('Failed to purchase offer ${offer.id} on webapp');
+      return;
     }
 
     if (collectedCoins == null) {
       LoggerInstance.logger.e('Coins collected is null');
     } else {
-      collectedCoins = collectedCoins! - coins;
+      collectedCoins = collectedCoins! - offer.tokensCost;
     }
     notifyListeners();
   }

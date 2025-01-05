@@ -1,12 +1,18 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:ui';
 
+import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/models/choco_tur_user_purchases.dart';
+import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_button.dart';
 import 'package:choco_tur/widgets/my_tours_background_painter.dart';
-import 'package:choco_tur/widgets/prize_list_tile.dart';
+import 'package:choco_tur/widgets/offer_tile.dart';
+import 'package:choco_tur/widgets/user_purchase_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -20,6 +26,56 @@ class MyWalletUi extends StatefulWidget {
 
 class _MyWalletUiState extends State<MyWalletUi> {
   bool _processing = false;
+  List<ChocoTurOffer>? _offers;
+  List<ChocoTurUserPurchaseInfo>? _userPurchases;
+
+  Future<void> _onRefresh(BuildContext context) async {
+    // TODO: Clear cache?.
+    _offers = null;
+    await _getOrReturnOffers(context, fromCache: false);
+    await _getOrReturnUserPurchases(context, refresh: true);
+
+    setState(() {});
+  }
+
+  Future<void> _onOfferPurchased(BuildContext context, ChocoTurOffer offer) async {
+    setState(() {
+      _processing = true;
+    });
+
+    // TODO: Send web request for purchase, refresh
+
+    setState(() {
+      _processing = false;
+    });
+  }
+
+  Future<void> _onUserPurchaseRedeemed(BuildContext context, ChocoTurUserPurchaseInfo userPurchase) async {
+    setState(() {
+      _processing = true;
+    });
+
+    // TODO: Code and stuff, refresh
+
+    setState(() {
+      _processing = false;
+    });
+  }
+
+  Future<List<ChocoTurOffer>> _getOrReturnOffers(BuildContext context, {bool fromCache = true}) async {
+    _offers ??= await WebappService.getOffers(context, tryFromCache: fromCache);
+
+    return _offers!;
+  }
+
+  Future<List<ChocoTurUserPurchaseInfo>> _getOrReturnUserPurchases(BuildContext context, {bool refresh = false}) async {
+    if (refresh) {
+      await Provider.of<ChocoTurUserPurchases>(context, listen: false).refresh();
+    }
+    _userPurchases ??= Provider.of<ChocoTurUserPurchases>(context, listen: false).userPurchases;
+
+    return _userPurchases!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,29 +121,66 @@ class _MyWalletUiState extends State<MyWalletUi> {
                       Padding(
                         padding: const EdgeInsets.only(top: 20),
                         child: Text(
-                          AppLocalizations.of(context)!.prizes,
+                          AppLocalizations.of(context)!.availableOffers,
                           textAlign: TextAlign.center,
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Styles.redShade),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
-                        child: PrizeListTile(
-                          cost: 5,
-                          title: "10% discount",
-                          info:
-                              "You have 10% discount on one purchase redeemable at the following shops: Guido Castagna",
-                          onPressed: (context) => {},
+                        child: FutureBuilder(
+                          future: _getOrReturnOffers(context),
+                          builder: (context, offersSnapshot) {
+                            if (offersSnapshot.hasData &&
+                                offersSnapshot.connectionState == ConnectionState.done &&
+                                offersSnapshot.data != null) {
+                              return RefreshIndicator(
+                                onRefresh: () => _onRefresh(context),
+                                child: ListView.builder(
+                                    itemCount: offersSnapshot.data!.length,
+                                    scrollDirection: Axis.vertical,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      return OfferTile(
+                                          offer: offersSnapshot.data![index], onPurchase: _onOfferPurchased);
+                                    }),
+                              );
+                            } else {
+                              return const Center(child: LoadingAnimation());
+                            }
+                          },
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 5.0),
-                        child: PrizeListTile(
-                          cost: 20,
-                          title: "Chocolate tasting",
-                          info:
-                              "You can use this prize to get a special chocolate tasting at the following shops: Gobino",
-                          onPressed: (context) => {},
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Text(
+                          AppLocalizations.of(context)!.purchasedOffers,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Styles.redShade),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: FutureBuilder(
+                          future: _getOrReturnUserPurchases(context),
+                          builder: (context, userPurchasesSnapshot) {
+                            if (userPurchasesSnapshot.hasData &&
+                                userPurchasesSnapshot.connectionState == ConnectionState.done &&
+                                userPurchasesSnapshot.data != null) {
+                              return RefreshIndicator(
+                                onRefresh: () => _onRefresh(context),
+                                child: ListView.builder(
+                                    itemCount: userPurchasesSnapshot.data!.length,
+                                    scrollDirection: Axis.vertical,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      return UserPurchaseTile(
+                                          userPurchase: userPurchasesSnapshot.data![index],
+                                          onRedeem: _onUserPurchaseRedeemed);
+                                    }),
+                              );
+                            } else {
+                              return const Center(child: LoadingAnimation());
+                            }
+                          },
                         ),
                       ),
                     ],

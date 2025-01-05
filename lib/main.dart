@@ -3,6 +3,7 @@ import 'package:choco_tur/language_selection_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user_answers.dart';
 import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/models/choco_tur_user_purchases.dart';
 import 'package:choco_tur/my_chocotur_page.dart';
 import 'package:choco_tur/password_recovery_process_page.dart';
 import 'package:choco_tur/quiz_page.dart';
@@ -17,6 +18,7 @@ import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/sqlite_cache.dart';
 import 'package:choco_tur/tour_info_page.dart';
+import 'package:choco_tur/utils/global_keys.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/timer.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -38,6 +40,7 @@ void main() async {
   var chocoUser = await ChocoTurUser.init();
   var chocoUserCoins = await ChocoTurUserCoins.init(chocoUser);
   var chocoUserAnswers = await ChocoTurUserAnswers.init(chocoUser);
+  var chocoUserPurchases = await ChocoTurUserPurchases.init(chocoUser);
   await splashTimer;
   FlutterNativeSplash.remove();
 
@@ -51,6 +54,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (_) => chocoUserAnswers,
+      ),
+      ChangeNotifierProvider(
+        create: (_) => chocoUserPurchases,
       ),
     ],
     child: ChocoTurApp(user: chocoUser),

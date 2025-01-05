@@ -15,6 +15,7 @@ class ChocoTurTour {
   late final Duration avgDuration;
   late final Map<String, String> descriptions;
   late final List<String> stopIds;
+  late final List<String> tastingIds;
   late final List<ChocoTurTourStopInfo> stopInfos;
   late final List<ChocoTurTourTastingInfo> tastingInfos;
   late final String imageId;
@@ -50,13 +51,14 @@ class ChocoTurTour {
   }
 
   ChocoTurTour.fromMap(Map<String, dynamic> map) {
-    id = map['id'];
-    title = map['title'];
-    costEuros = map['costEuros'];
-    lengthKm = map['lengthKm'];
-    avgDuration = parseTime(map['avgDuration']);
-    descriptions = Map.from(map['descriptions']);
-    stopIds = List.from(map['stopIds']);
+    id = map['tour']['id'];
+    title = map['tour']['title'];
+    costEuros = map['tour']['costEuros'];
+    lengthKm = map['tour']['lengthKm'];
+    avgDuration = parseTime(map['tour']['avgDuration']);
+    descriptions = Map.from(map['tour']['descriptions']);
+    stopIds = List.from(map['tour']['stopIds']);
+    tastingIds = List.from(map['tour']['tastingIds']);
     List<dynamic> stopInfoMaps = List.from(map['stopInfos']);
     stopInfos = [];
     for (var i = 0; i < stopInfoMaps.length; ++i) {
@@ -67,7 +69,7 @@ class ChocoTurTour {
     for (var i = 0; i < tastingInfoMaps.length; ++i) {
       tastingInfos.add(ChocoTurTourTastingInfo.fromMap(Map.from(tastingInfoMaps[i])));
     }
-    imageId = map['imageId'];
+    imageId = map['tour']['imageId'];
   }
 
   ChocoTurTour.fromCacheMap(Map<String, dynamic> map) {
@@ -78,6 +80,7 @@ class ChocoTurTour {
     avgDuration = parseTime(map['avgDuration']);
     descriptions = Map.from(jsonDecode(map['descriptions']));
     stopIds = List.from(jsonDecode(map['stopIds']));
+    tastingIds = List.from(jsonDecode(map['tastingIds']));
     List<dynamic> stopInfoMaps = List.from(jsonDecode(map['stopInfos']));
     stopInfos = [];
     for (var i = 0; i < stopInfoMaps.length; ++i) {
@@ -108,6 +111,7 @@ class ChocoTurTour {
       'avgDuration': avgDuration.toString(),
       'descriptions': jsonEncode(descriptions),
       'stopIds': jsonEncode(stopIds),
+      'tastingIds': jsonEncode(tastingIds),
       'stopInfos': jsonEncode(stopInfoMaps),
       'tastingInfos': jsonEncode(tastingInfoMaps),
       'imageId': imageId,
@@ -411,5 +415,68 @@ class ChocoTurTasting {
     ingredients = Map.from(map['ingredients']);
     reviews = List.from(map['reviews']);
     imageId = map['imageId'];
+  }
+}
+
+enum ChocoTurOfferType { discount, tasting }
+
+class ChocoTurOffer {
+  ChocoTurOffer();
+
+  late final String id;
+  late final int type;
+  late final int tokensCost;
+  late final int duration;
+  late final Map<String, String> titles;
+  late final Map<String, String> descriptions;
+  late final Map<String, String> conditions;
+  late final List<String> businessIds;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type,
+      'tokensCost': tokensCost,
+      'duration': duration,
+      'titles': titles,
+      'descriptions': descriptions,
+      'conditions': conditions,
+      'businessIds': businessIds,
+    };
+  }
+
+  Map<String, dynamic> toCacheMap() {
+    return {
+      'id': id,
+      'type': type,
+      'tokensCost': tokensCost,
+      'duration': duration,
+      'titles': jsonEncode(titles),
+      'descriptions': jsonEncode(descriptions),
+      'conditions': jsonEncode(conditions),
+      'businessIds': jsonEncode(businessIds),
+    };
+  }
+
+  ChocoTurOffer.fromMap(Map<String, dynamic> map) {
+    id = map['id'];
+    type = map['type'];
+    tokensCost = map['tokensCost'];
+    duration = map['duration'];
+    titles = Map.from(map['titles']);
+    descriptions = Map.from(map['descriptions']);
+    conditions = Map.from(map['conditions']);
+    businessIds = List.from(map['businessIds']);
+  }
+
+  ChocoTurOffer.fromCacheMap(Map<String, dynamic> map) {
+    id = map['id'];
+    type = map['type'];
+    tokensCost = map['tokensCost'];
+    duration = map['duration'];
+    titles = Map.from(jsonDecode(map['titles']));
+    descriptions = Map.from(jsonDecode(map['descriptions']));
+    conditions = Map.from(jsonDecode(map['conditions']));
+    businessIds = List.from(jsonDecode(map['businessIds']));
   }
 }

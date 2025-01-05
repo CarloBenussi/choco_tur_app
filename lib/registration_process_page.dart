@@ -24,7 +24,7 @@ class RegistrationProcessPage extends StatefulWidget {
 }
 
 class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
-  final _formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
 
   int _currentPageIndex = 0;
@@ -77,7 +77,7 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
     if (text.length == 6) {
       bool confirmSuccess = await WebappService.confirmEmail(context, _collectedEmail, text);
       if (confirmSuccess && mounted) {
-        Navigator.pushReplacementNamed(context, RouteNames.home, arguments: true);
+        Navigator.pushReplacementNamed(context, RouteNames.home);
       }
     }
   }
@@ -155,6 +155,7 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
 
   @override
   Widget build(BuildContext context) {
+    _formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: PageTransitionSwitcher(
@@ -238,6 +239,11 @@ class _RegistrationProcessPageState extends State<RegistrationProcessPage> {
                               ),
                             );
                           } else {
+                            Timer(const Duration(seconds: 60), () {
+                              setState(() {
+                                _resendCodeAvailable = true;
+                              });
+                            });
                             return Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

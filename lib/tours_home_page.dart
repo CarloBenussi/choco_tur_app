@@ -1,4 +1,5 @@
 import 'package:choco_tur/models/choco_tur_tour.dart';
+import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/tutorial_coach_mark_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/coordinates.dart';
@@ -12,6 +13,7 @@ import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/navigation_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ToursHomePage extends StatefulWidget {
   const ToursHomePage({super.key});
@@ -59,10 +61,10 @@ class HomePageState extends State<ToursHomePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    bool? showTutorial = ModalRoute.of(context)!.settings.arguments as bool?;
-    if ((showTutorial != null) && showTutorial) {
-      TutorialCoachMarkService.show(context);
-    }
+    // if (!Provider.of<ChocoTurUser>(context, listen: false).hasSeenTutorial) {
+    //   TutorialCoachMarkService.show(context);
+    //   Provider.of<ChocoTurUser>(context, listen: false).setHasSeenTutorial();
+    // }
   }
 
   @override

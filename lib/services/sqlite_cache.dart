@@ -7,13 +7,16 @@ class SqliteCache {
   static const _toursTableName = "tours";
   static const _stopsTableName = "stops";
   static const _tastingsTableName = "tastings";
+  static const _offersTableName = "offers";
 
   static const String _toursTableSchema =
-      "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
+      "id TEXT PRIMARY KEY, title TEXT, costEuros REAL, lengthKm REAL, avgDuration TEXT, descriptions TEXT, stopIds TEXT, tastingIds TEXT, stopInfos TEXT, tastingInfos TEXT, imageId TEXT";
   static const String _stopsTableSchema =
       "id TEXT PRIMARY KEY, titles TEXT, descriptions TEXT, latitude REAL, longitude REAL, imageId TEXT, audioId TEXT, tastingId TEXT, optionalGroup INTEGER";
   static const String _tastingsTableSchema =
       "id INTEGER PRIMARY KEY, titles TEXT, descriptions TEXT, ingredients TEXT, reviews TEXT, imageId TEXT";
+  static const String _offersTableSchema =
+      "id TEXT PRIMARY KEY, type INTEGER, tokensCost INTEGER, duration INTEGER, titles TEXT, descriptions TEXT, conditions TEXT, businessIds TEXT";
 
   static Future<Database>? _db;
   static SqliteCache? _cache;
@@ -24,18 +27,7 @@ class SqliteCache {
       'choco_tur_cache.db',
     );
 
-    // MOCK DATA (not supported on web).
     bool exists = await databaseExists(path);
-    // if (!exists && !kIsWeb) {
-    //   // Copy from asset.
-    //   ByteData data = await rootBundle.load(url.join("assets/mock_db", "tour_saturday.db"));
-    //   List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-
-    //   // Write and flush the bytes written.
-    //   await File(path).writeAsBytes(bytes, flush: true);
-
-    //   exists = true;
-    // }
 
     _db = openDatabase(
       path,
@@ -49,6 +41,9 @@ class SqliteCache {
           );
           db.execute(
             'CREATE TABLE $_tastingsTableName($_tastingsTableSchema)',
+          );
+          db.execute(
+            'CREATE TABLE $_offersTableName($_offersTableSchema)',
           );
         }
       },
@@ -76,6 +71,7 @@ class SqliteCache {
         'avgDuration',
         'descriptions',
         'stopIds',
+        'tastingIds',
         'stopInfos',
         'tastingInfos',
         'imageId',
@@ -117,6 +113,7 @@ class SqliteCache {
         'avgDuration',
         'descriptions',
         'stopIds',
+        'tastingIds',
         'stopInfos',
         'tastingInfos',
         'imageId',
@@ -228,6 +225,45 @@ class SqliteCache {
       } else {
         LoggerInstance.logger.d('Stop ${tourStopMap["id"]} did not exist yet on cache, inserting it.');
         await database.insert(_stopsTableName, tourStopMap);
+      }
+    }
+  }
+
+  Future<List<ChocoTurOffer>?> getOffers() async {
+    final database = await _db!;
+
+    List<Map<String, dynamic>> offerMaps = await database.query(
+      _offersTableName,
+      columns: [
+        'id',
+        'type',
+        'tokensCost',
+        'duration',
+        'titles',
+        'descriptions',
+        'conditions',
+        'businessIds',
+      ],
+    );
+
+    List<ChocoTurOffer> offers = [];
+    for (var offerMap in offerMaps) {
+      offers.add(ChocoTurOffer.fromCacheMap(offerMap));
+    }
+
+    return offers;
+  }
+
+  Future<void> saveOffers(List<ChocoTurOffer> offers) async {
+    final database = await _db!;
+
+    for (var offer in offers) {
+      Map<String, dynamic> offerInfoMap = offer.toCacheMap();
+      if (await database.update(_offersTableName, offerInfoMap) > 0) {
+        LoggerInstance.logger.d('Offer ${offerInfoMap["id"]} was updated.');
+      } else {
+        LoggerInstance.logger.d('Offer ${offerInfoMap["id"]} did not exist yet on cache, inserting it.');
+        await database.insert(_offersTableName, offerInfoMap);
       }
     }
   }

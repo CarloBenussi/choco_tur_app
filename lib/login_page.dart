@@ -2,7 +2,6 @@
 
 import 'dart:ui';
 
-import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/services/facebook_login_service.dart';
 import 'package:choco_tur/services/google_login_service.dart';
 import 'package:choco_tur/services/webapp_service.dart';
@@ -21,7 +20,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -120,15 +118,6 @@ class _LoginPageState extends State<LoginPage> {
 
       // TODO: send token to spring app for validation and user registration, and save
       // JWT token into Bearer header.
-
-      // ignore: use_build_context_synchronously
-      Provider.of<ChocoTurUser>(context, listen: false).saveLoginInfo(
-        email,
-        accessToken?.token,
-        null,
-        LoginType.withFacebook,
-        true,
-      );
 
       LoggerInstance.logger.i("Successfully logged in with Facebook.");
 
