@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // ignore: must_be_immutable
@@ -24,7 +23,6 @@ class TourStopInfos extends StatelessWidget {
   final String langCode;
   final List<ChocoTurTourStopInfo> tourStopInfos;
 
-  Polyline? _polyline;
   Set<Marker>? _markers;
 
   Future<Uint8List> _getMarkerBytes(String path, int width) async {

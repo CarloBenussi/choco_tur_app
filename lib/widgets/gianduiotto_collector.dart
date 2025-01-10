@@ -1,5 +1,5 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/models/choco_tur_user_wallet.dart';
 import 'package:choco_tur/utils/global_keys.dart';
 import 'package:choco_tur/utils/route_names.dart';
 import 'package:choco_tur/utils/styles.dart';
@@ -20,7 +20,7 @@ class _GianduiottoCollectorState extends State<GianduiottoCollector> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _collectedCoins = Provider.of<ChocoTurUserCoins>(context, listen: true).collectedCoins;
+    _collectedCoins = Provider.of<ChocoTurUserWallet>(context, listen: true).collectedCoins;
   }
 
   void onPressed(BuildContext context) {

@@ -54,6 +54,7 @@ class WebappService {
   static const String recordUserAnswerEndpoint = "/users/info/recordAnswer";
   static const String getUserPurchaseInfosEndpoint = "/users/info/getPurchaseInfos";
   static const String purchaseOfferEndpoint = "/users/info/purchaseOffer";
+  static const String deleteUserAccountEndpoint = "/users/manage/delete";
 
   static const String offersEndpoint = "/offers/offers";
 
@@ -965,6 +966,36 @@ class WebappService {
     }
   }
 
+  static Future<bool> deleteAccount(BuildContext context, String? accessToken) async {
+    Uri uri = _buildUri(deleteUserAccountEndpoint);
+    HttpClientRequest request = await _client!.postUrl(uri);
+    request.headers.set('Authorization', "Bearer $accessToken");
+    request.headers.set('Content-Type', 'application/json');
+    String body = "";
+    request.add(utf8.encode(body));
+    HttpClientResponse response = await request.close();
+
+    if (tokenExpiredStatusCodes.contains(response.statusCode)) {
+      LoggerInstance.logger.e("User access token expired, refreshing token and re-doing request.");
+      HttpClientResponse? newResponse =
+          await _redoRequestWithRefreshedToken(context, uri, HttpRequestMethod.post, body);
+      if (newResponse == null) {
+        LoggerInstance.logger.e("Failed to delete user account, redirecting user to login.");
+        Navigator.pushReplacementNamed(context, RouteNames.login);
+      }
+
+      response = newResponse!;
+    }
+
+    if (response.statusCode == 200) {
+      LoggerInstance.logger.d("Delete user account successful");
+      return true;
+    } else {
+      LoggerInstance.logger.e('Got error response for user account delete: ${response.statusCode}, $body');
+      return false;
+    }
+  }
+
   /*---------------------------------------------------------------------------*/
 
   static Uri _buildUri(String endpoint, [dynamic params]) {
@@ -999,9 +1030,9 @@ class WebappService {
     // Redo request.
     HttpClientRequest newRequest =
         (method == HttpRequestMethod.get) ? await _client!.getUrl(uri) : await _client!.postUrl(uri);
-    if (method == HttpRequestMethod.post) newRequest.add(utf8.encode(body!));
     newRequest.headers
         .set('Authorization', "Bearer ${Provider.of<ChocoTurUser>(context, listen: false).loginAccessToken}");
+    if (method == HttpRequestMethod.post) newRequest.add(utf8.encode(body!));
     return await newRequest.close();
   }
 

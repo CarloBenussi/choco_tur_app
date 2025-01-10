@@ -254,12 +254,44 @@ class SqliteCache {
     return offers;
   }
 
+  Future<ChocoTurOffer?> getOfferFromId(String offerId) async {
+    final database = await _db!;
+
+    List<Map<String, dynamic>> offerMaps = await database.query(
+      _offersTableName,
+      columns: [
+        'id',
+        'type',
+        'tokensCost',
+        'duration',
+        'titles',
+        'descriptions',
+        'conditions',
+        'businessIds',
+      ],
+      where: "id = ?",
+      whereArgs: [getOfferFromId],
+    );
+
+    if (offerMaps.isEmpty) {
+      LoggerInstance.logger.e('Got no data for offer $offerId');
+      return null;
+    }
+
+    if (offerMaps.length > 1) {
+      LoggerInstance.logger.e('Got multiple offers with id $offerId');
+      return null;
+    }
+
+    return ChocoTurOffer.fromCacheMap(offerMaps[0]);
+  }
+
   Future<void> saveOffers(List<ChocoTurOffer> offers) async {
     final database = await _db!;
 
     for (var offer in offers) {
       Map<String, dynamic> offerInfoMap = offer.toCacheMap();
-      if (await database.update(_offersTableName, offerInfoMap) > 0) {
+      if (await database.update(_offersTableName, offerInfoMap, where: "id = ?", whereArgs: [offerInfoMap["id"]]) > 0) {
         LoggerInstance.logger.d('Offer ${offerInfoMap["id"]} was updated.');
       } else {
         LoggerInstance.logger.d('Offer ${offerInfoMap["id"]} did not exist yet on cache, inserting it.');

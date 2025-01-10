@@ -61,10 +61,12 @@ class HomePageState extends State<ToursHomePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // if (!Provider.of<ChocoTurUser>(context, listen: false).hasSeenTutorial) {
-    //   TutorialCoachMarkService.show(context);
-    //   Provider.of<ChocoTurUser>(context, listen: false).setHasSeenTutorial();
-    // }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // if (!Provider.of<ChocoTurUser>(context, listen: false).hasSeenTutorial) {
+      //   Provider.of<ChocoTurUser>(context, listen: false).setHasSeenTutorial();
+      //   TutorialCoachMarkService.show(context);
+      // }
+    });
   }
 
   @override

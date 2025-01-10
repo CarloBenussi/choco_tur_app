@@ -4,9 +4,9 @@ import 'dart:ui';
 
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
-import 'package:choco_tur/models/choco_tur_user_coins.dart';
-import 'package:choco_tur/models/choco_tur_user_purchases.dart';
+import 'package:choco_tur/models/choco_tur_user_wallet.dart';
 import 'package:choco_tur/services/webapp_service.dart';
+import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/styles.dart';
 import 'package:choco_tur/widgets/loading_animation.dart';
 import 'package:choco_tur/widgets/login_button.dart';
@@ -25,56 +25,50 @@ class MyWalletUi extends StatefulWidget {
 }
 
 class _MyWalletUiState extends State<MyWalletUi> {
-  bool _processing = false;
+  ChangeNotifier? _walletProvider;
   List<ChocoTurOffer>? _offers;
   List<ChocoTurUserPurchaseInfo>? _userPurchases;
 
-  Future<void> _onRefresh(BuildContext context) async {
-    // TODO: Clear cache?.
+  Future<void> _refresh(BuildContext context) async {
     _offers = null;
-    await _getOrReturnOffers(context, fromCache: false);
-    await _getOrReturnUserPurchases(context, refresh: true);
+    _userPurchases = null;
+    await _getOffersAndUserPurchases(context, refresh: true);
 
     setState(() {});
   }
 
-  Future<void> _onOfferPurchased(BuildContext context, ChocoTurOffer offer) async {
-    setState(() {
-      _processing = true;
-    });
-
-    // TODO: Send web request for purchase, refresh
-
-    setState(() {
-      _processing = false;
-    });
-  }
-
-  Future<void> _onUserPurchaseRedeemed(BuildContext context, ChocoTurUserPurchaseInfo userPurchase) async {
-    setState(() {
-      _processing = true;
-    });
-
-    // TODO: Code and stuff, refresh
-
-    setState(() {
-      _processing = false;
-    });
-  }
-
-  Future<List<ChocoTurOffer>> _getOrReturnOffers(BuildContext context, {bool fromCache = true}) async {
-    _offers ??= await WebappService.getOffers(context, tryFromCache: fromCache);
-
-    return _offers!;
-  }
-
-  Future<List<ChocoTurUserPurchaseInfo>> _getOrReturnUserPurchases(BuildContext context, {bool refresh = false}) async {
+  Future<bool> _getOffersAndUserPurchases(BuildContext context, {bool refresh = false}) async {
+    _offers ??= await WebappService.getOffers(context, tryFromCache: !refresh);
     if (refresh) {
-      await Provider.of<ChocoTurUserPurchases>(context, listen: false).refresh();
+      await Provider.of<ChocoTurUserWallet>(context, listen: false).refresh();
     }
-    _userPurchases ??= Provider.of<ChocoTurUserPurchases>(context, listen: false).userPurchases;
+    _userPurchases ??= Provider.of<ChocoTurUserWallet>(context, listen: false).userPurchases;
 
-    return _userPurchases!;
+    return true;
+  }
+
+  ChocoTurOffer? _getOfferFromPurchase(ChocoTurUserPurchaseInfo purchaseInfo) {
+    for (var offer in _offers!) {
+      if (offer.id == purchaseInfo.offerId) {
+        return offer;
+      }
+    }
+
+    LoggerInstance.logger.e('No offer found with ID ${purchaseInfo.offerId}');
+    return null;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // final newWalletProvider = Provider.of<ChocoTurUserWallet>(context, listen: true);
+
+    // if (_walletProvider != newWalletProvider && mounted) {
+    //   _walletProvider?.removeListener(() => _refresh(context));
+    //   _walletProvider = newWalletProvider;
+    //   _walletProvider?.addListener(() => _refresh(context));
+    // }
   }
 
   @override
@@ -101,7 +95,7 @@ class _MyWalletUiState extends State<MyWalletUi> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  Provider.of<ChocoTurUserCoins>(context, listen: true).collectedCoins?.toString() ??
+                                  Provider.of<ChocoTurUserWallet>(context, listen: true).collectedCoins?.toString() ??
                                       "?",
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
@@ -129,19 +123,20 @@ class _MyWalletUiState extends State<MyWalletUi> {
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: FutureBuilder(
-                          future: _getOrReturnOffers(context),
-                          builder: (context, offersSnapshot) {
-                            if (offersSnapshot.hasData &&
-                                offersSnapshot.connectionState == ConnectionState.done &&
-                                offersSnapshot.data != null) {
+                          future: _getOffersAndUserPurchases(context),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
                               return RefreshIndicator(
-                                onRefresh: () => _onRefresh(context),
+                                onRefresh: () => _refresh(context),
                                 child: ListView.builder(
-                                    itemCount: offersSnapshot.data!.length,
+                                    itemCount: _offers!.length,
                                     scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
                                     itemBuilder: (BuildContext context, int index) {
-                                      return OfferTile(
-                                          offer: offersSnapshot.data![index], onPurchase: _onOfferPurchased);
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 5),
+                                        child: OfferTile(offer: _offers![index]),
+                                      );
                                     }),
                               );
                             } else {
@@ -161,20 +156,20 @@ class _MyWalletUiState extends State<MyWalletUi> {
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: FutureBuilder(
-                          future: _getOrReturnUserPurchases(context),
-                          builder: (context, userPurchasesSnapshot) {
-                            if (userPurchasesSnapshot.hasData &&
-                                userPurchasesSnapshot.connectionState == ConnectionState.done &&
-                                userPurchasesSnapshot.data != null) {
+                          future: _getOffersAndUserPurchases(context),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
                               return RefreshIndicator(
-                                onRefresh: () => _onRefresh(context),
+                                onRefresh: () => _refresh(context),
                                 child: ListView.builder(
-                                    itemCount: userPurchasesSnapshot.data!.length,
+                                    itemCount: _userPurchases!.length,
                                     scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    padding: const EdgeInsets.only(bottom: 5),
                                     itemBuilder: (BuildContext context, int index) {
                                       return UserPurchaseTile(
-                                          userPurchase: userPurchasesSnapshot.data![index],
-                                          onRedeem: _onUserPurchaseRedeemed);
+                                          userPurchase: _userPurchases![index],
+                                          offer: _getOfferFromPurchase(_userPurchases![index])!);
                                     }),
                               );
                             } else {
@@ -186,18 +181,6 @@ class _MyWalletUiState extends State<MyWalletUi> {
                     ],
                   ),
                 ),
-                if (_processing)
-                  Flexible(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 5,
-                        sigmaY: 5,
-                      ),
-                      child: const Center(
-                        child: LoadingAnimation(),
-                      ),
-                    ),
-                  ),
               ],
             );
           } else {
@@ -206,5 +189,12 @@ class _MyWalletUiState extends State<MyWalletUi> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    //_walletProvider?.removeListener(() => _refresh(context));
+
+    super.dispose();
   }
 }

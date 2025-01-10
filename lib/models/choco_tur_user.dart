@@ -206,6 +206,7 @@ class ChocoTurUser extends ChangeNotifier {
   }
 
   void setHasSeenTutorial() {
+    hasSeenTutorial = true;
     _prefs.setBool(_hasSeenTutorialKey, true);
   }
 
@@ -389,6 +390,41 @@ class ChocoTurUser extends ChangeNotifier {
     _prefs.remove(_cameraLatituteKey);
     _prefs.remove(_cameraLongitudeKey);
     _prefs.remove(_cameraZoomKey);
+
+    notifyListeners();
+  }
+
+  Future<void> delete(BuildContext context) async {
+    bool success = await WebappService.deleteAccount(context, loginAccessToken);
+    if (!success) {
+      LoggerInstance.logger.e("Failed to delete user account");
+      return;
+    }
+
+    // Logout from ext provider if used.
+    if (loginType == LoginType.withGoogle) {
+      await GoogleLoginService.googleSignIn.signOut();
+    } else if (loginType == LoginType.withFacebook) {
+      await FacebookLoginService.facebookLogin.logOut();
+    }
+
+    loginEmail = null;
+    loginAccessToken = null;
+    loginRefreshToken = null;
+    loggedIn = false;
+    loginType = null;
+    cameraPosition = null;
+    userTours = null;
+    userQuizs = null;
+    _prefs.remove(_loginEmailKey);
+    _prefs.remove(_loginAccessTokenKey);
+    _prefs.remove(_loginRefreshTokenKey);
+    _prefs.remove(_loginTypeIndexKey);
+    _prefs.remove(_cameraLatituteKey);
+    _prefs.remove(_cameraLongitudeKey);
+    _prefs.remove(_cameraZoomKey);
+
+    notifyListeners();
   }
 }
 
@@ -462,6 +498,7 @@ class ChocoTurUserPurchaseInfo {
   ChocoTurUserPurchaseInfo();
 
   late final String id;
+  late final String offerId;
   late final bool redeemed;
   late final String purchaseTime;
   late final String expiryTime;
@@ -470,6 +507,7 @@ class ChocoTurUserPurchaseInfo {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'offerId': offerId,
       'redeemed': redeemed,
       'purchaseTime': purchaseTime,
       'expiryTime': expiryTime,
@@ -479,6 +517,7 @@ class ChocoTurUserPurchaseInfo {
 
   ChocoTurUserPurchaseInfo.fromMap(Map<String, dynamic> map) {
     id = map['id'];
+    offerId = map['offerId'];
     redeemed = map['redeemed'];
     purchaseTime = map['purchaseTime'];
     expiryTime = map['expiryTime'];

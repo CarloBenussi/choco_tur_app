@@ -8,7 +8,7 @@ import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/models/choco_tur_user_answers.dart';
-import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/models/choco_tur_user_wallet.dart';
 import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
@@ -56,7 +56,7 @@ class _QuizPageState extends State<QuizPage> {
 
     await Provider.of<ChocoTurUserAnswers>(listen: false, context).recordAnswer(context, questionId);
     if (correct) {
-      await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
+      await Provider.of<ChocoTurUserWallet>(listen: false, context).addCollectedCoins(context, 1);
     }
   }
 
@@ -304,13 +304,15 @@ class _QuizPageState extends State<QuizPage> {
                           );
                         } else if (_currentPageIndex == widget.quiz.questions.length + 1) {
                           return Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.quizScoreNotEnough,
-                              style: TextStyle(
-                                color: Styles.redShade,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 25,
-                              ),
+                            child: AnimatedTextKit(
+                              isRepeatingAnimation: false,
+                              animatedTexts: [
+                                TyperAnimatedText(
+                                  AppLocalizations.of(context)!.quizScoreNotEnough,
+                                  textStyle: TextStyle(fontSize: 24, color: Styles.redShade),
+                                  speed: const Duration(milliseconds: 20),
+                                ),
+                              ],
                             ),
                           );
                           // TODO: Page showing the score and giving discount or additional tasting.

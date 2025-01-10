@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             child: Text(
                               AppLocalizations.of(context)!.forgotPassword,
-                              style: TextStyle(fontSize: 15, color: Styles.redShade),
+                              style: TextStyle(fontSize: 17, color: Styles.redShade),
                             ))
                       ],
                     ),
@@ -247,61 +247,61 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.only(top: 20, bottom: 20),
-                      child: Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Container(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: Text(AppLocalizations.of(context)!.or,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w300,
-                                )),
-                          ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: LoginWithButton(
-                        onPressedFunction: () => loginWithGoogle(context),
-                        labelText: AppLocalizations.of(context)!.signInWithGoogle,
-                        icon: const FaIcon(
-                          FontAwesomeIcons.google,
-                          color: Styles.onRedShade,
-                        ),
-                        buttonColor: Styles.redShade,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: LoginWithButton(
-                        onPressedFunction: loginWithApple,
-                        labelText: AppLocalizations.of(context)!.signInWithApple,
-                        icon: const FaIcon(
-                          FontAwesomeIcons.apple,
-                          color: Styles.onRedShade,
-                        ),
-                        buttonColor: Styles.redShade,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: LoginWithButton(
-                        onPressedFunction: loginWithFacebook,
-                        labelText: AppLocalizations.of(context)!.signInWithFacebook,
-                        icon: const FaIcon(
-                          FontAwesomeIcons.facebook,
-                          color: Styles.onRedShade,
-                        ),
-                        buttonColor: Styles.redShade,
-                      ),
-                    ),
+                    // Container(
+                    //   padding: const EdgeInsets.only(top: 20, bottom: 20),
+                    //   child: Row(
+                    //     children: [
+                    //       const Expanded(child: Divider()),
+                    //       Container(
+                    //         padding: const EdgeInsets.only(left: 10, right: 10),
+                    //         child: Text(AppLocalizations.of(context)!.or,
+                    //             style: const TextStyle(
+                    //               fontSize: 20,
+                    //               fontWeight: FontWeight.w300,
+                    //             )),
+                    //       ),
+                    //       const Expanded(child: Divider()),
+                    //     ],
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 10),
+                    //   child: LoginWithButton(
+                    //     onPressedFunction: () => loginWithGoogle(context),
+                    //     labelText: AppLocalizations.of(context)!.signInWithGoogle,
+                    //     icon: const FaIcon(
+                    //       FontAwesomeIcons.google,
+                    //       color: Styles.onRedShade,
+                    //     ),
+                    //     buttonColor: Styles.redShade,
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 10),
+                    //   child: LoginWithButton(
+                    //     onPressedFunction: loginWithApple,
+                    //     labelText: AppLocalizations.of(context)!.signInWithApple,
+                    //     icon: const FaIcon(
+                    //       FontAwesomeIcons.apple,
+                    //       color: Styles.onRedShade,
+                    //     ),
+                    //     buttonColor: Styles.redShade,
+                    //   ),
+                    // ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 10),
+                    //   child: LoginWithButton(
+                    //     onPressedFunction: loginWithFacebook,
+                    //     labelText: AppLocalizations.of(context)!.signInWithFacebook,
+                    //     icon: const FaIcon(
+                    //       FontAwesomeIcons.facebook,
+                    //       color: Styles.onRedShade,
+                    //     ),
+                    //     buttonColor: Styles.redShade,
+                    //   ),
+                    // ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text(
                           AppLocalizations.of(context)!.dontHaveAnAccountQ,
@@ -316,7 +316,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () => {Navigator.pushNamed(context, RouteNames.registrationProcess)},
                             child: Text(
                               AppLocalizations.of(context)!.createAnAccount,
-                              style: TextStyle(fontSize: 15, color: Styles.redShade),
+                              style: TextStyle(fontSize: 17, color: Styles.redShade),
                             ))
                       ],
                     ),

@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:choco_tur/map_page.dart';
 import 'package:choco_tur/models/choco_tur_tour.dart';
 import 'package:choco_tur/models/choco_tur_user.dart';
 import 'package:choco_tur/models/choco_tur_user_answers.dart';
-import 'package:choco_tur/models/choco_tur_user_coins.dart';
+import 'package:choco_tur/models/choco_tur_user_wallet.dart';
 import 'package:choco_tur/services/firebase_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:choco_tur/utils/route_names.dart';
@@ -128,7 +127,7 @@ class _TourStopStoryChatPageState extends State<TourStopStoryChatPage> {
 
     await Provider.of<ChocoTurUserAnswers>(listen: false, context).recordAnswer(context, answerId);
     if (correct) {
-      await Provider.of<ChocoTurUserCoins>(listen: false, context).addCollectedCoins(context, 1);
+      await Provider.of<ChocoTurUserWallet>(listen: false, context).addCollectedCoins(context, 1);
     }
   }
 

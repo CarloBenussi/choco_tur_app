@@ -64,17 +64,11 @@ class TourStartPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Spring.bubbleButton(
-                springController: _springController,
-                animDuration: const Duration(seconds: 2),
-                animStatus: (AnimStatus status) {
-                  if (status == AnimStatus.completed) {
-                    _springController.play();
-                  }
-                },
-                child: Image.asset(
-                  "assets/chocolateIcon.png",
-                  width: 50,
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.memory(tour.imageData!),
                 ),
               ),
               SizedBox(
@@ -85,12 +79,12 @@ class TourStartPage extends StatelessWidget {
                     FadeAnimatedText(
                       AppLocalizations.of(context)!.welcomeToChocoTur,
                       textStyle: TextStyle(fontSize: 20, color: Styles.redShade),
-                      duration: const Duration(milliseconds: 3000),
+                      duration: const Duration(milliseconds: 2000),
                     ),
                     FadeAnimatedText(
                       tour.title,
                       textStyle: TextStyle(fontSize: 20, color: Styles.redShade),
-                      duration: const Duration(milliseconds: 3000),
+                      duration: const Duration(milliseconds: 2000),
                     ),
                   ],
                   onFinished: () => _onAnimationFinished(context),

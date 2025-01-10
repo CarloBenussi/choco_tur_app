@@ -4,34 +4,40 @@ import 'package:choco_tur/services/webapp_service.dart';
 import 'package:choco_tur/utils/logger.dart';
 import 'package:flutter/material.dart';
 
-class ChocoTurUserCoins extends ChangeNotifier {
-  static Future<ChocoTurUserCoins> init(ChocoTurUser user) async {
+class ChocoTurUserWallet extends ChangeNotifier {
+  static Future<ChocoTurUserWallet> init(ChocoTurUser user) async {
     int? collectedCoins;
+    List<ChocoTurUserPurchaseInfo>? userPurchases;
     if (user.loggedIn) {
       collectedCoins = await WebappService.getUserCollectedCoins(user.loginAccessToken);
+      userPurchases = await WebappService.getUserPurchaseInfos(user.loginAccessToken);
     }
 
-    return ChocoTurUserCoins(user: user, collectedCoins: collectedCoins);
+    return ChocoTurUserWallet(user: user, collectedCoins: collectedCoins, userPurchases: userPurchases);
   }
 
-  ChocoTurUserCoins({
+  ChocoTurUserWallet({
     required this.user,
     this.collectedCoins,
+    this.userPurchases,
   }) {
     user.addListener(_onLoginChange);
   }
 
   ChocoTurUser user;
   int? collectedCoins;
+  List<ChocoTurUserPurchaseInfo>? userPurchases;
 
   void _onLoginChange() async {
-    // If we logged in (no previous collected coins and user is logged), download coins.
+    // If we logged in (no previous collected coins and user is logged), download wallet info.
     if ((collectedCoins == null) && user.loggedIn) {
       collectedCoins = await WebappService.getUserCollectedCoins(user.loginAccessToken);
+      userPurchases = await WebappService.getUserPurchaseInfos(user.loginAccessToken);
     }
-    // If we logged out (previous collected coins and user is not logged), nullify coins.
+    // If we logged out (previous collected coins and user is not logged), nullify wallet info.
     else if ((collectedCoins != null) && !user.loggedIn) {
       collectedCoins = null;
+      userPurchases = null;
     }
     notifyListeners();
   }
@@ -62,6 +68,14 @@ class ChocoTurUserCoins extends ChangeNotifier {
     } else {
       collectedCoins = collectedCoins! - offer.tokensCost;
     }
+
+    notifyListeners();
+  }
+
+  Future<void> refresh() async {
+    collectedCoins = await WebappService.getUserCollectedCoins(user.loginAccessToken);
+    userPurchases = await WebappService.getUserPurchaseInfos(user.loginAccessToken);
+
     notifyListeners();
   }
 
